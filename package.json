@@ -1,0 +1,44 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && vite build --ssr",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@headlessui/react": "^2.0.0",
+        "@inertiajs/react": "^1.0.0",
+        "@tailwindcss/forms": "^0.5.3",
+        "@vitejs/plugin-react": "^4.2.0",
+        "autoprefixer": "^10.4.12",
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "laravel-echo": "^2.0.2",
+        "laravel-vite-plugin": "^1.0",
+        "postcss": "^8.4.31",
+        "pusher-js": "^8.4.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "tailwindcss": "^3.2.1",
+        "vite": "^5.0"
+    },
+    "dependencies": {
+        "@chatscope/chat-ui-kit-react": "^2.0.3",
+        "@fortawesome/fontawesome-free": "^6.7.2",
+        "@fortawesome/fontawesome-svg-core": "^6.7.2",
+        "@fortawesome/free-solid-svg-icons": "^6.7.2",
+        "@fortawesome/react-fontawesome": "^0.2.2",
+        "@inertiajs/inertia-react": "^0.8.1",
+        "@react-google-maps/api": "^2.20.6",
+        "framer-motion": "^11.15.0",
+        "leaflet": "^1.9.4",
+        "leaflet.markercluster": "^1.5.3",
+        "lucide-react": "^0.487.0",
+        "react-datepicker": "^7.5.0",
+        "react-infinite-scroll-component": "^6.1.0",
+        "react-leaflet": "^4.2.0",
+        "react-leaflet-markercluster": "^4.2.1",
+        "react-range": "^1.10.0",
+        "react-tailwindcss-datepicker": "^1.7.2"
+    }
+}
