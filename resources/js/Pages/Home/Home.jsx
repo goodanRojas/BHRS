@@ -11,7 +11,7 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import Dropdown from '@/Components/Dropdown';
 function Home({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-    // console.log(initialBeds);
+    // console.log(initialBeds.data);
     const [beds, setBeds] = useState(initialBeds.data);
     const [pagination, setPagination] = useState(initialPagination);
     const [boardingHouses, setBoardingHouses] = useState([]);
@@ -82,7 +82,7 @@ function Home({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                         { label: 'Beds' },
                     ]}
                 />
-          
+
 
                 {/* Filters */}
                 <div className="relative inline-block text-left w-[11em]">
@@ -119,11 +119,16 @@ function Home({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                             >
                                 <Link href={`/beds/${bed.id}`}>
                                     <img
-                                        src={bed.image.startsWith('https')? bed.image : `/storage/${bed.image}`}
+                                        src={bed.image.startsWith('https') ? bed.image : `/storage/${bed.image}`}
                                         alt={bed.name}
                                         className="w-full h-40 object-cover rounded-md mb-3"
                                     />
-                                    <h2 className="text-lg font-semibold mb-2">{bed.name}</h2>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h2 className="text-lg font-semibold mb-2">{bed.name}</h2>
+                                        <p className="text-yellow-500 text-sm mb-2">
+                                            {bed.avg_rating.toFixed(1)} ★
+                                        </p>
+                                    </div>
                                     <p className="text-gray-600 text-sm mb-2">
                                         Room: {bed.room_name || "N/A"}
                                     </p>
@@ -133,9 +138,7 @@ function Home({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                     <p className="text-gray-800 font-semibold mb-2">
                                         Price: ${bed.sale_price || bed.price}
                                     </p>
-                                    <p className="text-yellow-500 text-sm mb-2">
-                                        {/* Rating: {bed.average_rating.toFixed(1)} ★ */}
-                                    </p>
+
                                     <p
                                         className={`text-sm font-medium ${bed.is_occupied ? "text-red-500" : "text-green-500"
                                             }`}

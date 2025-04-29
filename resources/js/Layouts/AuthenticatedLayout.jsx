@@ -5,9 +5,8 @@ import ChatWidget from '@/Pages/Message/ChatWidget';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Footer from '@/Components/Footer';
 
-import { createContext } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext } from 'react';
 import { faHeart, faBell, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
@@ -20,47 +19,48 @@ export default function AuthenticatedLayout({ header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
 
-    const [directMessage, setDirectMessage] = useState({});
-    const [groupMessage, setGroupMessage] = useState({});
-    const [botMessage, setBotMessage] = useState({});
+    const [directMessages, setDirectMessages] = useState({});
+    const [groupMessages, setGroupMessages] = useState({});
+    const [botMessages, setBotMessages] = useState({});
 
     useEffect(() => {
         if (user) {
 
             axios.get("/direct-message")
-                .then(({ data }) => setDirectMessage(data.direct))
+                .then(({ data }) => setDirectMessages(data.direct))
                 .catch((err) => console.error("Error loading direct messages:", err));
-
+// console.log(directMessages);
             axios.get("/group-message")
-                .then(({ data }) => setGroupMessage(data.group))
+                .then(({ data }) => setGroupMessages(data.group))
                 .catch((err) => console.error("Error loading group messages:", err));
 
             axios.get("/bot-message")
-                .then(({ data }) => setBotMessage(data.bot))
+                .then(({ data }) => setBotMessages(data.bot))
                 .catch((err) => console.error("Error loading bot messages:", err));
 
 
             Echo.private(`direct-messages.${user.id}`)
-                .listen('MessageSent', (e) => {
-                    setDirectMessage((prevMessages) => ({
+                .listen('MessageSent', (message) => {
+                    setDirectMessages((prevMessages) => ({
                         ...prevMessages,
-                        [e.message.sender_id]: [
-                            ...(prevMessages[e.message.sender_id] || []),
-                            e.message
+                        [message.sender_id]: [
+                            ...(prevMessages[message.sender_id] || []),
+                            message,
                         ],
                     }));
                 });
-/* 
-            Echo.private(`group-messages.${user.id}`)
-                .listen('GroupMessageSent', (e) => {
-                    setGroupMessage((prevMessages) => ({
-                        ...prevMessages,
-                        [e.message.group_id]: [
-                            ...(prevMessages[e.message.group_id] || []),
-                            e.message
-                        ],
-                    }));
-                }); */
+
+            /* 
+                        Echo.private(`group-messages.${user.id}`)
+                            .listen('GroupMessageSent', (e) => {
+                                setGroupMessage((prevMessages) => ({
+                                    ...prevMessages,
+                                    [e.message.group_id]: [
+                                        ...(prevMessages[e.message.group_id] || []),
+                                        e.message
+                                    ],
+                                }));
+                            }); */
 
 
         }
@@ -305,8 +305,18 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </header>
             )}
-            <main>{children}</main>
-            <ChatContext.Provider value={{ directMessages: directMessage, groupMessages: groupMessage, botMessages: botMessage }}>
+            <main
+                className='min-h-screen'
+            >{children}</main>
+            <ChatContext.Provider value={{
+                directMessages,
+                setDirectMessages,
+                groupMessages,
+                setGroupMessages,
+                botMessages,
+                setBotMessages,
+            }}>
+
                 <ChatWidget />
             </ChatContext.Provider>
             <Footer />

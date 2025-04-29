@@ -13,78 +13,57 @@ class BedBookingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Bed $bed)
     {
-        //
-    }
+        $bed->load("bookings", "room.building");
 
-    /**
-     * Show the form for creating a new resource.
-     */ public function create(Request $request, Bed $bed)
-    {
-        // Ensure the bed and its related room are loaded
-        $bed->load('room.building');
-
-        // Return the booking creation form with the bed and room data
-        return Inertia::render('Home/BedBooking/Booking', [
-            'bed' => $bed
+        return Inertia::render('Home/Booking/BedBooking',[
+            'bed' => $bed,
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function bookBed(Request $request, $bedId)
     {
+        // Validate form data
         $validated = $request->validate([
-            'bed_id' => 'required|exists:beds,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
+            'user_id' => 'required|exists:users,id',
             'start_date' => 'required|date',
-            'message' => 'nullable|string',
-            'payment_method' => 'required|numeric',
-            'total_price' => 'required|numeric|min:0',
-            'month_count' => 'required|numeric|min:0',
+            'month_count' => 'required|integer',
+            'payment_method' => 'required|in:cash,gcash',
+            'total_price' => 'required|numeric',
+            'bed_id' => 'required|exists:beds,id',
         ]);
-        $validated['user_id'] = auth()->id();
-
-
-        BedBooking::create($validated);
-
-        return redirect()->back()->with('success', 'Booking created successfully!');
+    
+        // Create the booking record
+        $booking = Booking::create([
+            'user_id' => $validated['user_id'],
+            'bookable_id' => $validated['bed_id'],
+            'bookable_type' => Bed::class, // Assuming you're booking a bed
+            'start_date' => $validated['start_date'],
+            'end_date' => $this->calculateEndDate($validated['start_date'], $validated['month_count']),
+            'total_price' => $validated['total_price'],
+            'status' => 'pending',
+        ]);
+    
+        // Handle payment method
+        if ($validated['payment_method'] == 'cash') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking successful. Please proceed to pay in cash at the boarding house.',
+                'booking_id' => $booking->id,
+            ]);
+        }
+    
+        // If payment is via GCash, redirect to GCash payment UI
+        if ($validated['payment_method'] == 'gcash') {
+            // Implement logic for redirecting to GCash payment (this will depend on the GCash API)
+            return response()->json([
+                'success' => true,
+                'gcash_url' => $this->generateGCashPaymentURL($booking), // This will be a placeholder URL
+                'message' => 'Please proceed to GCash payment.',
+                'booking_id' => $booking->id,
+            ]);
+        }
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Bed $bed)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Bed $bed)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Bed $bed)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Bed $bed)
-    {
-        //
-    }
+    
 }

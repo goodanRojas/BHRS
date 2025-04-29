@@ -1,8 +1,8 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Register() {
@@ -22,10 +22,17 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout>
+        <div className='flex flex-col items-center justify-center min-h-screen'>
             <Head title="Register" />
+            <nav className='flex justify-between items-center px-5'>
+                <div className="mb-6">
+                    <Link href="/">
+                        <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
+                    </Link>
+                </div>
 
-            <form onSubmit={submit}>
+            </nav>
+            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md space-y-6">
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -115,6 +122,6 @@ export default function Register() {
                     </PrimaryButton>
                 </div>
             </form>
-        </GuestLayout>
+        </div>
     );
 }

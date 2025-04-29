@@ -19,8 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/buildings/{building}', [BuildingController::class, 'showToUserBuilding'])->name('to.user.building.details');
     Route::get('/rooms/{room}', [RoomController::class, 'showToUserRoom'])->name('to.user.seller.room.details');
     Route::get('/beds/{bed}', [BedController::class, 'showToUserBed'])->name('to.user.seller.bed.details');
-    Route::post('/beds/{bed}/favorite', [BedController::class, 'toggleFavorite']);
-
+    
 
     Route::get('/boarding-houses', [HomePageController::class, 'showMap']);
 });

@@ -32,6 +32,7 @@ class HomePageController extends Controller
                 'room_name' => $bed->room->name ?? null,
                 'building_address' => $bed->room->building->address ?? null,
                 'is_occupied' => $bed->bookings->whereIn('status', ['approved', 'completed'])->isNotEmpty(),
+                'avg_rating' => round($bed->feedbacks->avg('rating'), 1),
             ];
         });
     

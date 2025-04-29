@@ -1,12 +1,9 @@
-<?Php
+<?php 
 
-use App\Http\Controllers\Seller\SellerAuthenticateController;
-use App\Http\Controllers\Seller\SellerDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-
-
+use App\Http\Controllers\Seller\SellerAuthenticateController;
+use App\Http\Controllers\Seller\SellerDashboardController;
 Route::get('/seller-login', function(){
     return Inertia::render('Seller/Login');
 })->name('seller.login');

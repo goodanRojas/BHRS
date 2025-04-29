@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\BedBooking;
+use App\Models\Booking;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +16,7 @@ class AccommodationController extends Controller
     public function index(Request $request)
     {
         $bedId = $request->query('bedId');
-        $details = BedBooking::with(['bed.room.building.seller'])
+        $details = Booking::with(['bed.room.building.seller'])
             ->where('user_id', auth()->id())
             ->where('status', 'confirmed')
             ->get();
@@ -29,7 +29,7 @@ class AccommodationController extends Controller
 
     public function showHistory(Request $request)
     {
-        $details = BedBooking::with(['bed.room.building.seller'])
+        $details = Booking::with(['bed.room.building.seller'])
             ->where('user_id', auth()->id())
             ->where('status', 'completed')
             ->get();
@@ -39,10 +39,10 @@ class AccommodationController extends Controller
     public function show(Request $request, $id)
     { 
          $userId = auth()->id();
-        $details = BedBooking::with(['bed.room.building.seller'])
+        $details = Booking::with(['bed.room.building.seller'])
             ->where('id', $id)
             ->firstOrFail();
-        $count = BedBooking::where('user_id', $userId)->where('status', 'completed')->count();
+        $count = Booking::where('user_id', $userId)->where('status', 'completed')->count();
         return Inertia::render('Home/Accommodation/Bed', ['bed' => $details, 'count' => $count]);
     }
 
