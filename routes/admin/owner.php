@@ -1,0 +1,9 @@
+<?php
+
+use App\Http\Controllers\Admin\OwnerController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('admin')->name('admin.')->middleware('admin')->group(function() {
+    Route::get('/owners', [OwnerController::class, 'index'])->name('owners');
+    Route::get('/owners/owners', [OwnerController::class, 'owners'])->name('owners.owners');
+});

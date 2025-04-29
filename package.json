@@ -34,6 +34,7 @@
         "leaflet": "^1.9.4",
         "leaflet.markercluster": "^1.5.3",
         "lucide-react": "^0.487.0",
+        "puppeteer": "^24.7.2",
         "react-datepicker": "^7.5.0",
         "react-infinite-scroll-component": "^6.1.0",
         "react-leaflet": "^4.2.0",

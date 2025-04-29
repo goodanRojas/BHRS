@@ -38,7 +38,7 @@ export default function Rooms({ room }) {
                             <p className="text-sm text-red-500">{room.sale_price}</p>
                         </div>
                     </div>
-                    {room.user_id === null ? (
+                {/*     {room.user_id === null ? (
                         <div className="mt-4">
                             <p className="text-sm text-gray-600">Beds: {room.beds.length}</p>
                             <p className="text-sm text-gray-600">
@@ -54,7 +54,7 @@ export default function Rooms({ room }) {
                             />
                             <p className="ml-3 text-sm text-gray-800">{room.user.name}</p>
                         </div>
-                    )}
+                    )} */}
                 </div>
 
                 {/* Display Beds */}
@@ -93,12 +93,12 @@ export default function Rooms({ room }) {
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center mt-4">
-                                                    <img
+                                                  {/*   <img
                                                         src={`/storage/${room.user.image}`}
                                                         alt={room.user.name}
                                                         className="h-10 w-10 rounded-full border-2 border-gray-200"
-                                                    />
-                                                    <p className="ml-3 text-sm text-gray-800">{room.user.name}</p>
+                                                    /> 
+                                                     <p className="ml-3 text-sm text-gray-800">{room.user.name}</p> */}
                                                 </div>
                                             )}
                                         </div>

@@ -4,6 +4,7 @@ import NavLink from '@/Components/NavLink';
 import ChatWidget from '@/Pages/Message/ChatWidget';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Footer from '@/Components/Footer';
+import { FavoriteContext } from '@/Contexts/FavoriteContext';
 
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, createContext } from 'react';
@@ -22,14 +23,14 @@ export default function AuthenticatedLayout({ header, children }) {
     const [directMessages, setDirectMessages] = useState({});
     const [groupMessages, setGroupMessages] = useState({});
     const [botMessages, setBotMessages] = useState({});
-
+    const [favoritesCount, setFavoritesCount] = useState(user.favorites.length);
     useEffect(() => {
         if (user) {
 
             axios.get("/direct-message")
                 .then(({ data }) => setDirectMessages(data.direct))
                 .catch((err) => console.error("Error loading direct messages:", err));
-// console.log(directMessages);
+            // console.log(directMessages);
             axios.get("/group-message")
                 .then(({ data }) => setGroupMessages(data.group))
                 .catch((err) => console.error("Error loading group messages:", err));
@@ -72,7 +73,13 @@ export default function AuthenticatedLayout({ header, children }) {
             }
         }
     }, []);
+
+    const updateFavoritesCount = (newCount) => {
+        setFavoritesCount(newCount);
+    };
     return (
+        <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
+  
         <div className="min-h-screen ">
             <nav className="border-b border-gray-100">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -117,9 +124,9 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             {/* Favorites Icon with Badge */}
                             <div className="relative group">
-                                {user.favorites.length > 0 && (
+                                {favoritesCount > 0 && (
                                     <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                        {user.favorites.length}
+                                        {favoritesCount}
                                     </div>
                                 )}
                                 <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
@@ -322,5 +329,8 @@ export default function AuthenticatedLayout({ header, children }) {
             <Footer />
 
         </div>
+        
+    </FavoriteContext.Provider>
+
     );
 }

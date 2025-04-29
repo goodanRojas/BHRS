@@ -1,16 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import {useFavorite} from '@/Contexts/FavoriteContext'; // 👈 Add this line
+
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 
-import Stars from '@/Components/Stars';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds }) {
-    console.log(sibling_beds);
-    // console.log(completed_bookings);
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
+    const { updateFavoritesCount } = useFavorite();
+
     const toggleFavorite = async () => {
         try {
             const response = await axios.post(`/beds/${bed.id}/favorite`, {
@@ -19,6 +20,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
             if (response.status === 200) {
                 setIsFavorite(!isFavorite); // Update state after success
+                updateFavoritesCount(response.data.favorites_count);
             }
         } catch (error) {
             console.error("Error toggling favorite:", error);
@@ -28,7 +30,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
 
     return (
-        <AuthenticatedLayout>
+        <>
             <Head title={`Bed in ${bed.name}`} />
 
             <div className="p-6 space-y-6">
@@ -230,6 +232,8 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 </div>
 
             </div>
-        </AuthenticatedLayout>
+            </>
     );
 }
+
+Bed.layout = (page) => <AuthenticatedLayout children={page} />;

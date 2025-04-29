@@ -10,6 +10,8 @@ export default function GroupChat() {
   const { auth } = usePage().props;
   const { groupMessages, setGroupMessages } = useContext(ChatContext);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
 
   const [groups, setGroups] = useState([]);
   const [selectedGC, setSelectedGC] = useState(null);
@@ -19,9 +21,23 @@ export default function GroupChat() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [addUser, setAddUser] = useState();
+  const [addUserModal, setAddUserModal] = useState(false);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // const container = messagesContainerRef.current;
+  // if (!container) return;
+  // const previousScrollHeight = container.scrollHeight;
+
+
+  // setGroupMessages((prev) => [
+  //   ...response.data.messages,
+  //   ...prev
+  // ]);
+
+  // setTimeout(() => {
+  //   const newScrollHeight = container.scrollHeight;
+  //   container.scrollTop = newScrollHeight - previousScrollHeight + container.scrollTop;
+  // }, 0);
 
   useEffect(() => {
     axios.get("/group-message").then(({ data }) => setGroups(data.groups));
@@ -29,9 +45,7 @@ export default function GroupChat() {
 
   useEffect(() => {
     if (selectedGC) {
-      console.log(selectedGC);
       axios.get(`/group-message/selected-gc/${selectedGC.id}`).then(({ data }) => {
-        console.log(data);
         setGroupMessages(prev => ({ ...prev, [selectedGC.id]: data.group }));
         setSelectedGC(prev => ({ ...prev, groups: data }));
 
@@ -42,6 +56,42 @@ export default function GroupChat() {
   useEffect(() => {
     scrollToBottom();
   }, [groupMessages, selectedGC]);
+/* 
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    const handleScroll = () => {
+      if (container.scrollTop < 100 && !isLoading && hasMoreMessages) {
+        loadOlderMessages();
+      }
+    };
+    container.addEventListener("scroll", handleScroll);
+
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [isLoading, hasMoreMessages]);
+
+  const loadOlderMessages = async () => {
+    setIsLoading(true);
+
+    const response = await axios.get(`/group-message/older-messages`, {
+      params: {
+        before: earliestMessageId, // get messages older than this ID
+      }
+    });
+
+    if (response.data.messages.length > 0) {
+      setGroupMessages((prev) => [
+        ...response.data.messages,
+        ...prev,
+      ]);
+      setEarliestMessageId(response.data.message[0].id);
+    }
+    else {
+      setHasMoreMessages(false);
+    }
+    setIsLoading(false);
+
+  }; */
 
   const sendMessage = () => {
     if (!messageInput.trim() || !selectedGC) return;
@@ -50,10 +100,8 @@ export default function GroupChat() {
       group_id: selectedGC.id,
       content: messageInput,
     }).then(({ data }) => {
-      setGroupMessages(prev => ({
-        ...prev,
-        [selectedGC.id]: [...(prev[selectedGC.id] || []), data.message],
-      }));
+      selectedGC.messages.push(data.message);
+      setSelectedGC({ ...selectedGC });  // force re-render
       setMessageInput("");
     });
   };
@@ -95,8 +143,7 @@ export default function GroupChat() {
 
     axios.post(`/group-message/${selectedGC.id}/add-member`, { id: addUserEmail })
       .then(() => {
-        setAddUser();
-        alert("User added!");
+        // things after adding user
       });
   };
 
@@ -112,25 +159,25 @@ export default function GroupChat() {
   return (
     <div className="h-80 border rounded shadow-lg overflow-hidden flex flex-col">
 
-      <div className="flex justify-between items-center gap-4 p-4">
-        <h2 className=" text-lg font-bold">GC</h2>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className=" rounded-full w-10 h-10 bg-blue-500 text-white py-1 rounded"
-        >
-          +
-        </button>
-      </div>
+      {selectedGC === null && (
+        <div className="flex justify-between items-center gap-4 p-4">
+          <h2 className="text-lg font-bold">GC</h2>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="rounded-full w-10 h-10 bg-blue-500 text-white py-1"
+          >
+            +
+          </button>
+        </div>
+      )}
 
       {/* Chat window */}
       {selectedGC ? (
 
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          {console.log(selectedGC)}
-          <div className="flex items-center justify-between p-4">
+        <div className="flex flex-col flex-1 relative overflow-y-auto">
+          <div className=" flex items-center justify-between sticky top-0 left-0 right-0 bg-white p-4">
             <button
               onClick={() => {
-                console.log("[CLICK] Back button pressed — clearing selectedUser");
                 setSelectedGC(null);
               }}
               className="text-gray-700 hover:text-gray-900"
@@ -168,7 +215,7 @@ export default function GroupChat() {
                     Delete
                   </button>
                   <button
-                    onClick={() => setAddUser(1)}
+                    onClick={() => setAddUserModal(true)}
                     className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition"
                   >
                     <FontAwesomeIcon icon={faUserPlus} className="text-gray-500" />
@@ -187,19 +234,21 @@ export default function GroupChat() {
           {/* Messages Section */}
           <div>
             {/* MESSAGES */}
-            <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <div
+
+              ref={messagesContainerRef}
+              className="flex-1 p-4 space-y-3 overflow-y-auto min-h-full">
               {selectedGC.messages.length === 0 ? (
                 <div className="text-gray-400 text-center">No messages yet</div>
               ) :
                 selectedGC.messages.map((message, index) => {
-                  console.log(selectedGC);
                   const sender = selectedGC.members.find(member => member.id === message.sender_id);
                   return (
                     <div
                       key={index}
                       className={`flex gap-2 p-3 rounded-lg max-w-xs ${message.sender_id === auth.user.id
-                          ? "ml-auto bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-800"
+                        ? "ml-auto bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-800"
                         }`}
                     >
                       <img
@@ -223,7 +272,12 @@ export default function GroupChat() {
                 }
                 )
               }
+              <div ref={messagesEndRef} />
             </div>
+           {/*  {isLoading && (
+              <div className="text-center text-gray-500">Loading older messages…</div>
+            )} */}
+
             {/* INPUT FOR SENDING MESSAGE */}
             <div className="border-t p-3 flex items-center gap-2">
               <input
@@ -252,7 +306,6 @@ export default function GroupChat() {
               <div
                 key={group.id}
                 onClick={() => {
-                  console.log(group);
                   setSelectedGC(group)
                 }}
                 className="p-2 border rounded cursor-pointer hover:bg-gray-100"

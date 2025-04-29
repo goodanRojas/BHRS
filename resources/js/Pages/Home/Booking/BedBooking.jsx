@@ -8,7 +8,6 @@ import TermsAndConditionsModal from '@/Components/TermsAndConditionsModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
 export default function Booking({ bed }) {
-    console.log(bed);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -36,6 +35,7 @@ export default function Booking({ bed }) {
     };
 
     const handleSubmit = async (e) => {
+         console.log(formData);
         e.preventDefault();
         try {
             const response = await axios.post(`/bed/book/${formData.bed_id}`, formData);
@@ -46,8 +46,6 @@ export default function Booking({ bed }) {
             console.error('Booking failed:', error.response ? error.response.data : error.message);
         }
     };
-
-
     return (
         <AuthenticatedLayout>
             <Head title="Bed Booking" />
@@ -103,7 +101,7 @@ export default function Booking({ bed }) {
                 <div className="flex items-center gap-8 py-6 px-6 bg-white rounded-lg shadow-md">
                     {/* Bed Image */}
                     <img
-                        src={`/storage/${bed.image.startsWith('http') ? bed.image : `/bed/${bed.image}`}`}
+                        src={`${bed.image.startsWith('http') ? bed.image : `/storage/bed/${bed.image}`}`}
                         alt="Bed"
                         className="w-[6rem] h-[6rem] rounded-lg border border-gray-300 shadow-md object-cover"
                     />
@@ -119,22 +117,16 @@ export default function Booking({ bed }) {
                         {/* Room Details */}
                         <div className="flex items-center gap-3 text-sm">
                             <FontAwesomeIcon icon={faDoorOpen} className="text-green-600" />
-                            <img
-                                src={`/storage/${bed.room.image.startsWith('http') ? bed.room.image : `/bed/${bed.room.image}`}`}
-                                alt="Room"
-                                className="w-8 h-8 rounded-full border border-gray-300 shadow-sm"
-                            />
+                       
+
                             <strong>{bed.room.name}</strong>
                         </div>
 
-                        {/* Building Details */}
+                        {/* Build
+                        ing Details */}
                         <div className="flex items-center gap-3 text-sm">
                             <FontAwesomeIcon icon={faBuilding} className="text-yellow-600" />
-                            <img
-                                src={`/storage/${bed.room.building.image.startsWith('http') ? bed.room.building.image : `/bed/${bed.room.building.image}`}`}
-                                alt="Building"
-                                className="w-8 h-8 rounded-full border border-gray-300 shadow-sm"
-                            />
+                          
                             <strong>{bed.room.building.name}</strong>
                         </div>
 
@@ -250,8 +242,8 @@ export default function Booking({ bed }) {
                             required
                         >
                             <option value="">Select Payment Method</option>
-                            <option value="1">Cash</option>
-                            <option value="2">G-Cash</option>
+                            <option value="cash">Cash</option>
+                            <option value="gcash">G-Cash</option>
                         </select>
                     </div>
 

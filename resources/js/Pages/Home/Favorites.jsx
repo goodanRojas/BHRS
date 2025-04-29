@@ -1,16 +1,22 @@
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import {useFavorite} from '@/Contexts/FavoriteContext'; // 👈 Add this line
+
 import { Head, Link } from "@inertiajs/react";
 import { useState } from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
+
 export default function Favorites({ favorites }) {
     const [favoriteItems, setFavoriteItems] = useState(favorites);
 
+    const [isFavorite, setIsFavorite] = useState(false);
+    const {updateFavoritesCount} = useFavorite();
+
     const toggleFavorite = async (id, type) => {
         try {
-            await axios.post(`/favorites/${id}/toggle`);
+            await axios.post(`/beds/${id}/favorite`);
 
             // Remove the item from the UI by filtering it out
             setFavoriteItems((prev) =>
@@ -19,6 +25,7 @@ export default function Favorites({ favorites }) {
                     return !(itemId === id && item.type === type);
                 })
             );
+            updateFavoritesCount(-1);
         } catch (error) {
             console.error("Error toggling favorite:", error);
         }
@@ -26,7 +33,7 @@ export default function Favorites({ favorites }) {
 
 
     return (
-        <AuthenticatedLayout>
+        <>
             <Head title="Favorites" />
             <div className="p-4 flex flex-col min-h-full ">
                 <h1 className=" text-2xl font-bold mb-6">Favorites</h1>
@@ -87,6 +94,10 @@ export default function Favorites({ favorites }) {
                     </div>
                 )}
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+
+
+Favorites.layout = (page) => <AuthenticatedLayout children={page} />;

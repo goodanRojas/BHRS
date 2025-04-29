@@ -11,7 +11,7 @@ class RoomController extends Controller
 {
     public function showToUserRoom(Room $room)
     {
-        $room->load('building', 'beds', 'feedbacks', 'bookings', 'favorites');
+        $room->load('building', 'beds', 'feedbacks.user', 'bookings', 'favorites');
 
         return Inertia::render('Home/Room', [
             'room' => $room,

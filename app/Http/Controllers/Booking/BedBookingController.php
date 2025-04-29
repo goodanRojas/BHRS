@@ -4,66 +4,70 @@ namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bed;
-use App\Models\BedBooking;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use GlennRaya\Xendivel\Xendivel;
+use GlennRaya\Xendivel\Services\EWalletService;
 
 class BedBookingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Bed $bed)
-    {
-        $bed->load("bookings", "room.building");
+  /**
+   * Display a listing of the resource.
+   */
+  public function index(Bed $bed)
+  {
+    $bed->load("bookings", "room.building");
 
-        return Inertia::render('Home/Booking/BedBooking',[
-            'bed' => $bed,
-        ]);
-    }
+    return Inertia::render('Home/Booking/BedBooking', [
+      'bed' => $bed,
+    ]);
+  }
 
-    public function bookBed(Request $request, $bedId)
-    {
-        // Validate form data
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'start_date' => 'required|date',
-            'month_count' => 'required|integer',
-            'payment_method' => 'required|in:cash,gcash',
-            'total_price' => 'required|numeric',
-            'bed_id' => 'required|exists:beds,id',
-        ]);
-    
-        // Create the booking record
-        $booking = Booking::create([
-            'user_id' => $validated['user_id'],
-            'bookable_id' => $validated['bed_id'],
-            'bookable_type' => Bed::class, // Assuming you're booking a bed
-            'start_date' => $validated['start_date'],
-            'end_date' => $this->calculateEndDate($validated['start_date'], $validated['month_count']),
-            'total_price' => $validated['total_price'],
-            'status' => 'pending',
-        ]);
-    
-        // Handle payment method
-        if ($validated['payment_method'] == 'cash') {
-            return response()->json([
-                'success' => true,
-                'message' => 'Booking successful. Please proceed to pay in cash at the boarding house.',
-                'booking_id' => $booking->id,
-            ]);
-        }
-    
-        // If payment is via GCash, redirect to GCash payment UI
-        if ($validated['payment_method'] == 'gcash') {
-            // Implement logic for redirecting to GCash payment (this will depend on the GCash API)
-            return response()->json([
-                'success' => true,
-                'gcash_url' => $this->generateGCashPaymentURL($booking), // This will be a placeholder URL
-                'message' => 'Please proceed to GCash payment.',
-                'booking_id' => $booking->id,
-            ]);
-        }
+
+
+  public function bookBed(Request $request, $bedId)
+  {
+
+    if ($request->payment_method == 'gcash') {
+      Log::info('gcash');
+      return redirect()->route('xendivel.checkout');
+    } else {
+      Log::info($request);
+      $request->validate([
+        'start_date' => 'required|date',
+        'month_count' => 'required|integer|min:1',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string|max:255',
+        'payment_method' => 'required|in:cash,gcash',
+        'agreedToTerms' => 'required|accepted',
+      ]);
+
+      $bed = Bed::findOrFail($bedId);
+      $startDate = Carbon::parse($request->start_date);
+      $endDate =  $startDate->copy()->addMonths($request->month_count);
+
+      $totalPrice = $bed->price ?? $bed->price;
+      $totalPrice *= $request->month_count;
+
+
+
+
+      $booking = Booking::create([
+        'user_id' => auth()->id(),
+        'bookable_id' => $bed->id,
+        'bookable_type' => Bed::class,
+        'start_date' => $startDate,
+        'end_date' => $endDate,
+        'total_price' => $totalPrice,
+        'status' => 'pending',
+      ]);
+
+      return response()->json(['success' => true, 'booking' => $booking]);
     }
-    
+  }
 }

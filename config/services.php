@@ -13,7 +13,9 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'xendit' => [
+        'api_key' => env('XENDIT_API_KEY'),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

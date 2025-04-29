@@ -96,7 +96,9 @@ class BedController extends Controller
                 $isFavorite = true;
             }
 
-            return response()->json(['message' => $message, 'is_favorite' => $isFavorite], 200);
+            return response()->json(['message' => $message, 'is_favorite' => $isFavorite,
+            'favorites_count' => auth()->user()->favorites()->count()
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Error toggling favorite status: ' . $e->getMessage());
 
