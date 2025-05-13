@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faLocationDot, faDoorOpen, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
@@ -7,275 +7,234 @@ import axios from 'axios';
 import TermsAndConditionsModal from '@/Components/TermsAndConditionsModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
-export default function Booking({ bed }) {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        start_date: '',
+export default function Booking({ bed, userPreferences }) {
+    // console.log(bed);
+    // console.log(userPreferences);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: userPreferences?.fullname || '',
+        email: userPreferences?.email || '',
+        phone: userPreferences?.phone || '',
+        address: {
+            street: userPreferences?.address?.street || '',
+            barangay: userPreferences?.address?.barangay || '',
+            city: userPreferences?.address?.city || '',
+            province: userPreferences?.address?.province || '',
+            postal_code: userPreferences?.address?.postal_code || '',
+            country: userPreferences?.address?.country || '',
+        },
+        start_date: userPreferences?.start_date || '',
         month_count: 1,
-        message: '',  // Corrected from specialRequests to message
-        payment_method: '',  // Changed to match the model field
-        total_price: bed.sale_price ? bed.sale_price : bed.price,  // Added total_price
-        status: 'pending',  // Added default status
-        agreedToTerms: false,
-        bed_id: bed.id
+        message: userPreferences?.special_request || '',
+        payment_method: '',
+        total_price: bed.sale_price ? bed.sale_price : bed.price,
+        status: userPreferences?.status || 'pending',
+        agreedToTerms: userPreferences?.agreed_to_terms === 1,
+        bed_id: bed.id,
     });
-
 
     const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
     const [successModal, setSuccessModal] = useState(false);
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
 
-    const handleSubmit = async (e) => {
-         console.log(formData);
-        e.preventDefault();
-        try {
-            const response = await axios.post(`/bed/book/${formData.bed_id}`, formData);
-            if (response.status === 200) {
-                setSuccessModal(true);
-            }
-        } catch (error) {
-            console.error('Booking failed:', error.response ? error.response.data : error.message);
+        if (name.startsWith('address.')) {
+            const addressField = name.split('.')[1];
+            setData(data => ({
+                ...data,
+                address: {
+                    ...data.address,
+                    [addressField]: value,
+                }
+            }));
+        } else {
+            setData(name, type === 'checkbox' ? checked : value);
         }
     };
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(`/bed/book/${data.bed_id}`, {
+            onSuccess: () => setSuccessModal(true),
+            onError: (error) => console.error(error),
+        });
+    };
+
+
     return (
         <AuthenticatedLayout>
             <Head title="Bed Booking" />
 
-            {/* Success Modal Component */}
-            <Modal
-                show={successModal}
-                closeable={false}
-                onClose={() => setSuccessModal(false)}
-            >
-                <div className="flex flex-col items-center justify-center p-4 bg-green-100 text-green-600 rounded-lg shadow-lg">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mb-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+            {/* Success Modal */}
+            <Modal show={successModal} closeable={false} onClose={() => setSuccessModal(false)}>
+                <div className="flex flex-col items-center p-6 bg-green-100 text-green-700 rounded-lg shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-sm font-medium text-center">
-                        Booking Successful! <br />
-                        Please wait for the landlord to confirm your booking.
-                    </p>
-                    <Link
-                        href={'/beds/' + bed.id}
-                        onClick={() => setSuccessModal(false)}
-                        className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                    >
-                        OK
-                    </Link>
+                    <p className="text-center font-semibold text-sm">Booking Successful! Please wait for landlord confirmation.</p>
+                    <Link href={`/home/bed/${bed.id}`} className="mt-4 px-5 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">OK</Link>
                 </div>
             </Modal>
 
-            {/* Terms Modal Component */}
+            {/* Terms Modal */}
+            {/* Terms Modal */}
             <TermsAndConditionsModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onAgree={() => {
-                    setFormData((prev) => ({ ...prev, agreedToTerms: true }));
+                    setData('agreedToTerms', true);
                     setIsModalOpen(false);
                 }}
             />
 
-            <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-                <h1 className="text-3xl font-semibold text-gray-800 mb-6">Book Your Stay</h1>
 
-                <div className="flex items-center gap-8 py-6 px-6 bg-white rounded-lg shadow-md">
-                    {/* Bed Image */}
+            <div className="max-w-5xl mx-auto bg-white p-8 md:p-10 rounded-2xl shadow-lg space-y-8 mt-6">
+                <h1 className="text-3xl font-bold text-gray-800">Book Your Stay</h1>
+
+                {/* Bed Details */}
+                <div className="flex flex-col md:flex-row items-center gap-6">
                     <img
                         src={`${bed.image.startsWith('http') ? bed.image : `/storage/bed/${bed.image}`}`}
                         alt="Bed"
-                        className="w-[6rem] h-[6rem] rounded-lg border border-gray-300 shadow-md object-cover"
+                        className="w-32 h-32 rounded-xl border object-cover shadow-md"
                     />
-
-                    {/* Bed Details Section */}
-                    <div className="space-y-6 text-gray-700">
-                        {/* Bed Name */}
-                        <div className="flex items-center gap-3 text-lg font-semibold">
+                    <div className="space-y-1 text-gray-700">
+                        <div className="flex items-center gap-2 text-lg font-semibold">
                             <FontAwesomeIcon icon={faBed} className="text-blue-600" />
-                            <strong>{bed.name}</strong>
+                            {bed.name}
                         </div>
-
-                        {/* Room Details */}
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex items-center gap-2 text-sm">
                             <FontAwesomeIcon icon={faDoorOpen} className="text-green-600" />
-                       
-
-                            <strong>{bed.room.name}</strong>
+                            Room: {bed.room.name}
                         </div>
-
-                        {/* Build
-                        ing Details */}
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex items-center gap-2 text-sm">
                             <FontAwesomeIcon icon={faBuilding} className="text-yellow-600" />
-                          
-                            <strong>{bed.room.building.name}</strong>
+                            Building: {bed.room.building.name}
                         </div>
-
-                        {/* Address */}
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <FontAwesomeIcon icon={faLocationDot} className="text-red-600" />
-                            <strong>{bed.room.building.address}</strong>
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-lg text-blue-700">
-                            <span className="font-medium">Total Price: </span>₱<strong>{bed.sale_price ? bed.sale_price : bed.price}</strong>
+                        <div className="text-blue-700 font-medium text-sm mt-2">
+                            Total Price: ₱{bed.sale_price ?? bed.price}
                         </div>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {/* Booking Date */}
-                    <div className="flex flex-col">
-                        <label htmlFor="start_date" className="text-sm font-medium text-gray-600 mb-1">
-                            Booking Date
-                        </label>
-                        <input
-                            type="date"
-                            id="start_date"
-                            name="start_date"
-                            value={formData.start_date}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        />
-                    </div>
-
-                    {/* Duration (Months) */}
-                    <div className="flex flex-col">
-                        <label htmlFor="month_count" className="text-sm font-medium text-gray-600 mb-1">
-                            Duration (Months)
-                        </label>
-                        <input
-                            type="number"
-                            id="month_count"
-                            name="month_count"
-                            value={formData.month_count}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        />
-                    </div>
-
-                    {/* Full Name */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="name" className="text-sm font-medium text-gray-600 mb-1">Full Name</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        />
-                    </div>
-
-                    {/* Email */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="email" className="text-sm font-medium text-gray-600 mb-1">Email Address</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        />
-                    </div>
-
-                    {/* Phone Number */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="phone" className="text-sm font-medium text-gray-600 mb-1">Phone Number</label>
-                        <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        />
+                {/* Booking Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Personal Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Full Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={data.name}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Phone</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={data.phone}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Booking Date</label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                value={data.start_date}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Duration (Months)</label>
+                            <input
+                                type="number"
+                                name="month_count"
+                                value={data.month_count}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">Payment Method</label>
+                            <select
+                                name="payment_method"
+                                value={data.payment_method}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            >
+                                <option value="">Select</option>
+                                <option value="cash">Cash</option>
+                                <option value="gcash">G-Cash</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Address */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="address" className="text-sm font-medium text-gray-600 mb-1">Address</label>
-                        <textarea
-                            name="address"
-                            id="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                        />
-                    </div>
-
-                    {/* Payment Method */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="payment_method" className="text-sm font-medium text-gray-600 mb-1">Payment Method</label>
-                        <select
-                            name="payment_method"
-                            id="payment_method"
-                            value={formData.payment_method}
-                            onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-                            required
-                        >
-                            <option value="">Select Payment Method</option>
-                            <option value="cash">Cash</option>
-                            <option value="gcash">G-Cash</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {["street", "barangay", "city", "province", "postal_code", "country"].map((field) => (
+                            <div key={field}>
+                                <label className="block text-sm font-medium text-gray-600 capitalize">
+                                    {field.replace('_', ' ')}
+                                </label>
+                                <input
+                                    type="text"
+                                    name={`address.${field}`}
+                                    value={data.address[field]}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+                        ))}
                     </div>
 
                     {/* Special Requests */}
-                    <div className="flex flex-col col-span-2">
-                        <label htmlFor="specialRequests" className="text-sm font-medium text-gray-600 mb-1">Special Requests (Optional)</label>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-600">Special Requests (Optional)</label>
                         <textarea
-                            name="specialRequests"
-                            id="specialRequests"
-                            value={formData.specialRequests}
+                            name="message"
+                            value={data.message}
                             onChange={handleChange}
-                            className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            rows="3"
                         />
                     </div>
 
-                    {/* Terms Checkbox with Modal Trigger */}
-                    <div className="flex items-center col-span-2 text-sm">
+                    {/* Terms */}
+                    <div className="flex items-start gap-2 text-sm text-gray-700">
                         <input
                             type="checkbox"
                             name="agreedToTerms"
-                            checked={formData.agreedToTerms}
+                            checked={data.agreedToTerms}
                             onChange={handleChange}
-                            className="mr-2"
                             required
                         />
-                        <span className="text-gray-700">
+                        <span>
                             I agree to the{" "}
-                            <button
-                                type="button"
-                                onClick={() => setIsModalOpen(true)}
-                                className="text-blue-500 underline"
-                            >
+                            <button type="button" onClick={() => setIsModalOpen(true)} className="text-blue-500 underline">
                                 terms and conditions
                             </button>
                         </span>
@@ -284,14 +243,22 @@ export default function Booking({ bed }) {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition col-span-2"
+                        disabled={processing}
+                        className={`w-full flex justify-center items-center gap-2 bg-blue-600 text-white font-medium py-3 rounded-lg transition ${processing ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
+                            }`}
                     >
-                        Submit Booking
+                        {processing && (
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                        )}
+                        {processing ? 'Submitting...' : 'Submit Booking'}
                     </button>
                 </form>
+
             </div>
-
-
         </AuthenticatedLayout>
+
     );
 }

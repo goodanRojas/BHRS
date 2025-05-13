@@ -10,8 +10,9 @@ export default function ChatLayout({ isOpen, onClose }) {
 
     return (
         isOpen && (
-            <div className="absolute bottom-16 right-0 w-80 bg-white shadow-lg rounded-lg">
+            <div className="absolute bottom-16 bg-indigo-100 right-0 w-80  shadow-lg rounded-lg">
                 {/* Header */}
+                
                 <div className="p-2 bg-gray-100 border-b flex justify-between items-center">
                     <strong>Chats</strong>
                     <button className="p-1 text-gray-700 hover:text-black" onClick={onClose}>
@@ -31,13 +32,13 @@ export default function ChatLayout({ isOpen, onClose }) {
                         className={`flex-1 py-2 ${activeTab === "group" ? "bg-blue-500 text-white" : "text-gray-700"}`}
                         onClick={() => setActiveTab("group")}
                     >
-                        <FontAwesomeIcon icon={faUsers} /> 
+                        <FontAwesomeIcon icon={faUsers} />
                     </button>
                     <button
                         className={`flex-1 py-2 ${activeTab === "bot" ? "bg-blue-500 text-white" : "text-gray-700"}`}
                         onClick={() => setActiveTab("bot")}
                     >
-                        <FontAwesomeIcon icon={faRobot} /> 
+                        <FontAwesomeIcon icon={faRobot} />
                     </button>
                 </div>
 

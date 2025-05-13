@@ -10,8 +10,7 @@ Route::prefix('admin')->name('admin.')->group(function() {
     Route::middleware('admin')->group(function(){
         Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-        Route::post('/delete', [AdminController::class, 'logout'])->name('logout');
-       
+        Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
     });
 });
 

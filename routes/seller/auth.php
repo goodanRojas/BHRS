@@ -2,15 +2,24 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Seller\SellerAuthenticateController;
 use App\Http\Controllers\Seller\SellerDashboardController;
-Route::get('/seller-login', function(){
-    return Inertia::render('Seller/Login');
-})->name('seller.login');
+use App\Http\Controllers\Seller\SellerAuthenticateController;
 
-Route::post('/seller-login', [SellerAuthenticateController::class, 'store']);
 
-Route::middleware('seller')->group(function () {
-    Route::get('/seller/dashboard', [SellerDashboardController::class, 'index'])->name('seller.dashboard');
-    Route::post('/seller/logout', [SellerAuthenticateController::class, 'destroy'])->name('seller.logout');
+Route::prefix('seller')->name('seller.')->group(function() {
+    Route::get('/login', [SellerAuthenticateController::class, 'index'])->name('login.index');
+    Route::post('/login', [SellerAuthenticateController::class, 'store'])->name('login.store');
+    Route::middleware('admin')->group(function(){
+        Route::get('/logout', [SellerAuthenticateController::class, 'logout'])->name('logout');
+        Route::post('/logout', [SellerAuthenticateController::class, 'logout'])->name('logout');
+    });
 });
+
+require __DIR__.'\dashboard.php';
+require __DIR__.'\guest.php';
+require __DIR__.'\profile.php';
+require __DIR__.'\building.php';
+require __DIR__.'\room.php';
+require __DIR__.'\bed.php';
+require __DIR__.'\history.php';
+require __DIR__.'\request.php';

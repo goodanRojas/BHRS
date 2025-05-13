@@ -6,8 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 class SellerAuthenticateController
 {
+    public function index(Request $request)
+    {
+        return Inertia::render('Seller/Login', [
+            'canResetPassword' => Route::has('password.request'),
+            'canRegister' => Route::has('register'),
+            'status' => session('status'),
+        ]);
+    }
 
     public function store(Request $request): RedirectResponse
     {
@@ -28,7 +38,7 @@ class SellerAuthenticateController
         $request->session()->regenerate();
 
         // Redirect to the seller dashboard
-        return redirect()->intended(route('seller.dashboard', absolute: false));
+        return redirect()->intended(route('seller.dashboard.index', absolute: false));
     }
 
     public function destroy(Request $request)

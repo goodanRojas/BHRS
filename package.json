@@ -30,6 +30,7 @@
         "@fortawesome/react-fontawesome": "^0.2.2",
         "@inertiajs/inertia-react": "^0.8.1",
         "@react-google-maps/api": "^2.20.6",
+        "@tailwindcss/line-clamp": "^0.4.4",
         "framer-motion": "^11.15.0",
         "leaflet": "^1.9.4",
         "leaflet.markercluster": "^1.5.3",

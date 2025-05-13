@@ -11,7 +11,7 @@ class Payment extends Model
 
 
     protected $fillable = [
-        'user_id', 'payable_id', 'payable_type', 'amount', 'payment_method', 
+        'user_id', 'booking_id', 'amount', 'payment_method', 
         'status', 'transaction_id', 'receipt', 'paid_at'
     ];
 
@@ -24,8 +24,8 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function payable()
+    public function booking()
     {
-        return $this->morphTo();
+        return $this->belongsTo(Booking::class);
     }
 }

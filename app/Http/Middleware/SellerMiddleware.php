@@ -16,12 +16,9 @@ class SellerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('seller')->check()) {
+       if (!Auth::guard('seller')->check()) {
             return redirect()->route('login')->with('error', 'Unauthorized access');
         }
-        Inertia::share('auth', [
-            'user' => auth('seller')->user(),
-        ]);
 
         return $next($request);
     }

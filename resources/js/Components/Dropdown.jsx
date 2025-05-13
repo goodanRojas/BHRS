@@ -4,9 +4,8 @@ import { createContext, useContext, useState } from 'react';
 
 const DropDownContext = createContext();
 
-const Dropdown = ({ children }) => {
-    const [open, setOpen] = useState(false);
-
+const Dropdown = ({ children,  defaultOpen = false  }) => {
+    const [open, setOpen] = useState(defaultOpen);
     const toggleOpen = () => {
         setOpen((previousState) => !previousState);
     };
@@ -86,12 +85,15 @@ const Content = ({
     );
 };
 
-const DropdownLink = ({ className = '', children, ...props }) => {
+const DropdownLink = ({ className = '', children, active = false , ...props }) => {
     return (
         <Link
             {...props}
             className={
-                'block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ' +
+                'block w-full px-4 py-2 text-start text-sm leading-5 transition duration-150 ease-in-out focus:outline-none ' +
+                (active
+                    ? 'bg-gray-200 text-gray-900 ' // active style
+                    : 'text-gray-700 hover:bg-gray-100 focus:bg-gray-100 ') + // default style
                 className
             }
         >

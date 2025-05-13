@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use App\Models\Building;
-use App\Models\Room;
-use App\Models\Bed;
+use App\Models\{Payment, Building, Room, Bed};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
+use Illuminate\Support\Facades\Log;
 
 class SellerDashboardController extends Controller
 {
@@ -17,18 +15,35 @@ class SellerDashboardController extends Controller
      */
     public function index()
     {
-        $buildingCount = Building::count(); // Count of buildings
-        $roomCount = Room::count();         // Count of rooms
-        $bedCount = Bed::count();           // Count of beds
-        $roomsWithUserCount = Room::whereNotNull('user_id')->count();
-        $bedsWithUserCount = Bed::whereNotNull('user_id')->count();
+        $sellerId = auth()->guard('seller')->user()->id;
+        $buildingIds = Building::where('seller_id', $sellerId)->pluck('id');
+        $roomIds = Room::whereIn('building_id', $buildingIds)->pluck('id');
+        $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
+        $buildingCount = $buildingIds->count();
+        $roomCount = $roomIds->count();
+        $bedCount = $bedIds->count();
+
+
+        $payedBookingsCount = Payment::where('status', 'completed')
+            ->whereIn('booking_id', function ($query) use ($bedIds, $roomIds) {
+                $query->select('id')
+                    ->from('bookings')
+                    ->where(function ($q) use ($bedIds, $roomIds) {
+                        $q->where(function ($q1) use ($bedIds) {
+                            $q1->whereIn('bookable_id', $bedIds)
+                                ->where('bookable_type', Bed::class);
+                        })->orWhere(function ($q2) use ($roomIds) {
+                            $q2->whereIn('bookable_id', $roomIds)
+                                ->where('bookable_type', Room::class);
+                        });
+                    });
+            })->count();
         return Inertia::render("Seller/Dashboard", [
             'count' => [
                 'buildings' => $buildingCount,
                 'rooms' => $roomCount,
                 'beds' => $bedCount,
-                'roomsWithUser' => $roomsWithUserCount,
-                'bedsWithUser' => $bedsWithUserCount,
+                'payedBookingsCount' => $payedBookingsCount,
             ],
         ]);
     }

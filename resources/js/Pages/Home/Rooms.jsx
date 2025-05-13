@@ -6,20 +6,18 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import GuestLayout from "@/Layouts/GuestLayout";
 import BoardingHouseMap from "@/Components/BoardingHouseMap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { faBuilding, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Rooms({ initialRooms, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-
+    console.log(initialRooms);
     const [rooms, setRooms] = useState(initialRooms.data);
     const [pagination, setPagination] = useState(initialPagination);
     const [boardingHouses, setBoardingHouses] = useState([]);
-    const [openMap, setOpenMap] = useState(false);
     // Initialize priceFilter with min and max from props
     const [priceFilter, setPriceFilter] = useState([priceRange.min, priceRange.max]);
 
     const [filters, setFilters] = useState({
-        search: "",
         min_price: priceFilter[0],
         max_price: priceFilter[1],
         min_rating: "",
@@ -34,7 +32,7 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
             .catch((error) => console.error("Error fetching boarding houses:", error));
     }, []);
 
-  
+
 
     const fetchMoreRooms = async () => {
         if (!pagination.has_more_pages) return;
@@ -56,28 +54,19 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
 
     return (
         <Layout>
-            <Head title="Home" />
+            <Head title="Rooms" />
             <div className="flex flex-col p-6">
-                <h1 className="text-2xl font-bold mb-4">Available Rooms</h1>
 
                 {/* Breadcrumbs */}
                 <Breadcrumbs
                     links={[
-                        { label: 'Buildings', url: '/buildings' },
-                        { label: 'Rooms'},
-                        { label: 'Beds', url: `/` },
+                        { label: 'Buildings', url: '/home/buildings' },
+                        { label: 'Rooms' },
+                        { label: 'Beds', url: `/home` },
                     ]}
                 />
-                <div>
-                    <FontAwesomeIcon
-                        icon={faMapMarkerAlt}
-                        onClick={() => setOpenMap((prev) => !prev)}
-                        className="cursor-pointer text-blush-500 text-2xl mb-4 hover:text-blush-500 hover:scale-105 transition"
-                    />
-                </div>
-                {openMap && (
-                    <BoardingHouseMap boardingHouses={boardingHouses} />
-                )}
+
+
 
                 <InfiniteScroll
                     dataLength={rooms.length}
@@ -94,27 +83,28 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                             >
                                 <Link href={`/rooms/${room.id}`}>
                                     <img
-                                        src={`/storage/${room.image}`}
+                                        src={`/storage/room/${room.image}`}
                                         alt={room.name}
                                         className="w-full h-40 object-cover rounded-md mb-3"
                                     />
                                     <h2 className="text-lg font-semibold mb-2">{room.name}</h2>
-                                    
+
                                     <p className="text-gray-600 text-sm mb-2">
-                                        Address: {room.building_address || "N/A"}
+                                        <FontAwesomeIcon icon={faBuilding} /> {room.building_name || "N/A"}
                                     </p>
-                                    <p className="text-gray-800 font-semibold mb-2">
-                                        Price: ${room.sale_price || bed.price}
+                                    <p className="flex items-center text-gray-600 text-sm mb-2 line-clamp-2">
+                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-500" />
+                                        {room.building_address || "N/A"}
                                     </p>
-                                    <p className="text-yellow-500 text-sm mb-2">
-                                        Rating: {room.average_rating.toFixed(1)} ★
-                                    </p>
-                                    <p
-                                        className={`text-sm font-medium ${room.is_occupied ? "text-red-500" : "text-green-500"
-                                            }`}
-                                    >
-                                        {room.is_occupied ? "Occupied" : "Available"}
-                                    </p>
+                                    <div className="flex justify-between items-center"> 
+                                        <p className="text-gray-800 font-semibold mb-2">
+                                            &#8369;{room.price}
+                                        </p>
+                                        <p className="text-yellow-500 text-sm mb-2">
+                                             {room.average_rating.toFixed(1)} ★
+                                        </p>
+                                    </div>
+
                                 </Link>
                             </div>
                         ))}

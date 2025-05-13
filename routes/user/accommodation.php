@@ -8,4 +8,6 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/accommodations/history', [AccommodationController::class, 'showHistory'])->name('accommodations.history');
     Route::get('/accommodations/{bed}', [AccommodationController::class, 'show'])->name('accommodations.show');
     Route::post('/accommodations/bed/feedback', [AccommodationController::class, 'storeFeedback'])->name('accommodations.feedback');
+
+    Route::post('/accommodation/{type}/{id}/feedback', [AccommodationController::class, 'storeFeedback'])->name('accommodation.storeFeedback');
 });

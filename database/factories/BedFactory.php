@@ -19,7 +19,6 @@ class BedFactory extends Factory
         $price = $this->faker->randomFloat(2, 500, 3000);
 
         return [
-            'user_id' => User::factory(),
             'room_id' => Room::factory(),
             'name' => $this->faker->word() . ' Bed',
             'image' => $this->faker->randomElement([
@@ -31,6 +30,7 @@ class BedFactory extends Factory
                 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFdmSZ9d7hmZkKjoFprlOJkGX5xpipABK4Cg&s',
 
             ]),
+            'description' => $this->faker->paragraph(),
             'price' => $price,
             'sale_price' => $this->faker->randomFloat(2, 300, $price), // Always set sale_price
         ];

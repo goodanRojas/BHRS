@@ -90,4 +90,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(ChatGroupMessage::class, 'sender_id');
     }
+    public function address()
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
 }

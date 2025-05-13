@@ -1,97 +1,67 @@
-import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import Layout from './Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faBuilding, faDoorClosed, faMoneyBill, faClock } from '@fortawesome/free-solid-svg-icons';
 
-export default function Dashboard({ details }) {
-    const queryParams = new URLSearchParams(window.location.search);
-    const initialId = Number(queryParams.get('bedId')) || null; // Initialize from URL or null
-    const [selectedId, setSelectedId] = useState(initialId); // State to control the highlight
-
-    const calculateExpirationDate = (startDate, monthCount) => {
-        const start = new Date(startDate);
-        start.setMonth(start.getMonth() + monthCount);
-        return start.toLocaleDateString();
-    };
-
-    // Clear highlight by setting state to null
-    const handleRemoveHighlight = (id) => {
-        setSelectedId(selectedId === id ? null : id);
-        const newUrl = new URL(window.location);
-        newUrl.searchParams.delete('bedId');
-        window.history.pushState({}, '', newUrl);
-    };
-
+export default function Dashboard({ beds, rooms }) {
+    const user = usePage().props.auth.user;
+    console.log(user);
+    // console.log(beds);
+    // console.log(rooms);
     return (
         <Layout>
             <Head title="Accommodation Dashboard" />
-            <div className="p-4 md:p-8 space-y-8 bg-gray-100 min-h-screen">
-                <h1 className="text-3xl font-bold mb-8 text-center">Accommodation Dashboard</h1>
+            <div className="p-4 md:p-8 space-y-8 a min-h-screen">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {beds.map((bed) => (
+                        <div key={bed.id} className="bg-white rounded-2xl shadow p-4 space-y-2">
+                            <img src={bed.image} alt={bed.name} className="rounded-lg w-full h-48 object-cover" />
 
-                {details.length > 0 ? (
-                    details.map((detail) => (
-                        <div
-                            key={detail.id}
-                            onClick={() => handleRemoveHighlight(detail.id)}
-                            className={`p-4 border rounded-lg mb-4 cursor-pointer ${selectedId === detail.id ? 'border-blue-500 bg-blue-100' : ''
-                                }`}
-                        >
-                            <div className="sm:flex sm:flex-wrap sm:gap-4 sm:items-start md:items-center">
-                                <img
-                                    src={`/storage/${detail.bed.image}`}
-                                    alt={detail.bed.name}
-                                    className="h-24 w-24 rounded-lg object-cover"
-                                />
-                                <Link href={`/accommodations/${detail.id}`}>
-                                    <div className="flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                                            <Link href={`/beds/${detail.bed.id}`} className="flex-1">
-                                                <h2 className="text-2xl nowrap font-semibold">{detail.bed.name}</h2>
-                                            </Link>
-                                            <div className="flex flex-wrap items-center gap-4">
-                                                <p className="text-gray-500 flex items-center">
-                                                    <FontAwesomeIcon icon={faClock} className="mr-2" />
-                                                    {new Intl.DateTimeFormat('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    }).format(new Date(detail.start_date))}
-                                                </p>
-                                                <span className="hidden sm:block">-</span>
-                                                <p className="text-gray-500 flex items-center">
-                                                    <FontAwesomeIcon icon={faClock} className="mr-2" />
-                                                    {new Intl.DateTimeFormat('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    }).format(new Date(calculateExpirationDate(detail.start_date, detail.month_count)))}
-                                                </p>
-                                            </div>
-                                        </div>
+                            <h2 className="text-xl font-semibold">{bed.name}</h2>
+                            <p className="text-gray-600 text-sm">{bed.description}</p>
 
-                                        <div className="mt-4 space-y-2">
-                                            <p className="text-gray-500 flex items-center">
-                                                <FontAwesomeIcon icon={faDoorClosed} className="mr-2" />
-                                                Room: {detail.bed.room.name}
-                                            </p>
-                                            <p className="text-gray-500 flex items-center">
-                                                <FontAwesomeIcon icon={faBuilding} className="mr-2" />
-                                                Building: {detail.bed.room.building.name}
-                                            </p>
-                                            <p className="text-gray-500 flex items-center">
-                                                <FontAwesomeIcon icon={faMoneyBill} className="mr-2" />
-                                                Total Price: ₱{detail.total_price}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Link>
-
+                            <div className="text-sm text-gray-700">
+                                <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-green-500" /> Price: ₱{bed.sale_price ?? bed.price}</p>
+                                <p><FontAwesomeIcon icon={faBed} className="mr-1 text-yellow-500" /> Rating: {Number(bed.feedbacks_avg_rating).toFixed(1) ?? 'N/A'}</p>
                             </div>
+
+                            {bed.bookings?.length > 0 && (
+                                <div className="mt-2 border-t pt-2 text-sm text-gray-700">
+                                    <p><FontAwesomeIcon icon={faClock} className="mr-1 text-blue-500" /> Stay: {bed.bookings[0].start_date} → {bed.bookings[0].end_date}</p>
+                                    <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-purple-500" /> Paid by: {bed.bookings[0].payment?.payment_method}</p>
+                                    <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-purple-500" /> Receipt: {bed.bookings[0].payment?.receipt}</p>
+                                </div>
+                            )}
                         </div>
-                    ))
-                ) : (
-                    <p className="text-center text-gray-500">No accommodation details available.</p>
+                    ))}
+                    {rooms.map((room) => (
+                        <div key={room.id} className="bg-white rounded-2xl shadow p-4 space-y-2">
+                            <img src={'/storage/room/' + room.image} alt={room.name} className="rounded-lg w-full h-48 object-cover" />
+
+                            <h2 className="text-xl font-semibold">{room.name}</h2>
+                            <p className="text-gray-600 text-sm">{room.description}</p>
+
+                            <div className="text-sm text-gray-700">
+                                <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-green-500" /> Price: ₱{room.sale_price ?? room.price}</p>
+                                <p><FontAwesomeIcon icon={faDoorClosed} className="mr-1 text-yellow-500" /> Rating: {Number(room.feedbacks_avg_rating).toFixed(1) ?? 'N/A'}</p>
+                            </div>
+
+                            {room.bookings?.length > 0 && (
+                                <div className="mt-2 border-t pt-2 text-sm text-gray-700">
+                                    <p><FontAwesomeIcon icon={faClock} className="mr-1 text-blue-500" /> Stay: {room.bookings[0].start_date} → {room.bookings[0].end_date}</p>
+                                    <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-purple-500" /> Paid by: {room.bookings[0].payment?.payment_method}</p>
+                                    <p><FontAwesomeIcon icon={faMoneyBill} className="mr-1 text-purple-500" /> Receipt: {room.bookings[0].payment?.receipt}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {beds.length <= 0 && rooms.length <= 0 && (
+                    <div className="flex justify-center">
+                        <Link href="/home" className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">Browse to find your stay.</Link>
+                    </div>
                 )}
             </div>
         </Layout>

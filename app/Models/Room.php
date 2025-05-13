@@ -12,7 +12,6 @@ class Room extends Model
 
     protected $fillable = [
         'building_id',
-        'user_id',
         'name',
         'image',
         'price',
@@ -46,5 +45,9 @@ class Room extends Model
      public function favorites()
      {
          return $this->morphMany(Favorite::class, 'favoritable');
+     }
+     public function images()
+     {
+         return $this->morphMany(Media::class, 'imageable');
      }
 }

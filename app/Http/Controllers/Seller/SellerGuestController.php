@@ -8,23 +8,38 @@ use App\Models\BedBooking;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
-
+use App\Models\Booking;
+use App\Models\Bed;
+use App\Models\Room;
+use Illuminate\Support\Facades\Log;
 class SellerGuestController extends Controller
 {
-    public function show()
+    public function index()
     {
-        $sellerId = Auth::guard('seller')->id(); // Corrected to direct id() call
+        // Log::info(Auth::guard('seller')->user());
+        $seller = Auth::guard('seller')->user();
+        $buildingIds = $seller->buildings->pluck('id');
+        $roomIds = Room::whereIn('building_id', $buildingIds)->pluck('id');
+        $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
 
-        $guests = BedBooking::with(['bed.room.building', 'user'])
-            ->where('status', 'confirmed')
-            ->whereHas('bed.room.building', function ($query) use ($sellerId) {
-                $query->where('seller_id', $sellerId); // Filtering through the `bed` relationship
-            })
-            ->get();
-        return Inertia::render('Seller/Guest/Dashboard', [
-            'guests' => $guests
+        $bedBookings = Booking::with(['user','payment' ,'bookable' => function ($morph) {
+            $morph->with(['room.building']);
+        }])
+        ->where('bookable_type', Bed::class)
+        ->whereIn('bookable_id', $bedIds)
+        ->where('status', 'approved')
+        ->get();
+
+        $roomBookings = Booking::with(relations: ['user', 'payment' ,'bookable' => function ($morph){
+            $morph->with('building');
+        }])
+        ->where('bookable_type', Room::class)   
+        ->whereIn('bookable_id', $roomIds)
+        ->where('status', 'approved')
+        ->get();
+        return Inertia::render('Seller/Guest/Guests',[
+            'bedBookings' => $bedBookings,
+            'roomBookings' => $roomBookings,
         ]);
-    
     }
 }

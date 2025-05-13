@@ -20,5 +20,13 @@ Broadcast::channel('group-messages.{groupId}', function ($user, $groupId) {
     return $exists;
 });
 
-
-
+Broadcast::channel('favorites.{userId}', function ($user, $userId) {
+    Log::info("the channel is triggered");
+    Log::info($user->id);
+    Log::info($userId);
+    Log::info((int) $user->id === (int) $userId);
+    return (int) $user->id === (int) $userId;
+});
+Broadcast::channel('landlord.{landlordId}', function ($seller, $landlordId) {
+    return $seller->id === (int) $landlordId;
+}, ['guards' => ['seller']]);

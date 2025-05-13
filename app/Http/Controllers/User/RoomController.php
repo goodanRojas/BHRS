@@ -7,14 +7,63 @@ use Illuminate\Http\Request;
 use App\Models\Room;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\Bed;
+use App\Models\Feedback;
+use App\Models\Booking;
+
 class RoomController extends Controller
 {
     public function showToUserRoom(Room $room)
     {
         $room->load('building', 'beds', 'feedbacks.user', 'bookings', 'favorites');
+        $bedAvailability = !$room->beds->contains(function ($bed) {
+            return $bed->status === 'active';
+        });
+        $roomId = $room->id;
+        // Get all Bed IDs in those rooms
+        $bedIds = Bed::where('room_id', $room->id)->pluck('id');
 
+            // Total Ratings (Average & Count)
+            $averageRating = Feedback::where(function ($query) use ( $roomId) {
+                $query->where(function ($q) use ($roomId) {
+                    $q->where('feedbackable_type', Room::class)
+                        ->where('feedbackable_id', $roomId);
+                });
+            })->avg('rating');
+
+            $totalFeedbacks = Feedback::where(function ($query) use ($roomId) {
+                $query->where(function ($q) use ($roomId) {
+                    $q->where('feedbackable_type', Room::class)
+                        ->where('feedbackable_id', $roomId);
+                });
+            })->count();
+
+            // Total Completed Bookings
+            $totalCompletedBookings = Booking::where('status', 'completed')
+                ->where(function ($query) use ($roomId) {
+                    $query->where(function ($q) use ($roomId) {
+                        $q->where('bookable_type', Room::class)
+                            ->where('bookable_id', $roomId);
+                    });
+                })->count();
+            $roomAvailablity = Booking::where('status', 'active')
+                ->where(function ($query) use ($roomId) {
+                    $query->where(function ($q) use ($roomId) {
+                        $q->where('bookable_type', Room::class)
+                            ->where('bookable_id', $roomId);
+                    });
+                })->count();
+                
         return Inertia::render('Home/Room', [
             'room' => $room,
+            'ratingStats' => [
+                'average' => round($averageRating, 2),
+                'total' => $totalFeedbacks,
+            ],
+            'totalCompletedBookings' => $totalCompletedBookings,
+            'roomAvailablity' => $roomAvailablity,
+            'bedAvailability' => $bedAvailability,
         ]);
     }
 
@@ -22,27 +71,28 @@ class RoomController extends Controller
     public function showRooms(Request $request)
     {
         $rooms = Room::with(['building', 'feedbacks', 'bookings'])
-            ->whereNull('user_id')
             ->paginate(10);
 
         // Calculate min and max prices
         $minPrice = Room::min('price');
-        $maxPrice = Room::max('price');
+        $maxPrice = Room::max(column: 'price');
 
         // Transform data
-        $roomsData = $rooms->getCollection()->map(function ($room) {
+        $roomsData = $rooms->map(function ($room) {
             return [
                 'id' => $room->id,
                 'name' => $room->name,
                 'image' => $room->image,
                 'price' => $room->price,
                 'sale_price' => $room->sale_price,
-                'room_name' => $room->room->name ?? null,
-                'building_address' => $room->room->building->address ?? null,
+                'room_name' => $room->name ?? null,
+                'building_name' => $room->building->name ?? null,
+                'building_address' => $room->building->address ?? null,
                 'average_rating' => $room->feedbacks->avg('rating') ?? 0,
                 'is_occupied' => $room->bookings->where('status', 'active')->isNotEmpty(),
             ];
         });
+        Log::info('Rooms data:', context: $roomsData->toArray());
 
         return Inertia::render('Home/Rooms', [
             'initialRooms' => [

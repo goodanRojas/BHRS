@@ -22,6 +22,11 @@ export default function Login({ status, canResetPassword }) {
     return (
         <AdminLayout>
             <Head title="Log in" />
+            {/* Background Image */}
+            <div
+                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
+                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
+            ></div>
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
@@ -29,7 +34,7 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             )}
 
-            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md space-y-6">
+            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6  backdrop-blur rounded-lg shadow-md space-y-6">
                 <div>
                     <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
 
@@ -64,7 +69,7 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
-                 
+
                     <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
                         Log in
                     </PrimaryButton>

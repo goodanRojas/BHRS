@@ -14,7 +14,7 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('seller.login'), {
+        post(route('seller.login.store'), {
             onFinish: () => reset('password'),
         });
     };
@@ -29,7 +29,7 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             )}
 
-            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md space-y-6">
+            <form onSubmit={submit} className="w-full backdrop-blur max-w-lg mx-auto p-6 rounded-lg shadow-md space-y-6">
                 <div>
                     <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
 

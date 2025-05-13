@@ -4,33 +4,25 @@ import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-export default function AdminLayout({ children }) {
+export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     return (
         <div className="flex h-screen bg-gray-100">
+            {/* Background Image */}
+            <div
+                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
+                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
+            ></div>
+
             {/* Sidebar */}
             <Sidebar isOpen={isSidebarOpen} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Top Navbar */}
-                <header className="flex items-center justify-between bg-white shadow px-6 py-4">
-                    <div>
-                        <div className="flex items-center space-x-4">
-                            {/* Sidebar Toggle Button */}
-                            <button
-                                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                                className="text-gray-600 hover:text-gray-800"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            </button>
-                        </div>
-                  
-                    </div>
+                <header className="flex items-center justify-between bg-white shadow px-6 h-16">
 
                     <div className="flex items-center space-x-4">
 

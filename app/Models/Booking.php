@@ -18,7 +18,13 @@ class Booking extends Model
         'start_date',
         'end_date',
         'total_price',
+        'fullname',
+        'email',
+        'phone',
+        'special_request',
+        'agreed_to_terms',
         'status',
+        'payment_method',
     ];
 
     /**
@@ -32,4 +38,14 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+    public function address()
+{
+    return $this->morphOne(Address::class, 'addressable');
+}
+
 }

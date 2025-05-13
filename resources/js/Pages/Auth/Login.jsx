@@ -24,6 +24,10 @@ export default function Login({ status, canResetPassword }) {
     return (
         <div className='flex flex-col items-center justify-center min-h-screen'>
             <Head title="Log in" />
+            <div
+                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
+                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
+            ></div>
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
@@ -103,8 +107,17 @@ export default function Login({ status, canResetPassword }) {
                         Log in
                     </PrimaryButton>
                 </div>
-            </form>
+                <p className="text-sm text-gray-600 mt-4 text-center">
+                    Don't have an account?{' '}
+                    <Link
+                        href={route('register')}
+                        className="text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Register
+                    </Link>
+                </p>
 
+            </form>
         </div>
     );
 }

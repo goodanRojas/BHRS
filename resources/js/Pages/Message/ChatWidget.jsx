@@ -10,7 +10,7 @@ export default function ChatWidget() {
         <div className="fixed bottom-6 right-6">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-all"
+                className="relative bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
             >
                 <FontAwesomeIcon icon={faComments} className="text-xl" />
             </button>

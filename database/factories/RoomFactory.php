@@ -29,7 +29,6 @@ class RoomFactory extends Factory
         $price = $this->faker->randomFloat(2, 1000, 5000);
         return [
             'building_id' => Building::factory(),
-            'user_id' => User::factory(),
             'name' => $this->faker->word,
             'image' => $this->faker->imageUrl(640, 480, 'room'),
             'price' => $price,

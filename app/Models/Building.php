@@ -40,4 +40,10 @@ class Building extends Model
     {
         return $this->morphMany(Favorite::class, 'favoritable');
     }
+
+    public function address()
+{
+    return $this->morphOne(Address::class, 'addressable');
+}
+
 }

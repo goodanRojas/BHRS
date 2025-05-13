@@ -42,4 +42,8 @@ class Bed extends Model
     {
         return $this->morphMany(Favorite::class, 'favoritable');
     }
+    public function images()
+    {
+        return $this->morphMany(Media::class, 'imageable');
+    }
 }
