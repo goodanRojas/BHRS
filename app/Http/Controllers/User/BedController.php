@@ -152,6 +152,9 @@ class BedController extends Controller
                 $query->select('id', 'name', 'image');
             },
             'favorites',
+            'feedbacks' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            } ,
             'feedbacks.user',
             'images' => function ($query) {
                 $query->select('id', 'file_path', 'order', 'imageable_id', 'imageable_type');

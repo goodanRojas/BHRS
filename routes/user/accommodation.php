@@ -10,4 +10,5 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/accommodations/bed/feedback', [AccommodationController::class, 'storeFeedback'])->name('accommodations.feedback');
 
     Route::post('/accommodation/{type}/{id}/feedback', [AccommodationController::class, 'storeFeedback'])->name('accommodation.storeFeedback');
+    Route::get('/accomodations/cancelled', [AccommodationController::class, 'showCancelled'])->name('accommodations.cancelled');
 });

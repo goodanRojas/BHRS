@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Seller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
+use App\Models\Seller;
+use App\Models\Address;
 class OwnerController extends Controller
 {
     /* Display the initial owners */
@@ -22,20 +24,51 @@ class OwnerController extends Controller
 
     /* Create owner */
     public function create(Request $request)
-    {
+    {   
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:sellers,email',
+            'phone' => 'required|string|max:255',
             'password' => 'required|min:8',
+            'street' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'postalCode' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
         ]);
 
-        Seller::create([
+       $seller = Seller::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'status' => 1,
+            'phone' => $validated['phone'],
         ]);
+        if($seller)
+        {
+            $address = Address::create([
+                'addressable_id' => $seller->id,
+                'addressable_type' => Seller::class,
+                'street' => $validated['street'],
+                'barangay' => $validated['barangay'],
+                'city' => $validated['city'],
+                'province' => $validated['province'],
+                'postal_code' => $validated['postalCode'],
+                'country' => $validated['country']
+            ]); 
+            if($address)
+            {
+                return redirect(route('admin.owners'))->with('success', 'Owner successfully created');
+            }
+        }
 
-        return redirect()->back()->with('success', 'User successfully created');
+        return redirect()->back()->with('error', 'An error occured while creating the owner account.');
+    }
+
+    public function createShow(Request $request)
+    {
+        return Inertia::render('Admin/Owner/CreateAccount');
     }
 
     /* Get more of the owners */
@@ -89,8 +122,5 @@ class OwnerController extends Controller
     }
 
 
-    public function showRequests(Request $request)
-    {
-
-    }
+  
 }

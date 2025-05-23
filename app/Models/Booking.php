@@ -44,8 +44,11 @@ class Booking extends Model
         return $this->hasOne(Payment::class);
     }
     public function address()
-{
-    return $this->morphOne(Address::class, 'addressable');
-}
-
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
+       public function rejections()
+    {
+        return $this->morphMany(Rejection::class, 'rejectable');
+    }
 }

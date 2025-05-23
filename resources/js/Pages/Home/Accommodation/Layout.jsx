@@ -10,6 +10,7 @@ export default function Layout({ title, children }) {
                     <nav className="flex space-x-4 border-b pb-4 mb-6">
                         <NavLink href="/accommodations" active={route().current('accommodations.index')}>Dashboard</NavLink>
                         <NavLink href="/accommodations/history" active={route().current('accommodations.history')} >History</NavLink>
+                        <NavLink href="/accomodations/cancelled" active={route().current('accommodations.cancelled')} >Cancelled</NavLink>
                      </nav>
 
                     <div>

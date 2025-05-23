@@ -16,9 +16,12 @@ class Building extends Model
         'seller_id',
         'name',
         'image',
-        'address',
         'latitude',
         'longitude',
+        'number_of_floors',
+        'bir',
+        'business_permit',
+        'status'
     ];
 
     public function seller()
@@ -42,8 +45,17 @@ class Building extends Model
     }
 
     public function address()
-{
-    return $this->morphOne(Address::class, 'addressable');
-}
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
+
+    public function images()
+    {
+         return $this->morphMany(Media::class, 'imageable');
+    }
+    public function features()
+    {
+        return $this->morphMany(Feature::class, 'featureable');
+    }
 
 }

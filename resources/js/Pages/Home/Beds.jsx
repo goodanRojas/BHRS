@@ -30,7 +30,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
     useEffect(() => {
         // Fetch boarding houses
         axios
-            .get("/boarding-houses")
+            .get("/home/beds")
             .then((response) => setBoardingHouses(response.data))
             .catch((error) => console.error("Error fetching boarding houses:", error));
     }, []);
@@ -55,7 +55,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
         if (!pagination.has_more_pages) return;
 
         try {
-            const { data } = await axios.get("/beds", {
+            const { data } = await axios.get("/home/beds", {
                 params: { ...filters, page: pagination.current_page + 1 },
             });
             setBeds((prevBeds) => [...prevBeds, ...data.data]);
@@ -158,7 +158,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                 key={bed.id}
                                 className=" relative border rounded-lg shadow backdrop-blur  hover:shadow-lg transition"
                             >
-                                <Link href={`/beds/${bed.id}`}>
+                                <Link href={`/home/bed/${bed.id}`}>
                                     <img
                                         src={`/storage/bed/${bed.image}` || '/storage/bed/default_bed.png'}
                                         alt={bed.name}

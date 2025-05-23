@@ -50,4 +50,8 @@ class Room extends Model
      {
          return $this->morphMany(Media::class, 'imageable');
      }
+     public function features()
+    {
+        return $this->morphMany(Feature::class, 'featureable');
+    }
 }

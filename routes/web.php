@@ -16,8 +16,10 @@ Route::middleware('auth')->group(function () {
 });
 
 
+
 require __DIR__.'/auth.php';
 require __DIR__.'/user/bed.php';
 require __DIR__.'/xendivel.php';
 require __DIR__.'/seller/auth.php';
 require __DIR__.'/admin/admin.php';
+require __DIR__.'/chatbot/chatbot.php';

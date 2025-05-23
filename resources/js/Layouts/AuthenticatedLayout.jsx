@@ -202,7 +202,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 type="button"
                                                 className="inline-flex items-center  px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:scale-105 transition-transform duration-200"
                                             >
-                                                <img src={`/storage/profile/${user.avatar || 'default_avatar.png'}`} alt={user.avatar} className="h-8 w-8 rounded-full mr-2 border border-gray-300" />
+                                                <img src={`/storage/user/${user.avatar || 'default_avatar.png'}`} alt={user.avatar} className="h-8 w-8 rounded-full mr-2 border border-gray-300" />
                                                 <span className="truncate">{user.name.split(' ')[0]}</span>
 
                                                 <svg

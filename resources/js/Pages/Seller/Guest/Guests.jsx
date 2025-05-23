@@ -6,8 +6,8 @@ import RoomGuests from './RoomGuests';
 
 export default function Guests({ bedBookings = [], roomBookings = [] }) {
     const [activeTab, setActiveTab] = useState('beds');
-    console.log('bedBookings', bedBookings);
-    console.log('roomBookings', roomBookings);
+    // console.log('bedBookings', bedBookings);
+    // console.log('roomBookings', roomBookings);
     const {auth} = usePage().props;
     const seller = auth.seller;
 

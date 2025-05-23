@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
 class SellerAuthenticateController
 {
     public function index(Request $request)
@@ -41,16 +42,17 @@ class SellerAuthenticateController
         return redirect()->intended(route('seller.dashboard.index', absolute: false));
     }
 
+
     public function destroy(Request $request)
     {
-         // Log out the seller from the custom 'seller' guard
-    Auth::guard('seller')->logout();
+        // Log out the seller from the custom 'seller' guard
+        Auth::guard('seller')->logout();
 
-    // Invalidate the current session
-    $request->session()->invalidate();
+        // Invalidate the current session
+        $request->session()->invalidate();
 
-    // Regenerate the CSRF token to prevent session fixation
-    $request->session()->regenerateToken();
-        return redirect()->route('seller.login');
+        // Regenerate the CSRF token to prevent session fixation
+        $request->session()->regenerateToken();
+        return redirect()->route('seller.login.index');
     }
 }

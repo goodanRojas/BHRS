@@ -21,7 +21,7 @@ class SellerRequestController extends Controller
         $roomIds = Room::whereIn('building_id', $buildingIds)->pluck('id');
 
         $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
-
+        // dd($bedIds);
         $bedRequests = Booking::with(['user', 'payment', 'bookable' => function ($morph) {
             $morph->with(['room.building']);
         }])
@@ -31,7 +31,6 @@ class SellerRequestController extends Controller
             ->where('status', 'pending')
             ->where('payment_method', 'cash')
             ->get();
-        Log::info($bedRequests->pluck('payment_method'));
 
         $roomRequests = Booking::with(relations: ['user', 'payment', 'bookable' => function ($morph) {
             $morph->with('building');
@@ -41,6 +40,8 @@ class SellerRequestController extends Controller
             ->where('status', 'pending')
             ->whereRaw('LOWER(payment_method) = ?', ['cash'])
             ->get();
+
+            // dd($bedRequests);
 
         return Inertia::render('Seller/Guest/Request/Requests', [
             'bedRequests' => $bedRequests,

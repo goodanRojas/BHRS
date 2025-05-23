@@ -38,6 +38,7 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, bedAv
                         <p className="text-sm text-red-500">&#8369;{room.sale_price}</p>
                     </div>
                 </div>
+
                 {/* Rating and Booking Stats */}
                 <div className="flex gap-6 text-sm text-gray-700 mt-2">
                     <div>
@@ -57,48 +58,57 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, bedAv
                     )}
                 </div>
 
-                {/* Display Beds */}
+                {/* Display Beds in Table */}
                 <h3 className="text-xl font-semibold mt-6 mb-2">Beds</h3>
-                {room.beds.map((bed) => (
-                    <div
-                        key={bed.id}
-                        className="p-4 border grid grid-cols-2 rounded-lg shadow-md hover:bg-gray-100 transition-colors duration-200"
-                    >
-                        <Link href={`/seller/building/bed/${bed.id}`} className="block">
-                            {/* Image */}
-                            <div className="overflow-hidden rounded-lg mb-4">
-                                <img
-                                    src={`/storage/bed/${bed.image}`}
-                                    alt={bed.name}
-                                    className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
-                                />
-                            </div>
-
-                            {/* Name & Price */}
-                            <h4 className="text-lg font-semibold text-gray-800 mb-1">{bed.name}</h4>
-                            <div className="text-gray-700 text-md mb-2">&#8369; {bed.price}</div>
-
-                            {/* Sale Info */}
-                            {bed.sale_price && (
-                                <div className="flex items-center gap-2 mb-2">
-                                    <img src="/storage/system/sale-icon.png" alt="Sale" className="h-5 w-5" />
-                                    <p className="text-sm text-red-500 line-through">&#8369; {bed.sale_price}</p>
-                                </div>
-                            )}
-
-                            {/* Availability */}
-                            <div className="text-sm text-gray-600">
-                                {bed.status === 'active' ? (
-                                    <span className="text-green-600 font-medium">Available</span>
-                                ) : (
-                                    <span className="text-red-600 font-medium">Occupied</span>
-                                )}
-                            </div>
-
-                        </Link>
-                    </div>
-                ))}
-
+                <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+                    <table className="min-w-full table-auto">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Bed Name</th>
+                                <th className="px-4 py-2 text-left">Image</th>
+                                <th className="px-4 py-2 text-left">Price</th>
+                                <th className="px-4 py-2 text-left">Sale Price</th>
+                                <th className="px-4 py-2 text-left">Availability</th>
+                                <th className="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {room.beds.map((bed) => (
+                                <tr key={bed.id} className="border-b">
+                                    <td className="px-4 py-2">{bed.name}</td>
+                                    <td className="px-4 py-2">
+                                        <img
+                                            src={`/storage/${bed.image}`}
+                                            alt={bed.name}
+                                            className="w-20 h-20 object-cover rounded-md"
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2">&#8369; {bed.price}</td>
+                                    <td className="px-4 py-2">
+                                        {bed.sale_price && (
+                                            <p className="text-sm text-red-500 line-through">&#8369; {bed.sale_price}</p>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        {bed.status === 'active' ? (
+                                            <span className="text-green-600 font-medium">Available</span>
+                                        ) : (
+                                            <span className="text-red-600 font-medium">Occupied</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Link
+                                            href={`/seller/building/bed/${bed.id}`}
+                                            className="text-indigo-600 hover:text-indigo-800"
+                                        >
+                                            View Details
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </SellerLayout>
     );

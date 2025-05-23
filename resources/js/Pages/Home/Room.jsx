@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 export default function Rooms({ room, ratingStats, totalCompletedBookings, bedAvailability, roomAvailablity }) {
-    console.log(room); // Debugging line to check the room data
+    // console.log(room); // Debugging line to check the room data
     return (
         <AuthenticatedLayout>
             <Head title={`Room: ${room.name}`} />
@@ -59,45 +59,80 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, bedAv
 
                 {/* Display Beds */}
                 <h3 className="text-xl font-semibold mt-6 mb-2">Beds</h3>
-                {room.beds.map((bed) => (
-                    <div
-                        key={bed.id}
-                        className="p-4 border grid grid-cols-2 rounded-lg shadow-md hover:bg-gray-100 transition-colors duration-200"
-                    >
-                        <Link href={`/home/bed/${bed.id}`} className="block">
-                            {/* Image */}
-                            <div className="overflow-hidden rounded-lg mb-4">
-                                <img
-                                    src={`/storage/bed/${bed.image}`}
-                                    alt={bed.name}
-                                    className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
-                                />
-                            </div>
-
-                            {/* Name & Price */}
-                            <h4 className="text-lg font-semibold text-gray-800 mb-1">{bed.name}</h4>
-                            <div className="text-gray-700 text-md mb-2">&#8369; {bed.price}</div>
-
-                            {/* Sale Info */}
-                            {bed.sale_price && (
-                                <div className="flex items-center gap-2 mb-2">
-                                    <img src="/storage/system/sale-icon.png" alt="Sale" className="h-5 w-5" />
-                                    <p className="text-sm text-red-500 line-through">&#8369; {bed.sale_price}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {room.beds.map((bed) => (
+                        <div
+                            key={bed.id}
+                            className="p-6 border rounded-lg shadow-lg hover:bg-gray-50 transition-colors duration-300"
+                        >
+                            <Link href={`/home/bed/${bed.id}`} className="block">
+                                {/* Image Section */}
+                                <div className="overflow-hidden rounded-lg mb-4">
+                                    <img
+                                        src={`/storage/bed/${bed.image}`}
+                                        alt={bed.name}
+                                        className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                                    />
                                 </div>
-                            )}
 
-                            {/* Availability */}
-                            <div className="text-sm text-gray-600">
-                                {bed.status === 'active' ? (
-                                    <span className="text-green-600 font-medium">Available</span>
-                                ) : (
-                                    <span className="text-red-600 font-medium">Occupied</span>
+                                {/* Name and Price Section */}
+                                <h4 className="text-xl font-semibold text-gray-800 mb-2">{bed.name}</h4>
+                                <div className="text-lg font-medium text-gray-900 mb-3">&#8369; {bed.price}</div>
+
+                                {/* Sale Price (If Available) */}
+                                {bed.sale_price && (
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <img src="/storage/system/sale-icon.png" alt="Sale" className="h-5 w-5" />
+                                        <p className="text-sm text-red-500 line-through">&#8369; {bed.sale_price}</p>
+                                    </div>
                                 )}
-                            </div>
 
-                        </Link>
-                    </div>
-                ))}
+                                {/* Availability Section */}
+                                <div className="flex items-center text-sm text-gray-600">
+                                    {bed.status === 'active' ? (
+                                        <span className="flex items-center text-green-600 font-medium">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 mr-1"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlnsXlink="http://www.w3.org/1999/xlink"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                            Available
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center text-red-600 font-medium">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 mr-1"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlnsXlink="http://www.w3.org/1999/xlink"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                            Occupied
+                                        </span>
+                                    )}
+                                </div>
+                            </Link>
+                        </div>
+                    ))}
+                </div>
 
             </div>
         </AuthenticatedLayout>

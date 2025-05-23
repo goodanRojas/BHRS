@@ -3,31 +3,25 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
-        remember: false,
     });
 
     const submit = (e) => {
         e.preventDefault();
-
-        post(route('login'), {
+        post(route('login.store'), {
             onFinish: () => reset('password'),
         });
     };
 
     return (
-        <div className='flex flex-col items-center justify-center min-h-screen'>
+        <GuestLayout>
             <Head title="Log in" />
-            <div
-                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
-                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
-            ></div>
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
@@ -35,89 +29,52 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             )}
 
-            <nav className='flex justify-between items-center px-5'>
-                <div className="mb-6">
-                    <Link href="/">
-                        <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                    </Link>
-                </div>
-
-            </nav>
-
-            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md space-y-6">
+            <form onSubmit={submit} className="w-full backdrop-blur max-w-lg mx-auto p-6 rounded-lg shadow-md space-y-6">
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
 
                     <TextInput
                         id="email"
                         type="email"
                         name="email"
                         value={data.email}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                         autoComplete="username"
                         isFocused={true}
                         onChange={(e) => setData('email', e.target.value)}
                     />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
 
                     <TextInput
                         id="password"
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                         autoComplete="current-password"
                         onChange={(e) => setData('password', e.target.value)}
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
-                        />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
+                    <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <Link
+                        href={route('password.request')}
+                        className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+                    >
+                        Forgot your password?
+                    </Link>
+                    <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
                         Log in
                     </PrimaryButton>
                 </div>
-                <p className="text-sm text-gray-600 mt-4 text-center">
-                    Don't have an account?{' '}
-                    <Link
-                        href={route('register')}
-                        className="text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Register
-                    </Link>
-                </p>
-
             </form>
-        </div>
+        </GuestLayout>
     );
 }

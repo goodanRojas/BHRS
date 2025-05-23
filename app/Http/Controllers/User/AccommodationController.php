@@ -19,45 +19,39 @@ class AccommodationController extends Controller
     public function index(Request $request)
     {
         $beds = Bed::whereHas('bookings', function ($query) {
-            $query->where('status', 'approved')
-                ->whereHas('payment', function ($q) {
-                    $q->where('status', 'completed');
-                    $q->where('user_id', auth()->id());
-                });
+            $query->whereIn('status', ['approved', 'pending'])
+                ->where('user_id', auth()->id());
         })
             ->with([
                 'bookings' => function ($query) {
-                    $query->where('status', 'approved')
-                        ->whereHas('payment', function ($q) {
-                            $q->where('status', 'completed');
-                        })
-                        ->with(['payment' => function ($query) {
-                            $query->select('id', 'booking_id', 'payment_method', 'receipt');
-                        }]); // eager load payment for each booking
+                    $query->whereIn('status', ['approved', 'pending'])
+                        ->where('user_id', auth()->id());
                 },
-                // eager load ratings
+                'room' => function ($query) {
+                    $query->select(['name', 'id', 'building_id']);
+                },
+                'room.building' => function ($query) {
+                    $query->select(['name', 'id',]);
+                },
+                'room.building.address'
             ])
             ->withAvg('feedbacks', 'rating')
             ->get();
 
 
         $rooms = Room::whereHas('bookings', function ($query) {
-            $query->where('status', 'approved')
-                ->whereHas('payment', function ($q) {
-                    $q->where('status', 'completed');
-                    $q->where('user_id', auth()->id());
-                });
+            $query->whereIn('status', ['approved', 'pending'])
+                ->where('user_id', auth()->id());
         })
             ->with([
                 'bookings' => function ($query) {
-                    $query->where('status', 'approved')
-                        ->whereHas('payment', function ($q) {
-                            $q->where('status', 'completed');
-                        })
-                        ->with(['payment' => function ($query) {
-                            $query->select('id', 'booking_id', 'payment_method', 'receipt', 'amount');
-                        }]);                     // eager load payment for each booking
-                }, // eager load ratings
+                    $query->whereIn('status', ['approved', 'pending'])
+                        ->where('user_id', auth()->id());
+                },
+                'building' => function ($query) {
+                    $query->select('name');
+                },
+                'building.address'
             ])
             ->withAvg('feedbacks', 'rating')
             ->get();
@@ -73,51 +67,84 @@ class AccommodationController extends Controller
     {
         $userId = auth()->id();
 
-        $beds = Bed::whereHas('bookings', function ($query) use ($userId) {
-            $query->where('status', 'completed')
-                ->whereHas('payment', function ($q) use ($userId) {
-                    $q->where('status', 'completed')
-                        ->where('user_id', $userId);
-                });
+        // Function to retrieve completed bookings with payment and feedbacks
+        $getHistoryData = function ($model) use ($userId) {
+            return $model::whereHas('bookings', function ($query) use ($userId) {
+                $query->where('status', 'completed')
+                    ->whereHas('payment', function ($q) use ($userId) {
+                        $q->where('status', 'completed')
+                            ->where('user_id', $userId);
+                    });
+            })
+                ->with([
+                    'bookings' => function ($query) {
+                        $query->where('status', 'completed')
+                            ->whereHas('payment', function ($q) {
+                                $q->where('status', 'completed');
+                            })
+                            ->with(['payment:id,booking_id,payment_method,receipt,amount']);
+                    },
+                    'feedbacks' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId)
+                        ->orderBy('created_at', 'desc');
+                    }
+                ])
+                ->withAvg('feedbacks', 'rating')
+                ->get();
+        };
+
+        // Get history data for beds and rooms
+        $beds = $getHistoryData(Bed::class);
+        $rooms = $getHistoryData(Room::class);
+
+        return Inertia::render('Home/Accommodation/Histories', [
+            'beds' => $beds,
+            'rooms' => $rooms,
+        ]);
+    }
+
+
+    public function showCancelled(Request $request)
+    {
+        $beds = Bed::whereHas('bookings', function ($query) {
+            $query->whereIn('status', ['cancelled', 'rejected'])
+                ->where('user_id', auth()->id());
         })
             ->with([
                 'bookings' => function ($query) {
-                    $query->where('status', 'completed')
-                        ->whereHas('payment', function ($q) {
-                            $q->where('status', 'completed');
-                        })
-                        ->with(['payment:id,booking_id,payment_method,receipt,amount']);
+                    $query->whereIn('status', ['cancelled', 'rejected'])
+                        ->where('user_id', auth()->id());
                 },
-                'feedbacks' => function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                }
+                'room' => function ($query) {
+                    $query->select(['name', 'id', 'building_id']);
+                },
+                'room.building' => function ($query) {
+                    $query->select(['name', 'id',]);
+                },
+                'room.building.address'
             ])
             ->withAvg('feedbacks', 'rating')
             ->get();
 
-        $rooms = Room::whereHas('bookings', function ($query) use ($userId) {
-            $query->where('status', 'completed')
-                ->whereHas('payment', function ($q) use ($userId) {
-                    $q->where('status', 'completed')
-                        ->where('user_id', $userId);
-                });
+
+        $rooms = Room::whereHas('bookings', function ($query) {
+            $query->whereIn('status', ['cancelled', 'rejected'])
+                ->where('user_id', auth()->id());
         })
             ->with([
                 'bookings' => function ($query) {
-                    $query->where('status', 'completed')
-                        ->whereHas('payment', function ($q) {
-                            $q->where('status', 'completed');
-                        })
-                        ->with(['payment:id,booking_id,payment_method,receipt,amount']);
+                    $query->whereIn('status', ['cancelled', 'rejected'])
+                        ->where('user_id', auth()->id());
                 },
-                'feedbacks' => function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                }
+                'building' => function ($query) {
+                    $query->select('name');
+                },
+                'building.address'
             ])
             ->withAvg('feedbacks', 'rating')
             ->get();
 
-        return Inertia::render('Home/Accommodation/History', [
+        return Inertia::render('Home/Accommodation/Cancelled', [
             'beds' => $beds,
             'rooms' => $rooms,
         ]);
@@ -145,7 +172,7 @@ class AccommodationController extends Controller
         $feedback->user_id = Auth::id(); // Store the authenticated user's ID
         $feedback->rating = $validated['rating'];
         $feedback->comment = $validated['feedback'];
-        
+
         // Relate feedback to the accommodation
         if ($type == 'bed') {
             $accommodation->feedbacks()->save($feedback);

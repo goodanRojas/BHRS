@@ -10,7 +10,7 @@ import { faBuilding, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Rooms({ initialRooms, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-    console.log(initialRooms);
+    // console.log(initialRooms);
     const [rooms, setRooms] = useState(initialRooms.data);
     const [pagination, setPagination] = useState(initialPagination);
     const [boardingHouses, setBoardingHouses] = useState([]);

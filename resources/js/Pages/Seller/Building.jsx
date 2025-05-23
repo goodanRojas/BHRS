@@ -53,40 +53,52 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                     </div>
                 </div>
 
-                {/* Display Rooms */}
+                {/* Rooms Table */}
                 <h3 className="text-xl font-semibold mb-2 mt-4">Rooms</h3>
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {building.rooms.map((room) => (
-                        <div
-                            key={room.id}
-                            className="p-4 border rounded-lg shadow-md hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-                        >
-                            <Link href={`/seller/room/${room.id}`} className="block">
-                                <div className="flex flex-col">
-                                    {/* Image */}
-                                    <div className="overflow-hidden rounded-t-lg mb-4">
+                <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+                    <table className="min-w-full table-auto">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Room Name</th>
+                                <th className="px-4 py-2 text-left">Image</th>
+                                <th className="px-4 py-2 text-left">Sale Price</th>
+                                <th className="px-4 py-2 text-left">Beds Count</th>
+                                <th className="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {building.rooms.map((room) => (
+                                <tr key={room.id} className="border-b">
+                                    <td className="px-4 py-2">{room.name}</td>
+                                    <td className="px-4 py-2">
                                         <img
                                             src={`/storage/room/${room.image}`}
                                             alt={room.name}
-                                            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                                            className="w-20 h-20 object-cover rounded-md"
                                         />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                    <h4 className="text-xl font-semibold text-gray-800">{room.name}</h4>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <img src="/storage/system/sale-icon.png" alt="Sale" className="h-5 w-5" />
-                                            <p className="text-sm text-red-500">&#8369;{room.sale_price}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <FontAwesomeIcon icon={faBed} className="mr-1 text-gray-500" />{ room.beds_count}
-                                    </div>
-                                </div>
-                            </Link>
-                        </div>
-                    ))}
+                                    </td>
+                                    <td className="px-4 py-2">&#8369;{room.sale_price}</td>
+                                    <td className="px-4 py-2">{room.beds_count}</td>
+                                    <td className="px-4 py-2">
+                                        <Link
+                                            href={`/seller/room/${room.id}`}
+                                            className="text-indigo-600 hover:text-indigo-800"
+                                        >
+                                            View Details
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
+
+                {/* No Rooms Found Message */}
+                {building.rooms.length === 0 && (
+                    <div className="flex items-center justify-center h-64">
+                        <p className="text-gray-500">No rooms found.</p>
+                    </div>
+                )}
             </div>
         </SellerLayout>
     );

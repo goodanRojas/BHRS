@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,8 +32,11 @@ class Seller extends Authenticatable
         return $this->hasMany(Building::class);
     }
     public function address()
-{
-    return $this->morphOne(Address::class, 'addressable');
-}
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
 
+    public function buildingApplications(){
+        return $this->hasMany(BuildingApplication::class);
+    }
 }

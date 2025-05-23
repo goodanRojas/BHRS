@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link } from '@inertiajs/react';
+
 export default function BedRequests({ requests }) {
+    
+    
     const calculateMonths = (startDate, endDate) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -14,77 +17,67 @@ export default function BedRequests({ requests }) {
     };
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="overflow-x-auto">
             {requests.length === 0 ? (
                 <p className="text-gray-500">No bed requests found.</p>
             ) : (
-                requests.map((request) => {
-                    const startDate = new Date(request.start_date);
-                    const endDate = new Date(request.end_date);
-                    const monthCount = calculateMonths(startDate, endDate); // Calculate months between start and end date
+                <table className="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr>
+                            <th className="px-4 py-2 text-left border-b">User</th>
+                            <th className="px-4 py-2 text-left border-b">Booking Details</th>
+                            <th className="px-4 py-2 text-left border-b">Payment</th>
+                            <th className="px-4 py-2 text-left border-b">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {requests.map((request) => {
+                            const startDate = new Date(request.start_date);
+                            const endDate = new Date(request.end_date);
+                            const monthCount = calculateMonths(startDate, endDate); // Calculate months between start and end date
 
-                    return (
-                        <div key={request.id} className="bg-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform">
-                            {/* User Information */}
-                            <Link>
-                                <div className="flex items-center mb-4">
-                                    <img
-                                        src={`/storage/user/${request.user.avatar ? request.user.avatar : 'default_avatar.png'}`}
-                                        alt={request.user.name}
-                                        className="w-10 h-10 rounded-full mr-4"
-                                    />
-                                    <div>
-                                        <p className="font-semibold text-lg">{request.user.name}</p>
-                                        <p className="text-sm text-gray-500">{request.user.email}</p>
-                                        {request.user.address && (
-                                            <p className="text-sm text-gray-500">{request.user.address}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Bed Information */}
-                                <div className="mb-4">
-                                    <p className="text-xl font-semibold">{request.bookable.name}</p>
-                                    {request.bookable.image && (
+                            return (
+                                <tr key={request.id} className="hover:bg-gray-100 cursor-pointer">
+                                    {/* User Information */}
+                                    <td className="px-4 py-2 border-b flex items-center">
                                         <img
-                                            src={
-                                                request.bookable.image
-                                                    ? request.bookable.image.startsWith('https')
-                                                        ? request.bookable.image
-                                                        : `/storage/bed/${request.bookable.image}`
-                                                    : 'storage/bed/bed.png'
-                                            }
-                                            alt={request.bookable.name}
-                                            className="w-full h-48 object-cover rounded-lg mb-2"
+                                            src={`/storage/user/${request.user.avatar ? request.user.avatar : 'default_avatar.png'}`}
+                                            alt={request.user.name}
+                                            className="w-12 h-12 rounded-full mr-4"
                                         />
-                                    )}
-                                </div>
+                                        <div>
+                                            <p className="font-semibold text-lg">{request.user.name}</p>
+                                            <p className="text-sm text-gray-500">{request.user.email}</p>
+                                            {request.user.address && (
+                                                <p className="text-sm text-gray-500">{request.user.address}</p>
+                                            )}
+                                        </div>
+                                    </td>
 
-                                <div className="flex justify-between items-end gap-6 p-4 bg-white rounded-lg shadow-sm">
-                                    {/* Request Dates */}
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            <strong>Start:</strong> {startDate.toLocaleDateString()}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            <strong>End:</strong> {endDate.toLocaleDateString()}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            <strong>Duration:</strong> {monthCount} month{monthCount > 1 ? 's' : ''}
-                                        </p>
-                                    </div>
-                                    {/* Payment Status */}
-                                    <div className="text-right">
-                                        <p className="text-sm text-gray-500">
-                                          Payment Method: {request.payment_method}
-                                        </p>
-                                    </div>
-                                </div>
-                            </Link>
+                                    {/* Booking Information */}
+                                    <td className="px-4 py-2 border-b">
+                                        <p className="font-semibold">{request.bookable.name}</p>
+                                        <p className="text-sm text-gray-500">Start Date: {startDate.toLocaleDateString()}</p>
+                                        <p className="text-sm text-gray-500">End Date: {endDate.toLocaleDateString()}</p>
+                                        <p className="text-sm text-gray-500">Duration: {monthCount} month{monthCount > 1 ? 's' : ''}</p>
+                                    </td>
 
-                        </div>
-                    );
-                })
+                                    {/* Payment Information */}
+                                    <td className="px-4 py-2 border-b">
+                                        <p className="text-sm text-gray-500"> {request.payment_method}</p>
+                                    </td>
+
+                                    {/* Action Column */}
+                                    <td className="px-4 py-2 border-b">
+                                        <Link href={`/seller/request/bed/${request.id}`} className="text-blue-600 hover:text-blue-800">
+                                            View Details
+                                        </Link>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             )}
         </div>
     );

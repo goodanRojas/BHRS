@@ -56,57 +56,59 @@ export default function Rooms({ room }) {
                     )}
                 </div>
 
-                {/* Display Beds */}
+                {/* Display Beds in Table */}
                 <h3 className="text-xl font-semibold mt-6 mb-2">Beds</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {room.beds.map((bed) => (
-                        <div
-                            key={bed.id}
-                            className="p-4 border rounded shadow hover:bg-gray-100 cursor-pointer"
-                        >
-                            <Link href={`/beds/${bed.id}`} className="block">
-                            <div className="flex flex-col">
-                                    {/* Image Section */}
-                                    <div className="overflow-hidden rounded-t-lg mb-4">
+                <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+                    <table className="min-w-full table-auto">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Bed Name</th>
+                                <th className="px-4 py-2 text-left">Image</th>
+                                <th className="px-4 py-2 text-left">Price</th>
+                                <th className="px-4 py-2 text-left">Sale Price</th>
+                                <th className="px-4 py-2 text-left">Availability</th>
+                                <th className="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {room.beds.map((bed) => (
+                                <tr key={bed.id} className="border-b">
+                                    <td className="px-4 py-2">{bed.name}</td>
+                                    <td className="px-4 py-2">
                                         <img
                                             src={`/storage/${bed.image}`}
                                             alt={bed.name}
-                                            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                                            className="w-20 h-20 object-cover rounded-md"
                                         />
-                                    </div>
-
-                                    <h4 className="text-xl font-semibold text-gray-800">{bed.name}</h4>
-                                    <div className='flex items-center justify-between'>
-                                        <div>
-                                            <p className="text-lg text-gray-700">&#8369; {bed.price}</p>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <img src="/storage/system/sale-icon.png" alt="Sale" className="h-5 w-5" />
-                                                <p className="text-sm text-red-500">{bed.sale_price}</p>
+                                    </td>
+                                    <td className="px-4 py-2">&#8369; {bed.price}</td>
+                                    <td className="px-4 py-2">&#8369; {bed.sale_price}</td>
+                                    <td className="px-4 py-2">
+                                        {bed.user_id === null ? (
+                                            <p className="text-sm text-green-600">Unoccupied</p>
+                                        ) : (
+                                            <div className="flex items-center">
+                                                <img
+                                                    src={`/storage/${bed.user.image}`}
+                                                    alt={bed.user.name}
+                                                    className="h-10 w-10 rounded-full border-2 border-gray-200"
+                                                />
+                                                <p className="ml-3 text-sm text-gray-800">{bed.user.name}</p>
                                             </div>
-                                        </div>
-                                        <div>
-                                            {/* Availability / Occupancy */}
-                                            {room.user_id === null ? (
-                                                <div className="mt-4">
-                                                   <p>Unoccupied</p>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center mt-4">
-                                                    <img
-                                                        src={`/storage/${room.user.image}`}
-                                                        alt={room.user.name}
-                                                        className="h-10 w-10 rounded-full border-2 border-gray-200"
-                                                    />
-                                                    <p className="ml-3 text-sm text-gray-800">{room.user.name}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </Link>
-                        </div>
-                    ))}
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Link
+                                            href={`/beds/${bed.id}`}
+                                            className="text-indigo-600 hover:text-indigo-800"
+                                        >
+                                            View Details
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </SellerLayout>
