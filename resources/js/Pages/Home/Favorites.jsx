@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import {useFavorite} from '@/Contexts/FavoriteContext'; // 👈 Add this line
+import { useFavorite } from '@/Contexts/FavoriteContext'; // 👈 Add this line
 
 import { Head, Link } from "@inertiajs/react";
 import { useState } from "react";
@@ -12,7 +12,7 @@ export default function Favorites({ favorites }) {
     const [favoriteItems, setFavoriteItems] = useState(favorites);
 
     const [isFavorite, setIsFavorite] = useState(false);
-    const {updateFavoritesCount} = useFavorite();
+    const { updateFavoritesCount } = useFavorite();
 
     const toggleFavorite = async (id, type) => {
         try {
@@ -39,60 +39,81 @@ export default function Favorites({ favorites }) {
                 <h1 className=" text-2xl font-bold mb-6">Favorites</h1>
 
                 {favoriteItems.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {favoriteItems.map((item, index) => {
-                            const isBed = item.type === "bed";
-                            const image = isBed ? item.bed.image.startsWith('http') ? item.bed.image : `/storage/${item.bed.image}` : item.room.image.startsWith('http') ? item.room.image : `/storage/${item.room.image}`;
-                            const name = isBed ? `${item.bed.name}` : item.room.name;
-                            const price = isBed ? (item.bed.sale_price || item.bed.price) : item.room.price;
-                            const occupied = isBed ? item.bed.is_occupied : null;
-                            const roomName = isBed ? item.room?.name : item.room?.name;
-                            const buildingName = item.building?.name || "Unknown Building";
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse">
+                            <thead>
+                                <tr className="border-b border-gray-300 bg-gray-50">
+                                    <th className="px-4 py-2 text-left text-gray-600">Image</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Name</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Room</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Building</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Price</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Status</th>
+                                    <th className="px-4 py-2 text-left text-gray-600">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {favoriteItems.map((item, index) => {
+                                    const isBed = item.type === "bed";
+                                    const image = isBed
+                                        ? item.bed.image.startsWith('http')
+                                            ? item.bed.image
+                                            : `/storage/${item.bed.image}`
+                                        : item.room.image.startsWith('http')
+                                            ? item.room.image
+                                            : `/storage/${item.room.image}`;
+                                    const name = isBed ? item.bed.name : item.room.name;
+                                    const price = isBed ? (item.bed.sale_price || item.bed.price) : item.room.price;
+                                    const occupied = isBed ? item.bed.is_occupied : null;
+                                    const roomName = isBed ? item.room?.name : item.room?.name;
+                                    const buildingName = item.building?.name || "Unknown Building";
 
-                            return (
-                                <div
-                                    key={index}
-                                    className="border rounded-lg shadow p-4 hover:shadow-lg transition"
-                                >
-                                    <Link href={isBed ? `/beds/${item.bed.id}` : `/rooms/${item.room.id}`}>
-                                        <div className="overflow-hidden relative">
-                                            <img
-                                                src={image}
-                                                alt={name}
-                                                className="w-full h-60 object-cover transition-transform duration-300 hover:scale-105"
-                                            />
-                                            <FontAwesomeIcon
-                                                icon={faHeart}
-                                                className="absolute top-2 right-2 h-6 w-6 cursor-pointer text-red-500 hover:text-red-600"
-                                                onClick={(e) => {
-                                                    e.preventDefault(); // Prevent link navigation
-                                                    toggleFavorite(isBed ? item.bed.id : item.room.id, item.type);
-                                                }}
-                                            />
-                                        </div>
-
-                                        <h2 className="text-lg font-semibold mt-2">{name}</h2>
-                                        <p className="text-gray-600 text-sm mb-1">Room: {roomName}</p>
-                                        <p className="text-gray-600 text-sm mb-1">Building: {buildingName}</p>
-                                        <p className="text-gray-800 font-semibold mb-2">Price: ₱{price}</p>
-
-                                        {isBed && (
-                                            <p className={`text-sm font-medium ${occupied ? "text-red-500" : "text-green-500"}`}>
-                                                {occupied ? "Occupied" : "Available"}
-                                            </p>
-                                        )}
-                                    </Link>
-                                </div>
-                            );
-                        })}
+                                    return (
+                                        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                                            <td className="px-4 py-3">
+                                                <img
+                                                    src={image}
+                                                    alt={name}
+                                                    className="w-24 h-16 object-cover rounded"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3 text-blue-600 hover:underline">
+                                                <a href={isBed ? `/beds/${item.bed.id}` : `/rooms/${item.room.id}`}>
+                                                    {name}
+                                                </a>
+                                            </td>
+                                            <td className="px-4 py-3">{roomName}</td>
+                                            <td className="px-4 py-3">{buildingName}</td>
+                                            <td className="px-4 py-3 font-semibold">₱{price}</td>
+                                            <td className={`px-4 py-3 font-medium ${occupied ? "text-red-500" : "text-green-500"}`}>
+                                                {isBed ? (occupied ? "Occupied" : "Available") : "-"}
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        toggleFavorite(isBed ? item.bed.id : item.room.id, item.type);
+                                                    }}
+                                                    className="text-red-500 hover:text-red-700"
+                                                    title="Remove from favorites"
+                                                >
+                                                    <FontAwesomeIcon icon={faHeart} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
-                ) : (
-                    <div className="min-h-full flex-1 flex items-center justify-center">
-                        <div className="text-gray-600 text-center">
-                            No favorites found.
+                )
+                    : (
+                        <div className="min-h-full flex-1 flex items-center justify-center">
+                            <div className="text-gray-600 text-center">
+                                No favorites found.
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
             </div>
         </>
     );

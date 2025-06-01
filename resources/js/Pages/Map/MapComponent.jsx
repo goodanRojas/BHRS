@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import { Link, Head } from '@inertiajs/react';
 import 'leaflet/dist/leaflet.css';  // Ensure Leaflet styles are included
 import 'leaflet-draw/dist/leaflet.draw.css'; // Include Leaflet.draw styles
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -56,10 +57,11 @@ export default function MapComponent({ buildings }) {
             <Marker key={id} position={[latitude, longitude]} icon={customIcon}>
                 <Popup>
                     <div>
-                        <img src={`/storage/${image}`} alt={name} width="100" />
-                        <h4>{name}</h4>
-                        <p>Rating: 4.5</p> {/* You can dynamically add rating */}
-                        <p>{building.address}</p>
+                        <Link href={`/home/building/${id}`}>
+                            <img src={`/storage/${image}`} alt={name} width="100" />
+                            <h4>{name}</h4>
+                            <p>{building.address}</p>
+                        </Link>
                     </div>
                 </Popup>
             </Marker>

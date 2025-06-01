@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Seller\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Booking;
-use App\Models\Rejection;
-use App\Models\Payment;
-use App\Events\Request\BookingCancelled;
+use Illuminate\Support\Facades\Log;
+use App\Models\{Booking, Rejection, Payment, BookingCancelled};
 
 class BedRequestController extends Controller
 {
@@ -28,31 +26,34 @@ class BedRequestController extends Controller
     }
     public function accept(Request $request, Booking $booking)
     {
-        // dd($request);
-        // Check if payment method is 'cash'
-        if ($booking->payment_method !== 'cash') {
-            return back()->with(['error' => 'Only cash payments can be accepted'], 400);
+        Log::info($request->all());
+
+        // Validate the incoming request (recommended)
+        $request->validate([
+            'receiptImage' => 'required|image|max:2048', // adjust rules as needed
+        ]);
+
+        // Handle receipt image upload if present
+        if ($request->hasFile('receiptImage')) {
+            // Store the file in the 'public/receipts' directory
+            $path = $request->file('receiptImage')->store('receipts', 'public');
+            $hashedFileName = basename($path); // safer than hashName() here
+            $booking->seller_receipt = $hashedFileName;
+        } else {
+            // Optional: handle case if no file is uploaded
+            // You may want to return with error or do something else
+            return redirect()->back()->withErrors(['receiptImage' => 'Receipt image is required.']);
         }
 
-        // Update payment status to 
+        // Update booking status to approved
         $booking->status = 'approved';
+
+        // Save the updated booking record
         $booking->save();
 
-        $request->file('receiptImage')->store('receipts', 'public');
-        $hashedFileName = $request->file('receiptImage')->hashName();
-        Payment::create([
-            'user_id' => $booking->user_id,
-            'booking_id' => $booking->id,
-            'amount' => $booking->total_price,
-            'payment_method' => 'cash',
-            'status' => 'completed',
-            'transaction_id' => $request->transactionId,
-            'receipt' => $hashedFileName,
-            'paid_at' => Carbon::now()
-        ]);
-    
         return redirect()->route('seller.request.index')->with('success', 'Booking accepted and payment completed.');
     }
+
 
     /**
      * Reject the booking.
@@ -69,8 +70,8 @@ class BedRequestController extends Controller
         ]);
         // Mark the booking as rejected
 
-       $booking =  Booking::where('id', $request->bookingId)->update(['status' => 'rejected']);
-      
+        $booking =  Booking::where('id', $request->bookingId)->update(['status' => 'rejected']);
+
         Rejection::create([
             'rejectable_id' => $request->bookingId,
             'rejectable_type' => Booking::class,

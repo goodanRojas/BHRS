@@ -4,7 +4,7 @@ import { useFavorite } from '@/Contexts/FavoriteContext'; // 👈 Add this line
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faUserCheck, faStar, faDoorOpen, faBuilding, faLocationPin, faMessage, faUserTie } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faUserCheck, faMapMarkerAlt, faStar, faDoorOpen, faBuilding, faLocationPin, faMessage, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,8 +12,8 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds }) {
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const { updateFavoritesCount } = useFavorite();
-    const images = bed.images?.map((img) => `/storage/bed/${img.file_path}`) || [];
-
+    const images = bed.images;
+    console.log(bed);
     const [currentIndex, setCurrentIndex] = useState(0);
     const toggleFavorite = async () => {
         try {
@@ -42,6 +42,13 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
         setCurrentIndex(index);
     };
 
+    const chatWithSeller = (sellerId, bedId) => {
+        // Navigate to DirectChat page with seller and bed info
+        window.location.href = `/chatbot/seller/${sellerId}/bed/${bedId}`;
+    };
+
+
+
 
 
     return (
@@ -61,11 +68,11 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 <div className="bg-white shadow-lg rounded-xl overflow-hidden">
                     {/* 📸 Bed Image Section */}
                     <div className="relative group">
-                              {/* 🖼️ Image Carousel */}
+                        {/* 🖼️ Image Carousel */}
                         {images.length > 0 && (
                             <div className="relative w-full h-60 overflow-hidden rounded-md">
                                 <img
-                                    src={images[currentIndex]}
+                                    src={`/storage/${images[currentIndex].file_path}`}
                                     alt={`Slide ${currentIndex + 1}`}
                                     className="w-full h-full object-cover transition-transform duration-500"
                                 />
@@ -125,15 +132,36 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                     <div className="p-6 space-y-4">
                         {/* Name and Rating */}
                         <div className="flex items-center justify-between">
-                            <h4 className="text-2xl font-bold text-gray-800">{bed.name}</h4>
-                            {bed.average_rating > 0 ? (
-                                <div className="flex items-center gap-1 text-yellow-500 text-sm font-medium">
-                                    <span>{bed.average_rating}</span>
-                                    <span>★</span>
+                            <div className="flex items-center gap-2">
+                                <h4 className="text-2xl font-bold text-gray-800">{bed.name}</h4>
+
+                                {bed.average_rating > 0 ? (
+                                    <div className="flex items-center gap-1 text-yellow-500 text-sm font-medium">
+                                        <span>{bed.average_rating}</span>
+                                        <span>★</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-sm text-gray-500">No ratings yet</span>
+                                )}
+                            </div>
+                            {/*  Price Section */}
+                            <div className="flex items-center justify-between rounded-md p-4">
+                                <div>
+                                    <p className="text-lg font-bold text-gray-700">&#8369; {bed.price}</p>
+                                    {bed.sale_price && (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <img
+                                                src="/storage/system/sale-icon.png"
+                                                alt="Sale"
+                                                className="h-5 w-5"
+                                            />
+                                            <p className="text-sm text-red-500 font-medium">
+                                                Sale: &#8369; {bed.sale_price}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
-                            ) : (
-                                <span className="text-sm text-gray-500">No ratings yet</span>
-                            )}
+                            </div>
                         </div>
 
 
@@ -141,44 +169,48 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
                         {/* 🏢 Room and Building */}
                         <div>
-                            <p className="text-md font-semibold text-gray-700"><FontAwesomeIcon icon={faDoorOpen} /> {bed.room.name}</p>
-                            <p className="text-sm text-gray-500"><FontAwesomeIcon icon={faBuilding} /> {bed.room.building.name}</p>
-                            <p className="text-sm text-gray-500"><FontAwesomeIcon icon={faLocationPin} /> {bed.room.building.address}</p>
+                            <p className="text-md font-semibold text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faDoorOpen} /> {bed.room.name}</p>
+                            <p className="text-sm text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faBuilding} /> {bed.room.building.name}</p>
+                            <p className="flex items-center text-gray-700 text-sm mb-2 line-clamp-2">
+                                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-indigo-500" />
+                                {bed.room.building.address
+                                    ? `${bed.room.building.address.street}, ${bed.room.building.address.barangay}, ${bed.room.building.address.city}, ${bed.room.building.address.province} ${bed.room.building.address.postal_code}, ${bed.room.building.address.country}`
+                                    : "N/A"}
+                            </p>
                         </div>
                         {/* Contact Seller */}
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                             <Link href={`/home/building/${bed.room.building.id}`} className="flex items-center gap-1 hover:underline">
-                                <img src={`/storage/seller/${bed.room.building.seller.image}`} alt={bed.room.building.seller.name} className="h-6 w-6 rounded-full" />
+                                {bed.room.building.image ? (
+                                    <img src={`/storage/${bed.room.building.image}`} alt={bed.room.building.name} className="h-6 w-6 rounded-full" />
+                                ) : (
+                                    <FontAwesomeIcon icon={faUserTie} className="h-6 w-6 rounded-full" />
+                                )}
                                 {bed.room.building.seller.name}
                             </Link>
-                            <Link href="#" className="text-gray-500 hover:text-blue-600">
+                            <button onClick={() => chatWithSeller(bed.room.building.seller.id, bed.id)} className="text-gray-500 hover:text-blue-600">
                                 <FontAwesomeIcon icon={faMessage} />
-                            </Link>
+                            </button>
                         </div>
 
-                        {/*  Price Section */}
-                        <div className="flex items-center justify-between bg-gray-50 rounded-md p-4">
-                            <div>
-                                <p className="text-lg font-bold text-gray-700">&#8369; {bed.price}</p>
-                                {bed.sale_price && (
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <img
-                                            src="/storage/system/sale-icon.png"
-                                            alt="Sale"
-                                            className="h-5 w-5"
-                                        />
-                                        <p className="text-sm text-red-500 font-medium">
-                                            Sale: &#8369; {bed.sale_price}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+
 
                         {/* 📃 Description */}
                         <div>
                             <h5 className="text-sm font-semibold text-gray-700 mb-1">Description</h5>
-                            <pre className="text-sm text-gray-600 whitespace-pre-wrap">{bed.description}</pre>
+                            {/* <pre className="text-sm text-gray-600 whitespace-pre-wrap">{bed.description}</pre> */}
+                            <div>
+                                {bed.features.map((feature) => (
+                                    <div
+                                        key={feature.id}
+                                        className="relative inline-block p-1 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
+                                    >
+                                        {/* Feature name container with hover effect */}
+                                        <span className="text-xs text-gray-600">{feature.name}</span>
+
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                     {/* 💬 Feedback Section */}

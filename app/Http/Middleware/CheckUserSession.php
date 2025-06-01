@@ -2,12 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\UserSession;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-class SellerMiddleware
+
+class CheckUserSession
 {
     /**
      * Handle an incoming request.
@@ -16,10 +17,10 @@ class SellerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-       if (!Auth::guard('seller')->check()) {
-            return redirect()->route('seller.login.index')->with('error', 'Unauthorized access');
-        }
-
+       if(!session()->has('active_session'))
+       {
+        return redirect()->route('seller.login.index');
+       }
         return $next($request);
     }
 }

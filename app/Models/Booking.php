@@ -13,6 +13,8 @@ class Booking extends Model
 
     protected $fillable = [
         'user_id',
+        'user_receipt',
+        'seller_receipt',
         'bookable_id',
         'bookable_type',
         'start_date',

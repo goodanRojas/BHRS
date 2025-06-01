@@ -95,7 +95,7 @@ export default function Buildings({ initialBuildings }) {
                                 {/* Image Section */}
                                 <div className="overflow-hidden rounded-t-lg">
                                     <img
-                                        src={`/storage/building/${building.image}`}
+                                        src={`/storage/${building.image}`}
                                         alt={building.name}
                                         className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
                                     />

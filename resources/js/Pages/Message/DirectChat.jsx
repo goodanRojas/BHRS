@@ -4,7 +4,7 @@ import axios from "axios";
 import { usePage } from "@inertiajs/react";
 
 
-export default function DirectChat() {
+export default function DirectChat({}) {
     const { auth } = usePage().props;
     const { directMessages, setDirectMessages } = useContext(ChatContext);
     const messagesEndRef = useRef(null);

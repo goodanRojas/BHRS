@@ -22,7 +22,7 @@ class BuildingController  extends Controller
             // Eager load relationships
             $building->load(['rooms' => function($query){
                 $query->withCount('beds');
-            }, 'seller']);
+            }, 'seller', 'address']);
 
             // Get all Room IDs in the building
             $roomIds = Room::where('building_id', $building->id)->pluck('id');

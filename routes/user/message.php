@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Chats\BotChat;
+use App\Http\Controllers\Chatbot\ChatbotController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Chats\DirectChat;
@@ -19,11 +19,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/group-messages/send', 'sendMessage');
         Route::post('/group-message/create',  'createGroup');
         Route::put('/group-message/update/{groupId}',  'updateGroup');
-        Route::delete('/group-message/delete/{groupId}','deleteGroup');
+        Route::delete('/group-message/delete/{groupId}', 'deleteGroup');
         Route::post('/group-message/{groupId}/add-member', 'addMemberToGroup');
         Route::delete('/group-message/{groupId}/remove-member', 'removeMemberFromGroup');
     });
-    Route::controller(BotChat::class)->group(function () {
-        Route::get('/bot-message', 'fetchBotMessages');
-    });
+    // Route to display the chat interface
+    Route::get('/chatbot/seller/{sellerId}/bed/{bedId}', [ChatbotController::class, 'showChat'])->name('chat.show');
+
+    // Route to send a new message
+    Route::post('/chatbot/message', [ChatbotController::class, 'sendMessage'])->name('chat.send');
 });

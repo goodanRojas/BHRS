@@ -16,15 +16,15 @@ class BedController extends Controller
 
     public function index()
     {
-        $beds = Bed::with(['room.building', 'feedbacks', 'bookings',])
+        $beds = Bed::with(['room.building', 'feedbacks', 'bookings', 'features'])
             ->paginate(10);
-
+        Log::info($beds->getCollection());
         // Calculate min and max prices
         $minPrice = Bed::min('price');
         $maxPrice = Bed::max('price');
 
         // Transform data
-        $bedsData = $beds->map(function ($bed) {
+        $bedsData = $beds->getCollection()->map(function ($bed) {
             return [
                 'id' => $bed->id,
                 'name' => $bed->name,
@@ -40,6 +40,7 @@ class BedController extends Controller
                 'building_address' => $bed->room->building->address ?? null,
                 'is_occupied' => $bed->bookings->whereIn('status', ['approved', 'completed'])->isNotEmpty(),
                 'avg_rating' => round($bed->feedbacks->avg('rating'), 1),
+                ''
             ];
         });
 
@@ -146,11 +147,13 @@ class BedController extends Controller
                 $query->select('id', 'name', 'building_id');
             },
             'room.building' => function ($query) {
-                $query->select('id', 'name', 'address', 'seller_id');
+                $query->select('id', 'name', 'seller_id');
             },
             'room.building.seller' => function ($query) {
                 $query->select('id', 'name', 'image');
             },
+            'features',
+            'room.building.address',
             'favorites',
             'feedbacks' => function ($query) {
                 $query->orderBy('created_at', 'desc');

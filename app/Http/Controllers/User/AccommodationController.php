@@ -18,48 +18,38 @@ class AccommodationController extends Controller
      */
     public function index(Request $request)
     {
-        $beds = Bed::whereHas('bookings', function ($query) {
-            $query->whereIn('status', ['approved', 'pending'])
-                ->where('user_id', auth()->id());
-        })
+        $bookings = Booking::whereIn('status', ['approved', 'waiting'])
+            ->where('user_id', auth()->id())
             ->with([
-                'bookings' => function ($query) {
-                    $query->whereIn('status', ['approved', 'pending'])
-                        ->where('user_id', auth()->id());
-                },
-                'room' => function ($query) {
-                    $query->select(['name', 'id', 'building_id']);
-                },
-                'room.building' => function ($query) {
-                    $query->select(['name', 'id',]);
-                },
-                'room.building.address'
+                'bookable' => function ($morphTo) {
+                    $morphTo->morphWith([
+                        Bed::class => [
+                            'room' => function ($query) {
+                                $query->select(['id', 'name', 'building_id'])
+                                    ->with(['building' => function ($query) {
+                                        $query->select(['id', 'name'])->with('address');
+                                    }]);
+                            },
+                            'feedbacks' => function ($query) {
+                                $query->select( 'rating'); // adjust if necessary
+                            },
+                        ],
+                        Room::class => [
+                            'building' => function ($query) {
+                                $query->select(['id', 'name'])->with('address');
+                            },
+                            'feedbacks' => function ($query) {
+                                $query->select( 'rating'); // adjust if necessary
+                            },
+                        ],
+                        // add other morph types if any
+                    ]);
+                }
             ])
-            ->withAvg('feedbacks', 'rating')
             ->get();
-
-
-        $rooms = Room::whereHas('bookings', function ($query) {
-            $query->whereIn('status', ['approved', 'pending'])
-                ->where('user_id', auth()->id());
-        })
-            ->with([
-                'bookings' => function ($query) {
-                    $query->whereIn('status', ['approved', 'pending'])
-                        ->where('user_id', auth()->id());
-                },
-                'building' => function ($query) {
-                    $query->select('name');
-                },
-                'building.address'
-            ])
-            ->withAvg('feedbacks', 'rating')
-            ->get();
-
 
         return Inertia::render('Home/Accommodation/Dashboard', [
-            'beds' => $beds,
-            'rooms' => $rooms,
+            'bookings' => $bookings,
         ]);
     }
 
@@ -86,7 +76,7 @@ class AccommodationController extends Controller
                     },
                     'feedbacks' => function ($query) use ($userId) {
                         $query->where('user_id', $userId)
-                        ->orderBy('created_at', 'desc');
+                            ->orderBy('created_at', 'desc');
                     }
                 ])
                 ->withAvg('feedbacks', 'rating')
@@ -207,9 +197,7 @@ class AccommodationController extends Controller
         Feedback::create(
             [
                 'user_id' => Auth::id(),
-                'booking_id' => $request->booking_id
-            ],
-            [
+                'booking_id' => $request->booking_id,
                 'comment' => $request->comment,
                 'rating' => $request->rating,
             ]

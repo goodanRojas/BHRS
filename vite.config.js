@@ -11,6 +11,7 @@ export default defineConfig({
         }),
         react(),
     ],
+    
    /*  server: {
         host: '192.168.100.7', // Your local IP
         port: 5173,           // Default Vite port

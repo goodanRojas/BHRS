@@ -23,7 +23,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const [directMessages, setDirectMessages] = useState({});
     const [groupMessages, setGroupMessages] = useState({});
     const [botMessages, setBotMessages] = useState({});
-    const [favoritesCount, setFavoritesCount] = useState(user.favorites.length);
+    const [favoritesCount, setFavoritesCount] = useState(user?.favorites?.length || 0);
     useEffect(() => {
       
         if (user) {
@@ -150,7 +150,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                 {/* Notifications Dropdown */}
                                 <div className="relative group">
-                                    {user.notifications.length > 0 && (
+                                    {favoritesCount && (
                                         <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
                                             {user.notifications.length}
                                         </div>
@@ -171,7 +171,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content className="w-64 bg-white shadow-lg rounded-lg border border-gray-200">
-                                            {user.notifications.length > 0 ? (
+                                            {favoritesCount > 0 ?(
                                                 user.notifications.map((notification, index) => (
                                                     <div key={index} className="border-b last:border-none border-gray-200 p-3 hover:bg-gray-100 cursor-pointer transition">
                                                         <Link
@@ -202,8 +202,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 type="button"
                                                 className="inline-flex items-center  px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:scale-105 transition-transform duration-200"
                                             >
-                                                <img src={`/storage/user/${user.avatar || 'default_avatar.png'}`} alt={user.avatar} className="h-8 w-8 rounded-full mr-2 border border-gray-300" />
-                                                <span className="truncate">{user.name.split(' ')[0]}</span>
+                                                <img src={`/storage/${user?.avatar || 'profile/default_avatar.png'}`} alt={user?.avatar} className="h-8 w-8 rounded-full mr-2 border border-gray-300" />
+                                                <span className="truncate">{user?.name.split(' ')[0]}</span>
 
                                                 <svg
                                                     className="ml-1 h-4 w-4 text-gray-400"
@@ -290,13 +290,13 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="pb-1 pt-4">
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 <div className='flex items-center pl-4'>
-                                    <img src={`/storage/profile/${user.avatar || 'default_avatar.png'}`} alt={user.avatar} className="h-10 w-10 rounded-full" />
+                                    <img src={`/storage/${user?.avatar || 'profile/default_avatar.png'}`} alt={user?.avatar} className="h-10 w-10 rounded-full" />
                                     <div className="px-4">
                                         <div className="text-base font-medium text-gray-800">
-                                            {user.name}
+                                            {user?.name}
                                         </div>
                                         <div className="text-sm font-medium text-gray-500">
-                                            {user.email}
+                                            {user?.email}
                                         </div>
                                     </div>
                                 </div>
@@ -326,8 +326,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 <main
                     className='min-h-screen'
                 >{children}</main>
-                <ChatContext.Provider value={{
-                    directMessages,
+              {/*   <ChatContext.Provider value={{
+                    // directMessages,
                     setDirectMessages,
                     groupMessages,
                     setGroupMessages,
@@ -336,7 +336,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 }}>
 
                     <ChatWidget />
-                </ChatContext.Provider>
+                </ChatContext.Provider> */}
                 <Footer />
 
             </div>

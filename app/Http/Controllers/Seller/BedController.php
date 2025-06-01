@@ -3,68 +3,82 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bed;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
+use App\Models\{Bed, Media, Feature};
+
 class BedController extends Controller
 {
-   public function showBed(Request $request, Bed $bed)
+    public function showBed($id)
     {
-        $bed->load([
-            'room' => function ($query) {
-                $query->select('id', 'name', 'building_id');
-            },
-            'room.building' => function ($query) {
-                $query->select('id', 'name', 'address', 'seller_id');
-            },
-            'room.building.seller' => function ($query) {
-                $query->select('id', 'name', 'image');
-            },
-            'feedbacks.user',
-            'images' => function ($query) {
-                $query->select('id', 'file_path', 'order', 'imageable_id', 'imageable_type');
-            },
-
-        ]);
-
-       
-        // Calculate average rating
-        $bed->average_rating = round($bed->feedbacks->avg('rating'), 1);
-
-        // Count completed bookings
-        $completedBookings = $bed->bookings()->where('status', 'completed')->count();
-
-        // Sum of booking durations (in minutes)
-        $totalBookingDuration = $bed->bookings()
-            ->where('status', 'completed')
-            ->get()
-            ->reduce(function ($carry, $booking) {
-                $startDate = \Carbon\Carbon::parse($booking->start_date);
-                $endDate = \Carbon\Carbon::parse($booking->end_date);
-                $duration = $endDate->diffInMinutes($startDate); // corrected here!
-                return $carry + $duration;
-            }, 0);
-
-        // 🎯 Get sibling beds (in the same room, but exclude current bed)
-        $siblingBeds = Bed::withCount(['bookings' => function ($q) {
-            $q->where('status', 'completed');
-        }])
-            ->with('feedbacks') // Optional: include ratings
-            ->where('room_id', $bed->room_id)
-            ->where('id', '!=', $bed->id)
-            ->get()
-            ->map(function ($sibling) {
-                $sibling->average_rating = round($sibling->feedbacks->avg('rating'), 1);
-                return $sibling;
-            });
-
+        $bed = Bed::with('images', 'room.building', 'features')->find($id);
         return Inertia::render('Seller/Bed', [
-            'bed' => $bed,
-            'completed_bookings' => $completedBookings,
-            'total_booking_duration' => $totalBookingDuration,
-            'sibling_beds' => $siblingBeds,
+            'bed' => $bed
         ]);
     }
 
-     
+    public function uploadImage(Request $request)
+    {
+        Log::info($request->all());
+        $validated = $request->validate([
+            'image' => 'required',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
+        }
+        $media = Media::create([
+            'imageable_id' => $request->id,
+            'imageable_type' => Bed::class,
+            'file_path' => $imagePath,
+        ]);
+        return response()->json([
+            'uploadedImages' => $media
+        ]);
+    }
+    public function addBedFeature(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'featureable_id' => 'required|exists:beds,id', // Assuming featureable_id is related to Building
+        ]);
+        $feature = Feature::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'featureable_id' => $request->featureable_id,
+            'featureable_type' => Bed::class
+        ]);
+        return response()->json([
+            'feature' => $feature
+        ]);
+    }
+    public function deleteFeature($id)
+    {
+        // Find the feature by ID
+        $feature = Feature::findOrFail($id);
+
+        // Delete the feature
+        $feature->delete();
+
+
+        return response()->json([
+            'message' => 'Feature deleted successfully.'
+        ], 200);
+    }
+
+    public function updateDescription(Request $request)
+    {
+        $validated = $request->validate([
+            'description' => 'required|string',
+        ]);
+        $bed = Bed::find($request->id);
+        $bed->description = $validated['description'];
+        $bed->save();
+        return response()->json([
+            'description' => $bed->description
+        ]);
+    }
 }

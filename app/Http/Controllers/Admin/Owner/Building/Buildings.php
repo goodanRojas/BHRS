@@ -186,7 +186,7 @@ class Buildings extends Controller
     {
         // Log::info($request->all());
         $validated = $request->validate([
-            'image' => 'required|image|max:2048',
+            'image' => 'required|image',
             'price' => 'required|numeric',
             'name' => 'required|string|max:255',
             'room_id' => 'required|exists:rooms,id'

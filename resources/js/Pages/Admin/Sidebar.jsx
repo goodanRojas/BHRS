@@ -94,8 +94,8 @@ export default function Sidebar() {
                                                             Applications
                                                         </SidebarLink>
                                                         <SidebarLink
-                                                            href={route('admin.owner.building.application.index')}
-                                                            active={route().current('admin.owner.building.application.index')}
+                                                            href={route('admin.owner.buildings.create.show')}
+                                                            active={route().current('admin.owner.buildings.create.show')}
                                                             className='w-fit'
                                                         >
                                                             Create

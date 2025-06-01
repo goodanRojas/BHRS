@@ -41,7 +41,7 @@ export default function BedRequests({ requests }) {
                                     {/* User Information */}
                                     <td className="px-4 py-2 border-b flex items-center">
                                         <img
-                                            src={`/storage/user/${request.user.avatar ? request.user.avatar : 'default_avatar.png'}`}
+                                            src={`/storage/${request.user.avatar ? request.user.avatar : 'profile/default_avatar.png'}`}
                                             alt={request.user.name}
                                             className="w-12 h-12 rounded-full mr-4"
                                         />

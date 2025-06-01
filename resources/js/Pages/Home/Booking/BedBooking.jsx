@@ -67,12 +67,12 @@ export default function Booking({ bed, userPreferences }) {
 
             {/* Success Modal */}
             <Modal show={successModal} closeable={false} onClose={() => setSuccessModal(false)}>
-                <div className="flex flex-col items-center p-6 bg-green-100 text-green-700 rounded-lg shadow-lg">
+                <div className="flex flex-col items-center p-6 bg-indigo-100 text-indigo-700 rounded-lg shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-center font-semibold text-sm">Booking Successful! Please wait for landlord confirmation.</p>
-                    <Link href={`/home/bed/${bed.id}`} className="mt-4 px-5 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">OK</Link>
+                    <Link href={`/home/bed/${bed.id}`} className="mt-4 px-5 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">OK</Link>
                 </div>
             </Modal>
 
@@ -94,24 +94,24 @@ export default function Booking({ bed, userPreferences }) {
                 {/* Bed Details */}
                 <div className="flex flex-col md:flex-row items-center gap-6">
                     <img
-                        src={`${bed.image.startsWith('http') ? bed.image : `/storage/bed/${bed.image}`}`}
+                        src={`/storage/${bed.image}`}
                         alt="Bed"
                         className="w-32 h-32 rounded-xl border object-cover shadow-md"
                     />
                     <div className="space-y-1 text-gray-700">
                         <div className="flex items-center gap-2 text-lg font-semibold">
-                            <FontAwesomeIcon icon={faBed} className="text-blue-600" />
+                            <FontAwesomeIcon icon={faBed} className="text-indigo-600" />
                             {bed.name}
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                            <FontAwesomeIcon icon={faDoorOpen} className="text-green-600" />
+                            <FontAwesomeIcon icon={faDoorOpen} className="text-indigo-600" />
                             Room: {bed.room.name}
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                            <FontAwesomeIcon icon={faBuilding} className="text-yellow-600" />
+                            <FontAwesomeIcon icon={faBuilding} className="text-indigo-600" />
                             Building: {bed.room.building.name}
                         </div>
-                        <div className="text-blue-700 font-medium text-sm mt-2">
+                        <div className="text-indigo-700 font-medium text-sm mt-2">
                             Total Price: ₱{bed.sale_price ?? bed.price}
                         </div>
                     </div>
@@ -128,7 +128,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="name"
                                 value={data.name}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             />
                         </div>
@@ -139,7 +139,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="email"
                                 value={data.email}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             />
                         </div>
@@ -150,7 +150,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="phone"
                                 value={data.phone}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             />
                         </div>
@@ -161,7 +161,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="start_date"
                                 value={data.start_date}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             />
                         </div>
@@ -172,7 +172,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="month_count"
                                 value={data.month_count}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             />
                         </div>
@@ -182,7 +182,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="payment_method"
                                 value={data.payment_method}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
                             >
                                 <option value="">Select</option>
@@ -204,7 +204,7 @@ export default function Booking({ bed, userPreferences }) {
                                     name={`address.${field}`}
                                     value={data.address[field]}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     required
                                 />
                             </div>
@@ -218,43 +218,45 @@ export default function Booking({ bed, userPreferences }) {
                             name="message"
                             value={data.message}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             rows="3"
                         />
                     </div>
 
-                    {/* Terms */}
-                    <div className="flex items-start gap-2 text-sm text-gray-700">
-                        <input
-                            type="checkbox"
-                            name="agreedToTerms"
-                            checked={data.agreedToTerms}
-                            onChange={handleChange}
-                            required
-                        />
-                        <span>
-                            I agree to the{" "}
-                            <button type="button" onClick={() => setIsModalOpen(true)} className="text-blue-500 underline">
-                                terms and conditions
-                            </button>
-                        </span>
-                    </div>
+                    <div className="flex items-center justify-between">
+                        {/* Terms */}
+                        <div className="flex items-start gap-2 text-sm text-gray-700">
+                            <input
+                                type="checkbox"
+                                name="agreedToTerms"
+                                checked={data.agreedToTerms}
+                                onChange={handleChange}
+                                required
+                            />
+                            <span>
+                                I agree to the{" "}
+                                <button type="button" onClick={() => setIsModalOpen(true)} className="text-indigo-500 underline">
+                                    terms and conditions
+                                </button>
+                            </span>
+                        </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className={`w-full flex justify-center items-center gap-2 bg-blue-600 text-white font-medium py-3 rounded-lg transition ${processing ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
-                            }`}
-                    >
-                        {processing && (
-                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                        )}
-                        {processing ? 'Submitting...' : 'Submit Booking'}
-                    </button>
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className={` p-1 px-4 flex justify-center items-center gap-2 bg-indigo-600 text-white font-medium py-3 rounded-md transition ${processing ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-700'
+                                }`}
+                        >
+                            {processing && (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                </svg>
+                            )}
+                            {processing ? 'Submitting...' : 'Book'}
+                        </button>
+                    </div>
                 </form>
 
             </div>

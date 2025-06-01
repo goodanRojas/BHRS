@@ -13,7 +13,7 @@ class Application extends Controller
         
     public function index()
     {
-        $applications = BuildingApplication::all();
+        $applications = Building::all();
         return   Inertia::render('Admin/Owner/Building/Application', [
             'applications' => $applications
         ]);
@@ -25,11 +25,9 @@ class Application extends Controller
         Log::info($request->all());
 
         // Find the application using the provided id
-        $application = BuildingApplication::find($request->id);
-
+       
         // Log the found application
-        Log::info('Application 123: ' . $application);
-
+        $application = Building::find($request->id);
         // Handle the image upload if it exists in the request
         $imagePath = null;
         if ($request->hasFile('image')) {

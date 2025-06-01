@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 class Seller extends Authenticatable
 {
     use HasFactory, Notifiable;
+    protected $guard = 'seller';
     protected $fillable = [
         'name',
         'email',
@@ -18,14 +19,20 @@ class Seller extends Authenticatable
         'phone',
     ];
 
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    protected $casts = [
-        'password' => 'hashed',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
 
     public function buildings()
     {
@@ -36,7 +43,13 @@ class Seller extends Authenticatable
         return $this->morphOne(Address::class, 'addressable');
     }
 
-    public function buildingApplications(){
-        return $this->hasMany(BuildingApplication::class);
+    public function sentMessages()
+    {
+        return $this->morphMany(Message::class, 'sender');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->morphMany(Message::class, 'receiver');
     }
 }

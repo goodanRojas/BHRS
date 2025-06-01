@@ -74,17 +74,14 @@ return [
         ],
         'sellers' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Seller::class,
+            'model' =>  env('AUTH_MODEL', App\Models\Seller::class),
         ],
         'admins' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
+            'model' =>  env('AUTH_MODEL', App\Models\Admin::class),
         ]
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+      
     ],
 
     /*

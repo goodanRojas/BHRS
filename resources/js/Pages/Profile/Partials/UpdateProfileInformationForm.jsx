@@ -16,12 +16,34 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
+            // Add a default value for the profile picture to handle the initial state
+            profile_picture: null, 
         });
 
     const submit = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        // Create FormData to handle file upload
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+
+        // Append the profile picture file if provided
+        if (data.profile_picture) {
+            formData.append('profile_picture', data.profile_picture);
+        }
+
+        patch(route('profile.update'), {
+            data: formData, // Send FormData to the controller
+        });
+    };
+
+    const handleProfilePictureChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setData('profile_picture', file);
+        }
     };
 
     return (
@@ -37,6 +59,30 @@ export default function UpdateProfileInformation({
             </header>
 
             <form onSubmit={submit} className="mt-6 space-y-6">
+                {/* Profile Picture */}
+                <div>
+                    <InputLabel htmlFor="profile_picture" value="Profile Picture" />
+                    <div className="flex items-center gap-4">
+                        {/* Display current profile picture if exists */}
+                        {user.avatar && (
+                            <img
+                                src={`/storage/${user.avatar}`}
+                                alt="Profile Picture"
+                                className="w-16 h-16 rounded-full object-cover"
+                            />
+                        )}
+                        <input
+                            type="file"
+                            name="profile_picture"
+                            onChange={handleProfilePictureChange}
+                            className="mt-1 block w-full"
+                            accept="image/*"
+                        />
+                    </div>
+                    <InputError className="mt-2" message={errors.profile_picture} />
+                </div>
+
+                {/* Name Field */}
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -53,6 +99,7 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.name} />
                 </div>
 
+                {/* Email Field */}
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
 
@@ -69,6 +116,7 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
+                {/* Verification Logic */}
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="mt-2 text-sm text-gray-800">
@@ -85,13 +133,13 @@ export default function UpdateProfileInformation({
 
                         {status === 'verification-link-sent' && (
                             <div className="mt-2 text-sm font-medium text-green-600">
-                                A new verification link has been sent to your
-                                email address.
+                                A new verification link has been sent to your email address.
                             </div>
                         )}
                     </div>
                 )}
 
+                {/* Submit Button */}
                 <div className="flex items-center gap-4">
                     <PrimaryButton disabled={processing}>Save</PrimaryButton>
 

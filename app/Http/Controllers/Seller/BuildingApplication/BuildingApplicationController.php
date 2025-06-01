@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\BuildingApplication;
 
 class BuildingApplicationController extends Controller
 {
@@ -35,17 +34,7 @@ class BuildingApplicationController extends Controller
         $fireSafetyCertificatePath = $request->file('fireSafetyCertificate')->store('documents', 'public');
 
         // Create the BuildingApplication record
-        $application = BuildingApplication::create([
-            'seller_id' => $id,  // Assuming the seller is the authenticated user
-            'building_name' => $validated['buildingName'],
-            'number_of_floors' => $validated['numberOfFloors'],
-            'address' => $validated['address'],
-            'number_of_rooms' => $validated['numberOfRooms'],
-            'number_of_beds' => $validated['numberOfBeds'],
-            'bir' => $birPath,
-            'fire_safety_certificate' => $fireSafetyCertificatePath,
-            'status' => 'pending',  // You can set a default status or make it dynamic
-        ]);
+      
 
       
         // Return a response or redirect

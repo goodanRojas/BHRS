@@ -7,11 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\Building;
-use App\Models\Room;
-use App\Models\Bed;
-use App\Models\Feedback;
-use App\Models\Booking;
+use App\Models\{Building, Feature, Room};
 
 class BuildingController extends Controller
 {
@@ -43,58 +39,69 @@ class BuildingController extends Controller
         return response()->json($buildings);
     }
 
-    public function showBuilding(Building $building)
+
+    public function showBuilding($id)
     {
-        $building->load(['rooms' => function ($query) {
-            $query->withCount('beds');
-        }, 'seller']);
-
-        // Get all Room IDs in the building
-        $roomIds = Room::where('building_id', $building->id)->pluck('id');
-
-        // Get all Bed IDs in those rooms
-        $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
-
-        // Total Ratings (Average & Count)
-        $averageRating = Feedback::where(function ($query) use ($roomIds, $bedIds) {
-            $query->where(function ($q) use ($roomIds) {
-                $q->where('feedbackable_type', Room::class)
-                    ->whereIn('feedbackable_id', $roomIds);
-            })->orWhere(function ($q) use ($bedIds) {
-                $q->where('feedbackable_type', Bed::class)
-                    ->whereIn('feedbackable_id', $bedIds);
-            });
-        })->avg('rating');
-
-        $totalFeedbacks = Feedback::where(function ($query) use ($roomIds, $bedIds) {
-            $query->where(function ($q) use ($roomIds) {
-                $q->where('feedbackable_type', Room::class)
-                    ->whereIn('feedbackable_id', $roomIds);
-            })->orWhere(function ($q) use ($bedIds) {
-                $q->where('feedbackable_type', Bed::class)
-                    ->whereIn('feedbackable_id', $bedIds);
-            });
-        })->count();
-
-        // Total Completed Bookings
-        $totalCompletedBookings = Booking::where('status', 'completed')
-            ->where(function ($query) use ($roomIds, $bedIds) {
-                $query->where(function ($q) use ($roomIds) {
-                    $q->where('bookable_type', Room::class)
-                        ->whereIn('bookable_id', $roomIds);
-                })->orWhere(function ($q) use ($bedIds) {
-                    $q->where('bookable_type', Bed::class)
-                        ->whereIn('bookable_id', $bedIds);
-                });
-            })->count();
-
+        $building = Building::with('seller', 'address', 'images', 'rooms', 'features')->find($id);
+        Log::info($building);
         return Inertia::render('Seller/Building', [
-            'building' => $building,
-            'ratingStats' => [
-                'average' => round($averageRating, 2),
-                'total' => $totalFeedbacks,
-            ],
-            'totalCompletedBookings' => $totalCompletedBookings,
+            'building' => $building
+        ]);
+    }
+
+    public function addFeature(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'featureable_id' => 'required|exists:buildings,id', // Assuming featureable_id is related to Building
+        ]);
+        $feature = Feature::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'featureable_id' => $request->featureable_id,
+            'featureable_type' => Building::class
+        ]);
+        Log::info($feature);
+        return response()->json([
+            'feature' => $feature
+        ]);
+    }
+    public function deleteFeature($id)
+    {
+        // Find the feature by ID
+        $feature = Feature::findOrFail($id);
+
+        // Delete the feature
+        $feature->delete();
+
+
+        return response()->json([
+            'message' => 'Feature deleted successfully.'
+        ], 200);
+    }
+
+    public function addRoom(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'image' => 'required|image|',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
+        }
+
+        $rooms = Room::create([
+            'building_id' => $request->building_id,
+            'name' => $request->name,
+            'image' => $imagePath,
+            'price' => $request->price,
+        ]);
+        return response()->json([
+            'room' => $rooms
         ]);
     }
 }

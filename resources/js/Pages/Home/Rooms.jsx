@@ -10,7 +10,7 @@ import { faBuilding, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Rooms({ initialRooms, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-    // console.log(initialRooms);
+    console.log(initialRooms);
     const [rooms, setRooms] = useState(initialRooms.data);
     const [pagination, setPagination] = useState(initialPagination);
     const [boardingHouses, setBoardingHouses] = useState([]);
@@ -48,7 +48,7 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                 has_more_pages: data.has_more_pages,
             });
         } catch (error) {
-            console.error("Error fetching more beds:", error);
+            console.error("Error fetching more rooms:", error);
         }
     };
 
@@ -62,7 +62,7 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                     links={[
                         { label: 'Buildings', url: '/home/buildings' },
                         { label: 'Rooms' },
-                        { label: 'Beds', url: `/home` },
+                        { label: 'Rooms', url: `/home` },
                     ]}
                 />
 
@@ -83,7 +83,7 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                             >
                                 <Link href={`/rooms/${room.id}`}>
                                     <img
-                                        src={`/storage/room/${room.image}`}
+                                        src={`/storage/${room.image}`}
                                         alt={room.name}
                                         className="w-full h-40 object-cover rounded-md mb-3"
                                     />
@@ -94,14 +94,16 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                                     </p>
                                     <p className="flex items-center text-gray-600 text-sm mb-2 line-clamp-2">
                                         <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-500" />
-                                        {room.building_address || "N/A"}
+                                        {room.building_address
+                                            ? `${room.building_address.street}, ${room.building_address.barangay}, ${room.building_address.city}, ${room.building_address.province} ${room.building_address.postal_code}, ${room.building_address.country}`
+                                            : "N/A"}
                                     </p>
-                                    <div className="flex justify-between items-center"> 
+                                    <div className="flex justify-between items-center">
                                         <p className="text-gray-800 font-semibold mb-2">
                                             &#8369;{room.price}
                                         </p>
                                         <p className="text-yellow-500 text-sm mb-2">
-                                             {room.average_rating.toFixed(1)} ★
+                                            {room.average_rating.toFixed(1)} ★
                                         </p>
                                     </div>
 

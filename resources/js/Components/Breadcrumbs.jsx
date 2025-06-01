@@ -2,7 +2,8 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import '../../css/breadcrumb.css'; // Import the custom CSS file
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 export default function Breadcrumbs({ links }) {
     return (
         <nav
@@ -17,7 +18,7 @@ export default function Breadcrumbs({ links }) {
                     ) : (
                         <span>{link.label}</span>
                     )}
-                    {index < links.length - 1 && <span className="mx-2">/</span>}
+                    {index < links.length - 1 && <span className="mx-2"><FontAwesomeIcon icon={faChevronRight} className=" text-sm text-gray-500" /></span>}
                 </span>
             ))}
         </nav>

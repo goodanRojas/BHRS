@@ -10,7 +10,7 @@ export default function BedGuests({ bookings }) {
                         {/* User Information */}
                         <div className="flex items-center mb-4">
                             <img
-                                src={`/storage/profile/${booking.user.avatar ? booking.user.avatar : 'default_avatar.png'}`} // Placeholder for no image
+                                src={`/storage/${booking.user.avatar ? booking.user.avatar : '/profile/default_avatar.png'}`} // Placeholder for no image
                                 alt={booking.user.name}
                                 className="w-10 h-10 rounded-full mr-4"
                             />
@@ -32,7 +32,7 @@ export default function BedGuests({ bookings }) {
                                     booking.bookable.image
                                       ? booking.bookable.image.startsWith('https')
                                         ? booking.bookable.image
-                                        : `/storage/bed/${booking.bookable.image}`
+                                        : `/storage/${booking.bookable.image}`
                                       : 'storage/bed/bed.png'
                                   }                                  
                                     alt={booking.bookable.name}

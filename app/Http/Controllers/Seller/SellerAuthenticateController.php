@@ -4,42 +4,30 @@ namespace App\Http\Controllers\Seller;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Auth\SellerLoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class SellerAuthenticateController
 {
-    public function index(Request $request)
-    {
-        return Inertia::render('Seller/Login', [
-            'canResetPassword' => Route::has('password.request'),
-            'canRegister' => Route::has('register'),
-            'status' => session('status'),
-        ]);
-    }
 
-    public function store(Request $request): RedirectResponse
+
+    public function store(Request $request)
     {
-        // Validate the incoming request
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+        $validate = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
 
-        // Attempt authentication with the seller guard
-        if (!Auth::guard('seller')->attempt($credentials, $request->boolean('remember'))) {
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
+        if (Auth::guard('seller')->attempt(['email' => $validate['email'], 'password' => $validate['password']])) {
+            Log::info("Seller Is authenticated! ");
+            return redirect()->intended(route('seller.dashboard.index', absolute: false));
+        } else {
+            Log::info("Seller is not authenticated");
+            return back()->with('error', 'Invalid Credentials');
         }
-
-        // Regenerate the session to prevent session fixation attacks
-        $request->session()->regenerate();
-
-        // Redirect to the seller dashboard
-        return redirect()->intended(route('seller.dashboard.index', absolute: false));
     }
 
 

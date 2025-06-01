@@ -37,7 +37,7 @@ export default function CreateAccount() {
                             <InputLabel htmlFor="name" value="Name" className="block text-lg font-medium text-gray-700" />
                             <TextInput
                                 id="name"
-                                type="name"
+                                type="text"
                                 name="name"
                                 value={data.name}
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -65,7 +65,7 @@ export default function CreateAccount() {
                             <InputLabel htmlFor="phone" value="Phone" className="block text-lg font-medium text-gray-700" />
                             <TextInput
                                 id="phone"
-                                type="phone"
+                                type="tel"
                                 name="phone"
                                 value={data.phone}
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -79,7 +79,7 @@ export default function CreateAccount() {
                             <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
                             <TextInput
                                 id="password"
-                                type="password"
+                                type="text"
                                 name="password"
                                 value={data.password}
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -97,7 +97,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="street" value="Street" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="street"
-                            type="street"
+                            type="text"
                             name="street"
                             value={data.street}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -111,7 +111,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="barangay" value="Barangay" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="barangay"
-                            type="barangay"
+                            type="text"
                             name="barangay"
                             value={data.barangay}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -125,7 +125,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="city" value="City" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="city"
-                            type="city"
+                            type="text"
                             name="city"
                             value={data.city}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -139,7 +139,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="postalCode" value="Postal Code" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="postalCode"
-                            type="postalCode"
+                            type="number"
                             name="postalCode"
                             value={data.postalCode}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -153,7 +153,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="province" value="Province" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="province"
-                            type="province"
+                            type="text"
                             name="province"
                             value={data.province}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -167,7 +167,7 @@ export default function CreateAccount() {
                         <InputLabel htmlFor="country" value="Country" className="block text-lg font-medium text-gray-700" />
                         <TextInput
                             id="country"
-                            type="country"
+                            type="text"
                             name="country"
                             value={data.country}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"

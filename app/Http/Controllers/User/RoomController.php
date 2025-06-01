@@ -16,7 +16,7 @@ class RoomController extends Controller
 {
     public function showToUserRoom(Room $room)
     {
-        $room->load('building', 'beds', 'feedbacks.user', 'bookings', 'favorites');
+        $room->load('building', 'images', 'beds', 'feedbacks.user', 'bookings', 'favorites');
         $bedAvailability = !$room->beds->contains(function ($bed) {
             return $bed->status === 'active';
         });

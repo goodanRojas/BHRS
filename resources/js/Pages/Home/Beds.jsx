@@ -11,10 +11,10 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import Dropdown from '@/Components/Dropdown';
 function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-    // console.log(initialBeds.data);
+    console.log(initialBeds.data);
     const [beds, setBeds] = useState(initialBeds.data);
     const [pagination, setPagination] = useState(initialPagination);
-    const [boardingHouses, setBoardingHouses] = useState([]);
+    const [featuresFilter, setFeaturesFilter] = useState([]);
 
     // Initialize priceFilter with min and max from props
     const [priceFilter, setPriceFilter] = useState([priceRange.min, priceRange.max]);
@@ -26,14 +26,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
         min_rating: "",
     });
 
-    //console.log(priceRange);
-    useEffect(() => {
-        // Fetch boarding houses
-        axios
-            .get("/home/beds")
-            .then((response) => setBoardingHouses(response.data))
-            .catch((error) => console.error("Error fetching boarding houses:", error));
-    }, []);
+
 
     const applyFilters = async () => {
         try {
@@ -78,7 +71,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                         bed.id === bedId ? { ...bed, is_favorite: !bed.is_favorite } : bed
                     )
                 );
-    
+
             }
         } catch (error) {
             console.error("Error toggling favorite:", error);
@@ -91,35 +84,19 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
 
             <div className="flex flex-col p-2">
 
-                {/* Breadcrumbs */}
-                <Breadcrumbs
-                    links={[
-                        { label: 'Buildings', url: '/home/buildings' },
-                        { label: 'Rooms', url: `/home/rooms` },
-                        { label: 'Beds' },
-                    ]}
-                />
-                <div className="flex">
+
+                <div className="flex flex-col py-4">
 
 
-                    {/* Filters */}
-                    <div className="flex  sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                        {/* Filter Dropdown */}
-                        <div className="relative inline-block text-left">
-                            <Dropdown>
-                                <Dropdown.Trigger>
-                                    <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-150">
-                                        <FontAwesomeIcon icon={faFilter} />
-                                        <span>Filters</span>
-                                    </button>
-                                </Dropdown.Trigger>
-
-                                <Dropdown.Content className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                    <Dropdown.Link className="block px-4 py-2 hover:bg-gray-100">Rating</Dropdown.Link>
-                                    <Dropdown.Link className="block px-4 py-2 hover:bg-gray-100">Price</Dropdown.Link>
-                                </Dropdown.Content>
-                            </Dropdown>
-                        </div>
+                    <div className="flex items-center  sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
+                        {/* Breadcrumbs */}
+                        <Breadcrumbs
+                            links={[
+                                { label: 'Buildings', url: '/home/buildings' },
+                                { label: 'Rooms', url: `/home/rooms` },
+                                { label: 'Beds' },
+                            ]}
+                        />
 
                         {/* Search Bar */}
                         <div className="flex w-full sm:w-80">
@@ -141,7 +118,11 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                             </button>
                         </div>
                     </div>
+                    {/* Tag Filter */}
+                    <div className="flex items-center gap-4 mb-4">
+                        <p className="text-sm text-gray-500">Tag Filter</p>
 
+                    </div>
 
                 </div>
 
@@ -156,13 +137,13 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                         {beds.map((bed) => (
                             <div
                                 key={bed.id}
-                                className=" relative border rounded-lg shadow backdrop-blur  hover:shadow-lg transition"
+                                className="relative border rounded-lg shadow backdrop-blur hover:shadow-lg transition group"
                             >
                                 <Link href={`/home/bed/${bed.id}`}>
                                     <img
-                                        src={`/storage/bed/${bed.image}` || '/storage/bed/default_bed.png'}
+                                        src={`/storage/${bed.image}` || '/storage/bed/default_bed.png'}
                                         alt={bed.name}
-                                        className="w-full h-40 object-cover rounded-md mb-3"
+                                        className="w-full h-40 object-cover rounded-t-md mb-3"
                                     />
                                     {/* ❤️ Favorite Icon – Top Left */}
                                     <div className="absolute top-3 left-3 group">
@@ -195,8 +176,11 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                         </p>
                                         <p className="flex items-center text-gray-600 text-sm mb-2 line-clamp-2">
                                             <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-500" />
-                                            {bed.building_address || "N/A"}
+                                            {bed.building_address
+                                                ? `${bed.building_address.street}, ${bed.building_address.barangay}, ${bed.building_address.city}, ${bed.building_address.province} ${bed.building_address.postal_code}, ${bed.building_address.country}`
+                                                : "N/A"}
                                         </p>
+
 
                                         <p className="text-amber-500 font-semibold mb-2">
                                             &#8369;{bed.sale_price || bed.price}

@@ -28,8 +28,8 @@ class SellerRequestController extends Controller
             ->where('bookable_type', Bed::class)
             ->whereIn('bookable_id', $bedIds)
         
-            ->where('status', 'pending')
-            ->where('payment_method', 'cash')
+            ->where('status', 'waiting')
+            ->where('payment_method', 'gcash')
             ->get();
 
         $roomRequests = Booking::with(relations: ['user', 'payment', 'bookable' => function ($morph) {
@@ -37,8 +37,8 @@ class SellerRequestController extends Controller
         }])
             ->where('bookable_type', Room::class)
             ->whereIn('bookable_id', $roomIds)
-            ->where('status', 'pending')
-            ->whereRaw('LOWER(payment_method) = ?', ['cash'])
+            ->where('status', 'waiting')
+            ->whereRaw('LOWER(payment_method) = ?', ['gcash'])
             ->get();
 
             // dd($bedRequests);

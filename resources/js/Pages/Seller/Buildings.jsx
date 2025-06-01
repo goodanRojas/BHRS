@@ -76,7 +76,7 @@ export default function Buildings({ initialBuildings }) {
                                     <td className="px-4 py-2">{building.address}</td>
                                     <td className="px-4 py-2">
                                         <img
-                                            src={`/storage/building/${building.image}`}
+                                            src={`/storage/${building.image}`}
                                             alt={building.name}
                                             className="w-20 h-20 object-cover rounded-md"
                                         />

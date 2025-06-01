@@ -66,15 +66,16 @@ class User extends Authenticatable
         return $this->hasMany(Favorite::class);
     }
 
-    public function messagesSent()
+    public function sentMessages()
     {
-        return $this->hasMany(Message::class, 'sender_id');
+        return $this->morphMany(Message::class, 'sender');
     }
 
-    public function messagesReceived()
+    public function receivedMessages()
     {
-        return $this->hasMany(Message::class, 'receiver_id');
+        return $this->morphMany(Message::class, 'receiver');
     }
+
 
     public function chatGroups()
     {
