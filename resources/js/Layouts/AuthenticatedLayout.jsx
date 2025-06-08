@@ -8,7 +8,7 @@ import { FavoriteContext } from '@/Contexts/FavoriteContext';
 
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, createContext } from 'react';
-import { faHeart, faBell, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 
@@ -24,6 +24,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const [groupMessages, setGroupMessages] = useState({});
     const [botMessages, setBotMessages] = useState({});
     const [favoritesCount, setFavoritesCount] = useState(user?.favorites?.length || 0);
+    const [messagesCount, setMessagesCount] = useState(0);
     useEffect(() => {
       
         if (user) {
@@ -133,6 +134,21 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </div>
                                 </div>
 
+                                {/* Message Icon with Badge */}
+                                <div className="relative group">
+                                    {messagesCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                            {messagesCount}
+                                        </div>
+                                    )}
+                                    <Link href="/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-blue-400 hover:text-blue-500" />
+                                    </Link>
+                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                        Messages
+                                    </span>
+                                </div>
+
                                 {/* Favorites Icon with Badge */}
                                 <div className="relative group">
                                     {favoritesCount > 0 && (
@@ -147,52 +163,22 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Favorites
                                     </span>
                                 </div>
-
-                                {/* Notifications Dropdown */}
+                                {/* Favorites Icon with Badge */}
                                 <div className="relative group">
-                                    {favoritesCount && (
+                                    {favoritesCount > 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {user.notifications.length}
+                                            {favoritesCount}
                                         </div>
                                     )}
-
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <div
-                                                className="relative inline-flex items-center justify-center p-2 text-gray-600 cursor-pointer hover:scale-105 transition-transform duration-200"
-                                                onMouseEnter={() => setNotificationsModal(true)}
-                                                onClick={() => setNotificationsModal(true)}
-                                            >
-                                                <FontAwesomeIcon
-                                                    icon={faBell}
-                                                    className="h-6 w-6 text-yellow-400 hover:text-yellow-500 focus:outline-none"
-                                                />
-                                            </div>
-                                        </Dropdown.Trigger>
-
-                                        <Dropdown.Content className="w-64 bg-white shadow-lg rounded-lg border border-gray-200">
-                                            {favoritesCount > 0 ?(
-                                                user.notifications.map((notification, index) => (
-                                                    <div key={index} className="border-b last:border-none border-gray-200 p-3 hover:bg-gray-100 cursor-pointer transition">
-                                                        <Link
-                                                            href={`/notification/mark-as-read/${notification.data.message.id}/${notification.id}`}
-                                                            className="flex flex-col"
-                                                        >
-                                                            <p className="text-sm font-semibold text-gray-800">{notification.data.message.title}</p>
-                                                            <p className="text-xs text-gray-600 mt-1">{notification.data.message.message}</p>
-                                                        </Link>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="p-3 text-sm text-gray-500 text-center">No new notifications</p>
-                                            )}
-                                        </Dropdown.Content>
-                                    </Dropdown>
-
+                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-yellow-500 hover:text-yellow-600" />
+                                    </Link>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Notifications
+                                        Notificatoins
                                     </span>
                                 </div>
+
+                              
 
                                 {/* User Dropdown */}
                                 <div className="relative">
@@ -326,17 +312,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <main
                     className='min-h-screen'
                 >{children}</main>
-              {/*   <ChatContext.Provider value={{
-                    // directMessages,
-                    setDirectMessages,
-                    groupMessages,
-                    setGroupMessages,
-                    botMessages,
-                    setBotMessages,
-                }}>
-
-                    <ChatWidget />
-                </ChatContext.Provider> */}
+             
                 <Footer />
 
             </div>

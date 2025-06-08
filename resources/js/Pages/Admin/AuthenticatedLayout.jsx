@@ -6,7 +6,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
-
+    // const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     return (
         <div className="flex h-screen bg-gray-100">

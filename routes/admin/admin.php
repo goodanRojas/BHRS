@@ -19,3 +19,4 @@ require __DIR__.'\user.php';
 require __DIR__.'\owner.php';
 require __DIR__.'\profile.php';
 require __DIR__.'\building.php';
+require __DIR__.'\route.php';

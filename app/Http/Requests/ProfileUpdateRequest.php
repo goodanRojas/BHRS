@@ -25,6 +25,16 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif'], // Validation for avatar image
+            'address' => ['nullable', 'array'],
+            'address.street' => ['nullable', 'string'],
+            'address.barangay' => ['nullable', 'string'],
+            'address.city' => ['nullable', 'string'],
+            'address.province' => ['nullable', 'string'],
+            'address.postal_code' => ['nullable', 'string'],
+            'address.country' => ['nullable', 'string'],
+            'address.latitude' => ['nullable', 'numeric'],
+            'address.longitude' => ['nullable', 'numeric'],
         ];
     }
 }

@@ -84,7 +84,9 @@ class DirectChat extends Controller
         // Create a new message
         $message = Message::create([
             'sender_id' => auth()->id(),
+            'sender_type' => User::class,
             'receiver_id' => $validated['receiver_id'],
+            'receiver_type' => User::class,
             'content' => $validated['content'],
             'is_read' => false,
             'sent_at' => now(),
@@ -95,6 +97,28 @@ class DirectChat extends Controller
 
         return response()->json(['message' => $message]);
     }
+
+    public function getUsers(Request $request)
+    {
+        Log::info($request->all());
+        // Validate the userIds parameter to ensure it is an array of integers
+        $validated = $request->validate([
+            'userIds' => 'required|array',
+            'userIds.*' => 'integer|exists:users,id', // Ensure each ID is an integer and exists in the 'users' table
+        ]);
+
+        // Retrieve the userIds from the request
+        $userIds = $validated['userIds'];
+
+        // Get the user details for the provided user IDs
+        $users = User::whereIn('id', $userIds)->get();
+
+        // Return the user details in JSON format
+        return response()->json([
+            'users' => $users
+        ]);
+    }
+
     public function chatWithSeller($sellerId, $bedId)
     {
         // Fetch seller and bed details

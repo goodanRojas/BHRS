@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 export default function Sidebar() {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false);
 

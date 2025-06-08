@@ -4,46 +4,68 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
+import { Inertia } from '@inertiajs/inertia';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+
+import { useState } from 'react';
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
     className = '',
+    address
 }) {
     const user = usePage().props.auth.user;
-
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
+    const [preview, setPreview] = useState(user.avatar ? `/storage/${user.avatar}` : '/storage/profile/default_avatar.png');
+    const { data, setData, patch, post, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
             email: user.email,
-            avatar: user.avatar,
-            // Add a default value for the profile picture to handle the initial state
-            profile_picture: null, 
+            avatar: user.avatar || null, // Initialize avatar to null if not set
+            phone: user.phone || '', // Ensure phone is initialized
+            address: {
+                street: address?.street || '',
+                barangay: address?.barangay || '',
+                city: address?.city || '',
+                province: address?.province || '',
+                postal_code: address?.postal_code || '',
+                country: address?.country || '',
+            },
         });
 
     const submit = (e) => {
         e.preventDefault();
 
-        // Create FormData to handle file upload
         const formData = new FormData();
         formData.append('name', data.name);
         formData.append('email', data.email);
+        formData.append('phone', data.phone || ''); // Ensure phone is added
 
-        // Append the profile picture file if provided
-        if (data.profile_picture) {
-            formData.append('profile_picture', data.profile_picture);
+        // If avatar is set, append it to FormData
+        if (data.avatar) {
+            formData.append('avatar', data.avatar);
+            console.log('Avatar file selected:', data.avatar);  // Log file data for debugging
+        } else {
+            formData.append('avatar', '');  // Ensure avatar field is always included
         }
 
-        patch(route('profile.update'), {
-            data: formData, // Send FormData to the controller
-        });
+        formData.append('address', JSON.stringify(data.address)); // Ensure address is correctly appended
+
+        // Send the form data to the backend using a POST request
+        post(route('profile.update'),formData);
     };
 
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setData('profile_picture', file);
+            setData('avatar', file); // Update with the selected file
+            setPreview(URL.createObjectURL(file)); // Set preview image
         }
+    };
+
+    const handleAddressChange = (field, value) => {
+        setData('address', { ...data.address, [field]: value });
     };
 
     return (
@@ -58,29 +80,36 @@ export default function UpdateProfileInformation({
                 </p>
             </header>
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <form onSubmit={submit} encType="multipart/form-data" className="mt-6 space-y-6">
                 {/* Profile Picture */}
                 <div>
-                    <InputLabel htmlFor="profile_picture" value="Profile Picture" />
+                    <InputLabel htmlFor="avatar" value="Profile Picture" />
                     <div className="flex items-center gap-4">
-                        {/* Display current profile picture if exists */}
-                        {user.avatar && (
-                            <img
-                                src={`/storage/${user.avatar}`}
-                                alt="Profile Picture"
-                                className="w-16 h-16 rounded-full object-cover"
+                        {/* Display current profile picture if exists, or display default profile */}
+                        <img
+                            src={preview}
+                            alt="Profile Picture"
+                            className="w-16 h-16 rounded-full object-cover"
+                        />
+                        <label htmlFor="avatar">
+                            <FontAwesomeIcon
+                                icon={faEdit}
+                                className="cursor-pointer text-blue-500 hover:text-blue-700"
                             />
-                        )}
+                        </label>
+                        {/* File input for profile picture */}
                         <input
                             type="file"
-                            name="profile_picture"
+                            id="avatar"
+                            name="avatar"
                             onChange={handleProfilePictureChange}
-                            className="mt-1 block w-full"
+                            className="mt-1 hidden"
                             accept="image/*"
                         />
                     </div>
-                    <InputError className="mt-2" message={errors.profile_picture} />
+                    <InputError className="mt-2" message={errors.avatar} />
                 </div>
+
 
                 {/* Name Field */}
                 <div>
@@ -98,7 +127,6 @@ export default function UpdateProfileInformation({
 
                     <InputError className="mt-2" message={errors.name} />
                 </div>
-
                 {/* Email Field */}
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
@@ -114,6 +142,114 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.email} />
+                </div>
+                {/* Phone Field */}
+                <div>
+                    <InputLabel htmlFor="phone" value="Phone" />
+
+                    <TextInput
+                        id="phone"
+                        type="tel"
+                        className="mt-1 block w-full"
+                        value={data.phone}
+                        onChange={(e) => setData('phone', e.target.value)}
+                        required
+                        autoComplete="phone"
+                    />
+
+                    <InputError className="mt-2" message={errors.phone} />
+                </div>
+                {/* Address Fields */}
+                <div className="space-y-6 items-center justify-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Street Field */}
+                    <div>
+                        <InputLabel htmlFor="street" value="Street" />
+                        <TextInput
+                            id="street"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.street}
+                            onChange={(e) => handleAddressChange('street', e.target.value)}
+                            required
+                            autoComplete="address-line1"
+                        />
+                        <InputError className="mt-2" message={errors.address?.street} />
+                    </div>
+
+                    {/* Barangay Field */}
+                    <div>
+                        <InputLabel htmlFor="barangay" value="Barangay" />
+                        <TextInput
+                            id="barangay"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.barangay}
+                            onChange={(e) => handleAddressChange('barangay', e.target.value)}
+                            required
+                            autoComplete="address-line1"
+                        />
+                        <InputError className="mt-2" message={errors.address?.barangay} />
+                    </div>
+
+                    {/* City Field */}
+                    <div>
+                        <InputLabel htmlFor="city" value="City" />
+                        <TextInput
+                            id="city"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.city}
+                            onChange={(e) => handleAddressChange('city', e.target.value)}
+                            required
+                            autoComplete="address-level2"
+                        />
+                        <InputError className="mt-2" message={errors.address?.city} />
+                    </div>
+
+                    {/* Province Field */}
+                    <div>
+                        <InputLabel htmlFor="province" value="Province" />
+                        <TextInput
+                            id="province"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.province}
+                            onChange={(e) => handleAddressChange('province', e.target.value)}
+                            required
+                            autoComplete="address-level2"
+                        />
+                        <InputError className="mt-2" message={errors.address?.province} />
+                    </div>
+
+                    {/* Postal Code Field */}
+                    <div>
+                        <InputLabel htmlFor="postal_code" value="Postal Code" />
+                        <TextInput
+                            id="postal_code"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.postal_code}
+                            onChange={(e) => handleAddressChange('postal_code', e.target.value)}
+                            required
+                            autoComplete="postal-code"
+                        />
+                        <InputError className="mt-2" message={errors.address?.postal_code} />
+                    </div>
+
+                    {/* Country Field */}
+                    <div>
+                        <InputLabel htmlFor="country" value="Country" />
+                        <TextInput
+                            id="country"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.address.country}
+                            onChange={(e) => handleAddressChange('country', e.target.value)}
+                            required
+                            autoComplete="country"
+                        />
+                        <InputError className="mt-2" message={errors.address?.country} />
+                    </div>
                 </div>
 
                 {/* Verification Logic */}

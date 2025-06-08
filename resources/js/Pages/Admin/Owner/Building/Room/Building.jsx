@@ -2,7 +2,7 @@ import AuthenticatedLayout from '../../../AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus, faRoute } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -128,7 +128,14 @@ export default function Building({ building }) {
 
                 {/* Content Section */}
                 <div className="p-4 flex flex-col justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
+                    <div className='flex items-center justify-between'>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
+                        <Link
+                            href={`/admin/route/building/${building.id}/route-map`}
+                        >
+                            <FontAwesomeIcon icon={faRoute} className="text-blue-500 mr-2" />
+                        </Link>
+                    </div>
                     <p>
                         <FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />
                         {building.seller.name}
@@ -254,7 +261,7 @@ export default function Building({ building }) {
                                                     className="w-20 h-20 object-cover rounded-md"
                                                 />
                                             </td>
-                                           
+
                                             <td className="px-4 py-2">
                                                 <p className="text-gray-500 font-semibold">₱{room.price}</p>
                                             </td>

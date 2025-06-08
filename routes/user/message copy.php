@@ -3,20 +3,15 @@
 use App\Http\Controllers\Chatbot\ChatbotController;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Chats\{DirectChat, GroupChat, Messages};
+use App\Http\Controllers\Chats\DirectChat;
+use App\Http\Controllers\Chats\GroupChat;
 
-Route::middleware('auth')->group(function () {
-
-    Route::prefix('messages')->name('messages.')->group(function () {
-        Route::get('/', [Messages::class, 'index'])->name('index');
-    });
-
+Route::middleware('auth:sanctum')->group(function () {
     Route::controller(DirectChat::class)->group(function () {
         Route::get('/direct-message', 'fetchUserMessages');
         Route::get('direct-message/selected-user/{id}', 'fetchUserConversation');
         Route::get('/direct-message/search', 'searchUsers');
         Route::post('/direct-messages/send', 'sendMessage');
-        Route::get('/direct-messages/users', 'getUsers');
     });
     Route::controller(GroupChat::class)->group(function () {
         Route::get('/group-message', 'fetchGroupMessages');

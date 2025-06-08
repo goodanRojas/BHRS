@@ -58,4 +58,9 @@ class Building extends Model
         return $this->morphMany(Feature::class, 'featureable');
     }
 
+    public function routes()
+    {
+        return $this->hasMany(Route::class);
+    }
+
 }
