@@ -25,3 +25,4 @@ require __DIR__ . '\bed.php';
 require __DIR__ . '\history.php';
 require __DIR__ . '\request.php';
 require __DIR__ . '\building_application.php';
+require __DIR__ . '\message.php';

@@ -6,10 +6,14 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 import NotificationPopup from '@/Components/NotificationPopup';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
+    console.log(user);
     const [notification, setNotification] = useState(null);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [messagesCount, setMessagesCount] = useState(0);
     useEffect(() => {
         const landlordId = user?.id; // however you get it
 
@@ -150,6 +154,21 @@ export default function SellerLayout({ header, children }) {
                                             </Dropdown>
                                         </div>
                                     </div>
+
+                                    {/* Message Icon with Badge */}
+                                    <div className="relative group flex items-center justify-center">
+                                        {messagesCount > 0 && (
+                                            <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                                {messagesCount}
+                                            </div>
+                                        )}
+                                        <Link href="/seller/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                            <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-blue-400 hover:text-blue-500" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-10 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                            Messages
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -162,7 +181,7 @@ export default function SellerLayout({ header, children }) {
                                                     type="button"
                                                     className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:"
                                                 >
-                                                    <img src={`/storage/profile/${user.image || 'default_avatar.png'}`} alt={user.image} className="h-7 w-7 rounded-full mr-2" />
+                                                    <img src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`} alt={user.avatar} className="h-7 w-7 rounded-full mr-2" />
                                                     {user.name.split(' ')[0]}
 
                                                     <svg
@@ -183,7 +202,7 @@ export default function SellerLayout({ header, children }) {
 
                                         <Dropdown.Content>
                                             <Dropdown.Link
-                                                href={route('profile.edit')}
+                                                href={route('seller.profile.edit')}
                                             >
                                                 Profile
                                             </Dropdown.Link>
@@ -260,7 +279,7 @@ export default function SellerLayout({ header, children }) {
                         <div className="pb-1 pt-4">
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 <div className='flex items-center pl-4'>
-                                    <img src={`/storage/profile/${user.image || 'default_avatar.png'}`} alt={user.image} className="h-7 w-7 rounded-full mr-2" />
+                                    <img src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`} alt={user.avatar} className="h-7 w-7 rounded-full mr-2" />
                                     <div className="px-4">
                                         <div className="text-base font-medium text-gray-800">
                                             {user.name}

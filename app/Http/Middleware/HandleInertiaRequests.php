@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
                     ])
                     : null,
                 'seller' => Auth::guard('seller')->user(),
+                'admin' => Auth::guard('admin')->user(),
             ],
             'flash' => [
                 'success' => session('success'),

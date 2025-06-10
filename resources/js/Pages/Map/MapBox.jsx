@@ -12,7 +12,7 @@ const containerStyle = {
 
 
 export default function MapBox({ buildings }) {
-  console.log('Buildings:', buildings);
+  // console.log('Buildings:', buildings);
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [popup, setPopup] = useState(null);
@@ -65,24 +65,41 @@ export default function MapBox({ buildings }) {
       console.log('Geolocation is not supported by this browser.');
     }
 
+
     // Prepare GeoJSON features from buildings
     const geojson = {
       type: 'FeatureCollection',
-      features: buildings.map((b) => ({
-        type: 'Feature',
-        properties: {
-          id: b.id,
-          name: b.name,
-          image: b.image,
-          address: b.address,
-          rating: b.rating,
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [parseFloat(b.longitude), parseFloat(b.latitude)],
-        },
-      })),
+      features: buildings.map((b) => {
+        // Check if b.address exists and is not null
+        const address = b.address || {};
+
+        return {
+          type: 'Feature',
+          properties: {
+            id: b.id,
+            name: b.name,
+            image: b.image,
+            address: {
+              street: address.street || '',
+              barangay: address.barangay || '',
+              city: address.city || '',
+              province: address.province || '',
+              postal_code: address.postal_code || '',
+              country: address.country || '',
+            },
+            rating: b.rating,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [
+              parseFloat(b.longitude || '0'),  // Default to 0 if missing
+              parseFloat(b.latitude || '0'),   // Default to 0 if missing
+            ],
+          },
+        };
+      }),
     };
+
 
     // Helper: Close popup
     function closePopup() {
@@ -119,7 +136,10 @@ export default function MapBox({ buildings }) {
       features.forEach((feature) => {
         const coordinates = feature.geometry.coordinates;
         console.log('Adding DOM marker for feature:', feature);
+        // console.log('Adding DOM marker for feature:', feature);
         const { id, image, name, address, rating } = feature.properties;
+        const { street, barangay, city, province, postal_code, country } = address || {};
+        const fullAddress = `${street || 'No street available'}, ${barangay || 'No barangay available'}, ${city || 'No city available'}, ${province || 'No province available'}, ${postal_code || 'No postal code available'}, ${country || 'No country available'}`;
 
         const el = document.createElement('div');
         el.style.width = '40px';
@@ -157,7 +177,7 @@ export default function MapBox({ buildings }) {
               <div style="max-width:200px;">
                 <h3>${name}</h3>
                 <img src="/storage/${image}" alt="${name}" style="width:100%;height:100px;object-fit:cover;margin-bottom:8px;" />
-                <p>Address: ${address || 'No address available'}</p>
+                <p>Address: ${fullAddress}</p>
                 <p>Rating: ${rating ?? 'N/A'}</p>
               </div>
             `)
@@ -210,7 +230,7 @@ export default function MapBox({ buildings }) {
     // Spiderfy cluster markers (spread in circle)
     function spiderfyCluster(features, clusterCenter) {
       clearSpiderfy();
-      console.log(features);
+      // console.log(features);
 
       const spiderfyRadius = 70; // pixels
       const centerPoint = map.current.project(clusterCenter);

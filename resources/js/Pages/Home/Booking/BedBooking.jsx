@@ -159,7 +159,6 @@ export default function Booking({ bed, userPreferences }) {
                             <input
                                 type="date"
                                 name="start_date"
-                                value={data.start_date}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required
@@ -180,7 +179,7 @@ export default function Booking({ bed, userPreferences }) {
                             <label className="block text-sm font-medium text-gray-600">Payment Method</label>
                             <select
                                 name="payment_method"
-                                value={data.payment_method}
+                                value={data.payment_method === 'gcash' ? 'gcash' : 'cash'}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                 required

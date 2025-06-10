@@ -78,9 +78,9 @@ export default function Favorites({ favorites }) {
                                                 />
                                             </td>
                                             <td className="px-4 py-3 text-blue-600 hover:underline">
-                                                <a href={isBed ? `/beds/${item.bed.id}` : `/rooms/${item.room.id}`}>
+                                                <Link href={isBed ? `/home/bed/${item.bed.id}` : `/home/room/${item.room.id}`}>
                                                     {name}
-                                                </a>
+                                                </Link>
                                             </td>
                                             <td className="px-4 py-3">{roomName}</td>
                                             <td className="px-4 py-3">{buildingName}</td>

@@ -150,7 +150,7 @@ class BedController extends Controller
                 $query->select('id', 'name', 'seller_id');
             },
             'room.building.seller' => function ($query) {
-                $query->select('id', 'name', 'image');
+                $query->select('id', 'name', 'avatar');
             },
             'features',
             'room.building.address',

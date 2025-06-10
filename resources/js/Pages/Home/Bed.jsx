@@ -181,8 +181,8 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         {/* Contact Seller */}
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                             <Link href={`/home/building/${bed.room.building.id}`} className="flex items-center gap-1 hover:underline">
-                                {bed.room.building.image ? (
-                                    <img src={`/storage/${bed.room.building.image}`} alt={bed.room.building.name} className="h-6 w-6 rounded-full" />
+                                {bed.room.building.seller.avatar ? (
+                                    <img src={`/storage/${bed.room.building.seller.avatar}`} alt={bed.room.building.name} className="h-6 w-6 rounded-full" />
                                 ) : (
                                     <FontAwesomeIcon icon={faUserTie} className="h-6 w-6 rounded-full" />
                                 )}

@@ -139,7 +139,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                                         setActiveUser(user);
                                         fetchMessages(user.id); // Fetch messages for the selected user
                                     }}
-                                    className="cursor-pointer hover:bg-gray-100 p-2 rounded-md transition duration-200 flex items-center"
+                                    className="cursor-pointer bg-blue-100 b-1 hover:bg-blue-200 p-2 rounded-md transition duration-200 flex items-center"
                                 >
                                     <img src={`/storage/${user.avatar || 'profile/default_avatar.png'}`} alt={user.name} className="w-8 h-8 rounded-full mr-2" />
                                     <span>{user.name}</span>
@@ -157,7 +157,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                             <p className="text-gray-500">Select a user from the list to begin the conversation.</p>
                         </div>
                     ) : (
-                        <div className="min-h-screen flex flex-col justify-between">
+                        <div className="min-h-[80%] mb-5 flex flex-col justify-between">
                             <div>
                                 <h3 className="flex items-center gap-2 font-semibold text-gray-800 mb-4">
                                     <img

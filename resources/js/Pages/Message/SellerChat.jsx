@@ -98,7 +98,7 @@ const SellerChat = ({ seller, bed, messages }) => {
                                     </div>
                                     {/* Chatbot avatar or placeholder */}
                                     <img
-                                        src="/path/to/chatbot-avatar.png" // Replace with chatbot avatar image
+                                        src={`/storage/${msg.avatar}`} // Replace with chatbot avatar image
                                         alt="Chatbot Avatar"
                                         className="w-8 h-8 rounded-full"
                                     />
