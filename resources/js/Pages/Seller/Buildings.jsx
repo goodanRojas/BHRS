@@ -38,8 +38,12 @@ export default function Buildings({ initialBuildings }) {
             <Head title="Buildings" />
             <div className="p-4">
                 <div className="flex sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                    <Link href={'/seller/app'} className="flex items-center space-x-2 bg-indigo-500 text-white px-4 py-2 border border-gray-300 rounded-md shadow-sm hover:bg-indigo-600 transition duration-150">
-                        Apply a building
+                    <Link
+                        href="/seller/app"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 text-white font-semibold shadow-md hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                    >
+                        <FontAwesomeIcon icon={faUserTie} className="text-white" />
+                        Apply a Building
                     </Link>
 
                     {/* Search Bar */}
@@ -57,34 +61,38 @@ export default function Buildings({ initialBuildings }) {
                         />
                     </div>
                 </div>
-
                 {/* Buildings Table */}
                 <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-                    <table className="min-w-full table-auto">
-                        <thead className="bg-gray-100">
+                    <table className="min-w-full table-auto text-sm">
+                        <thead className="bg-indigo-50 text-indigo-700 text-left uppercase text-xs sticky top-0 z-10">
                             <tr>
-                                <th className="px-4 py-2 text-left">Building Name</th>
-                                <th className="px-4 py-2 text-left">Address</th>
-                                <th className="px-4 py-2 text-left">Image</th>
-                                <th className="px-4 py-2 text-left">Actions</th>
+                                <th className="px-6 py-3">Building Name</th>
+                                <th className="px-6 py-3">Address</th>
+                                <th className="px-6 py-3">Image</th>
+                                <th className="px-6 py-3">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-gray-700">
                             {buildings.map((building) => (
-                                <tr key={building.id} className="border-b">
-                                    <td className="px-4 py-2">{building.name}</td>
-                                    <td className="px-4 py-2">{building.address}</td>
-                                    <td className="px-4 py-2">
+                                <tr
+                                    key={building.id}
+                                    className="hover:bg-indigo-50 transition duration-150 ease-in-out"
+                                >
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                        {building.name}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{building.address}</td>
+                                    <td className="px-6 py-4">
                                         <img
                                             src={`/storage/${building.image}`}
                                             alt={building.name}
-                                            className="w-20 h-20 object-cover rounded-md"
+                                            className="w-20 h-20 object-cover rounded-md border"
                                         />
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td className="px-6 py-4">
                                         <Link
                                             href={`/seller/building/${building.id}`}
-                                            className="text-indigo-600 hover:text-indigo-800"
+                                            className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full shadow hover:bg-indigo-700 transition"
                                         >
                                             View Details
                                         </Link>
@@ -94,6 +102,7 @@ export default function Buildings({ initialBuildings }) {
                         </tbody>
                     </table>
                 </div>
+
 
                 {/* No Buildings Found Message */}
                 {buildings.length === 0 && (

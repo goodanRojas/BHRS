@@ -52,4 +52,9 @@ class Seller extends Authenticatable
     {
         return $this->morphMany(Message::class, 'receiver');
     }
+
+    public function paymentInfo()
+    {
+        return $this->hasOne(OwnerPaymentInfo::class, 'owner_id');
+    }
 }

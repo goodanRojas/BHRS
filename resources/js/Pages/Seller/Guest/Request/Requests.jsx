@@ -3,10 +3,11 @@ import { useState } from 'react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import BedRequests from './BedRequests';
 import RoomRequests from './RoomRequests';
+import PaymentInfo from './PaymentInfo';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
-export default function Request({ bedRequests = [], roomRequests = [] }) {
+export default function Request({ bedRequests = [], roomRequests = [], paymentInfo = {} }) {
     const [activeTab, setActiveTab] = useState('beds');
     const [searchQuery, setSearchQuery] = useState(''); // Added state for search query
 
@@ -44,45 +45,60 @@ export default function Request({ bedRequests = [], roomRequests = [] }) {
                     <div className="flex space-x-4">
                         <button
                             onClick={() => setActiveTab('beds')}
-                            className={`px-4 py-2 rounded ${activeTab === 'beds' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}`}
+                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ease-in-out ${activeTab === 'beds' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:text-blue-600'
+                                }`}
                         >
                             Bed
                         </button>
                         <button
                             onClick={() => setActiveTab('rooms')}
-                            className={`px-4 py-2 rounded ${activeTab === 'rooms' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}`}
+                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ease-in-out ${activeTab === 'rooms' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:text-blue-600'
+                                }`}
                         >
                             Room
                         </button>
+                        <button
+                            onClick={() => setActiveTab('payment')}
+                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ease-in-out ${activeTab === 'payment' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:text-blue-600'
+                                }`}
+                        >
+                            Payment Info
+                        </button>
                     </div>
 
+
                     {/* Search Input */}
-                    {/* Search Input */}
-                    <div className="flex w-full sm:w-80 relative">
+                    <div className="flex w-full sm:w-64 relative">
                         <input
                             type="text"
-                            placeholder="Search by User Name, Email, or Booking Name"
-                            className="p-2 pl-10 pr-4 border rounded-full w-full"
+                            placeholder="Search"
+                            className="p-2 pl-8 pr-3 border rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <button
-                            className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-4 text-indigo-500 flex items-center justify-center"
+                            className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 text-indigo-500 flex items-center justify-center"
                         >
-                            <FontAwesomeIcon icon={faSearch} />
+                            <FontAwesomeIcon icon={faSearch} className="text-sm" />
                         </button>
                     </div>
 
                 </div>
 
-
-                {/* Display filtered requests */}
-                {activeTab === 'beds' ? (
-                    <BedRequests requests={filteredBedRequests} />
-                ) : (
-                    <RoomRequests requests={filteredRoomRequests} />
-                )}
+                {/* Tab Content */}
+                {
+                    activeTab === 'beds' ? (
+                        <BedRequests requests={filteredBedRequests} />
+                    ) :
+                        activeTab === 'rooms' ? (
+                            <RoomRequests requests={filteredRoomRequests} />
+                        ) :
+                            activeTab === 'payment' ? (
+                                <PaymentInfo paymentInfo={paymentInfo} />
+                            ) : null
+                }
             </div>
         </SellerLayout>
+
     );
 }

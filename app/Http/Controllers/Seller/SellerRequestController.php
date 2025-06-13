@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Seller;
 use App\Models\Booking;
 use App\Models\Bed;
+use App\Models\OwnerPaymentInfo;
 use App\Models\Room;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class SellerRequestController extends Controller
         }])
             ->where('bookable_type', Bed::class)
             ->whereIn('bookable_id', $bedIds)
-        
+
             ->where('status', 'waiting')
             ->where('payment_method', 'gcash')
             ->get();
@@ -40,12 +41,14 @@ class SellerRequestController extends Controller
             ->where('status', 'waiting')
             ->whereRaw('LOWER(payment_method) = ?', ['gcash'])
             ->get();
+        $paymentInfo = OwnerPaymentInfo::where('owner_id', $seller->id)->first();
+        // dd($paymentInfo);
 
-            // dd($bedRequests);
 
         return Inertia::render('Seller/Guest/Request/Requests', [
             'bedRequests' => $bedRequests,
             'roomRequests' => $roomRequests,
+            'paymentInfo' => $paymentInfo,
         ]);
     }
 }

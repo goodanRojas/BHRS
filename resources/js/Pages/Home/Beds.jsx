@@ -6,7 +6,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import GuestLayout from "@/Layouts/GuestLayout";
 import BoardingHouseMap from "@/Components/BoardingHouseMap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMapMarkerAlt, faFilter, faDoorClosed, faBed, faSearch, faHeart, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faMapMarkerAlt, faFilter, faDoorClosed, faBed, faSearch, faHeart, faStar, faBuilding } from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import Dropdown from '@/Components/Dropdown';
 function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
@@ -151,14 +151,14 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                             icon={faHeart}
                                             className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
                                                 ? 'text-red-500 hover:text-red-600'
-                                                : 'text-white hover:text-gray-200'
+                                                : 'text-white hover:text-gray-200 hover:border-red-500'
                                                 } drop-shadow-md`}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 toggleFavorite(bed.id);
                                             }}
                                         />
-                                        <span className="absolute top-8 left-6 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
+                                        <span className="w-[130px] text-center absolute top-8 left-10 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
                                             Add to favorites
                                         </span>
                                     </div>
@@ -173,6 +173,10 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                         <p className="flex items-center text-gray-600 text-sm mb-2">
                                             <FontAwesomeIcon icon={faDoorClosed} className="mr-1 text-gray-500" />
                                             {bed.room_name || "N/A"}
+                                        </p>
+                                        <p className="flex items-center text-gray-600 text-sm mb-2">
+                                            <FontAwesomeIcon icon={faBuilding} className="mr-1 text-gray-500" />
+                                            {bed.building_name || "N/A"}
                                         </p>
                                         <p className="flex items-center text-gray-600 text-sm mb-2 line-clamp-2">
                                             <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-500" />

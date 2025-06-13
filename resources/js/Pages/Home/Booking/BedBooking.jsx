@@ -3,7 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faLocationDot, faDoorOpen, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-
+import InputField from '@/Components/InputField';
 import TermsAndConditionsModal from '@/Components/TermsAndConditionsModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
@@ -90,29 +90,39 @@ export default function Booking({ bed, userPreferences }) {
 
             <div className="max-w-5xl mx-auto bg-white p-8 md:p-10 rounded-2xl shadow-lg space-y-8 mt-6">
                 <h1 className="text-3xl font-bold text-gray-800">Book Your Stay</h1>
-
                 {/* Bed Details */}
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                    <img
-                        src={`/storage/${bed.image}`}
-                        alt="Bed"
-                        className="w-32 h-32 rounded-xl border object-cover shadow-md"
-                    />
-                    <div className="space-y-1 text-gray-700">
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                            <FontAwesomeIcon icon={faBed} className="text-indigo-600" />
-                            {bed.name}
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                    {/* Image */}
+                    <div className="flex-shrink-0">
+                        <img
+                            src={`/storage/${bed.image}`}
+                            alt="Bed"
+                            className="w-32 h-32 sm:w-40 sm:h-40 rounded-lg border object-cover shadow-md"
+                        />
+                    </div>
+
+                    {/* Info */}
+                    <div className="space-y-2 text-gray-800 w-full">
+                        <div className="text-xl font-semibold flex items-center gap-2 text-indigo-700">
+                            <FontAwesomeIcon icon={faBed} />
+                            <span>{bed.name}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <FontAwesomeIcon icon={faDoorOpen} className="text-indigo-600" />
-                            Room: {bed.room.name}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <FontAwesomeIcon icon={faDoorOpen} className="text-indigo-500" />
+                                <span className="text-gray-700">Room: {bed.room.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <FontAwesomeIcon icon={faBuilding} className="text-indigo-500" />
+                                <span className="text-gray-700">Building: {bed.room.building.name}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <FontAwesomeIcon icon={faBuilding} className="text-indigo-600" />
-                            Building: {bed.room.building.name}
-                        </div>
-                        <div className="text-indigo-700 font-medium text-sm mt-2">
-                            Total Price: ₱{bed.sale_price ?? bed.price}
+
+                        <div className="pt-2">
+                            <span className="inline-block bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full shadow-sm">
+                                Total Price: ₱{bed.sale_price ?? bed.price}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -121,67 +131,54 @@ export default function Booking({ bed, userPreferences }) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Personal Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Full Name</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={data.name}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={data.email}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Phone</label>
-                            <input
-                                type="tel"
-                                name="phone"
-                                value={data.phone}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Booking Date</label>
-                            <input
-                                type="date"
-                                name="start_date"
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Duration (Months)</label>
-                            <input
-                                type="number"
-                                name="month_count"
-                                value={data.month_count}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600">Payment Method</label>
+                        <InputField
+                            label="Full Name"
+                            name="name"
+                            value={data.name}
+                            onChange={handleChange}
+                            required
+                        />
+                        <InputField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={data.email}
+                            onChange={handleChange}
+                            required
+                        />
+                        <InputField
+                            label="Phone"
+                            name="phone"
+                            type="tel"
+                            value={data.phone}
+                            onChange={handleChange}
+                            required
+                        />
+                        <InputField
+                            label="Booking Date"
+                            name="start_date"
+                            type="date"
+                            value={data.start_date}
+                            onChange={handleChange}
+                            required
+                        />
+                        <InputField
+                            label="Duration (Months)"
+                            name="month_count"
+                            type="number"
+                            value={data.month_count}
+                            onChange={handleChange}
+                            required
+                        />
+                        <div className="relative w-full">
+                            <label htmlFor="payment_method" className="absolute -top-2 left-3 text-xs bg-white px-1 text-gray-500 z-10">
+                                Payment Method
+                            </label>
                             <select
                                 name="payment_method"
                                 value={data.payment_method === 'gcash' ? 'gcash' : 'cash'}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="mt-2 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
                                 required
                             >
                                 <option value="">Select</option>
@@ -194,32 +191,20 @@ export default function Booking({ bed, userPreferences }) {
                     {/* Address */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {["street", "barangay", "city", "province", "postal_code", "country"].map((field) => (
-                            <div key={field}>
-                                <label className="block text-sm font-medium text-gray-600 capitalize">
-                                    {field.replace('_', ' ')}
-                                </label>
-                                <input
-                                    type="text"
-                                    name={`address.${field}`}
-                                    value={data.address[field]}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                    required
-                                />
-                            </div>
+                            <InputField
+                                key={field}
+                                label={field.replace('_', ' ')}
+                                name={`address.${field}`}
+                                value={data.address[field]}
+                                onChange={handleChange}
+                                required
+                            />
                         ))}
                     </div>
 
                     {/* Special Requests */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-600">Special Requests (Optional)</label>
-                        <textarea
-                            name="message"
-                            value={data.message}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            rows="3"
-                        />
+                        <InputField label="Special Requests"  name="message" value={data.message} onChange={handleChange} type={'textarea'} />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -244,17 +229,38 @@ export default function Booking({ bed, userPreferences }) {
                         <button
                             type="submit"
                             disabled={processing}
-                            className={` p-1 px-4 flex justify-center items-center gap-2 bg-indigo-600 text-white font-medium py-3 rounded-md transition ${processing ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-700'
-                                }`}
-                        >
+                            className={`inline-flex items-center justify-center w-[100px] gap-2 px-6 py-2 text-sm sm:text-base font-semibold rounded-full 
+                                    transition-colors duration-200 
+                                    ${processing
+                                                                    ? 'bg-indigo-400 text-white cursor-not-allowed'
+                                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}
+                                `}
+                                >
                             {processing && (
-                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                <svg
+                                    className="animate-spin h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v8H4z"
+                                    />
                                 </svg>
                             )}
                             {processing ? 'Submitting...' : 'Book'}
                         </button>
+
                     </div>
                 </form>
 

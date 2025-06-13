@@ -4,14 +4,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-const GCashPaymentPage = ({ amount, bedId, gcashNumber, staticQrUrl }) => {
+const GCashPaymentPage = ({ amount, bedId, paymentInfo }) => {
+  console.log('Payment Info:', paymentInfo);
   const [paymentProof, setPaymentProof] = useState(null);
   const [imagePreview, setImagePreview] = useState(null); // State to hold the image preview URL
 
   // Safely generate the payment link only if bedId is defined
   const safeBedId = bedId || 'NA';
-  const paymentLink = `gcash://pay?recipient=${gcashNumber}&amount=${amount}&currency=PHP&reference=Booking${safeBedId}`;
-  const fallbackUrl = 'https://www.gcash.com/';
+  const paymentLink = `gcash://pay?recipient=${paymentInfo.gcash_number}&amount=${amount}&currency=PHP&reference=Booking${safeBedId}`;
+  const fallbackUrl = 'gcash://';
 
   // Use Inertia's useForm for form handling
   const { data, setData, post, processing, errors } = useForm({
@@ -24,10 +25,13 @@ const GCashPaymentPage = ({ amount, bedId, gcashNumber, staticQrUrl }) => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (isMobile) {
+      // Try to open the GCash app via the custom URL scheme
       window.location.href = paymentLink;
+
+      // Give the app some time to open, and fallback to the website if it doesn't
       setTimeout(() => {
-        window.location.href = fallbackUrl;
-      }, 2000);
+        window.location.href = fallbackUrl; // If the app doesn't open, fallback to the website
+      }, 10000); // Reduced the timeout to 1500ms for faster fallback
     } else {
       alert('To proceed with GCash payment, please use your mobile device.');
     }
@@ -58,7 +62,7 @@ const GCashPaymentPage = ({ amount, bedId, gcashNumber, staticQrUrl }) => {
         <h1 className="text-2xl font-bold mb-4">Complete Your GCash Payment</h1>
         <p className="mb-4 text-lg">Amount to Pay: ₱{amount}</p>
 
-        <img src={staticQrUrl} alt="GCash QR Code" className="mx-auto mb-4 w-48 h-48" />
+        <img src={`/storage/qrcodes/${paymentInfo.qr_code}`} alt="GCash QR Code" className="mx-auto mb-4 w-48 h-48" />
 
         <p className="mb-4">
           Scan this QR code in your GCash app and enter the amount manually.

@@ -1,8 +1,15 @@
 // resources/js/Components/Toast.jsx
 import { useEffect, useState } from 'react';
 
-export default function Toast({ message }) {
-    const [show, setShow] = useState(true);
+export default function Toast({ message, isTrue, isType = 'success' }) {
+    const typeColors = {
+        error: 'red',
+        warning: 'yellow',
+        success: 'green'
+    };
+
+    const type = typeColors[isType] || 'green'; // Default to 'green' for success
+    const [show, setShow] = useState(isTrue || false);
 
     useEffect(() => {
         const timer = setTimeout(() => setShow(false), 3000);
@@ -13,7 +20,7 @@ export default function Toast({ message }) {
 
     return (
         <div className="fixed top-4 right-4 z-50">
-            <div className="bg-green-500 text-white px-4 py-2 rounded shadow-md">
+            <div className={`bg-${type}-500 text-white px-4 py-2 rounded shadow-md`}>
                 {message}
             </div>
         </div>

@@ -7,6 +7,7 @@ use App\Models\Bed;
 use App\Models\Booking;
 use App\Events\NewBookingCreated;
 use App\Models\Address;
+use App\Models\OwnerPaymentInfo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -34,7 +35,7 @@ class BedBookingController extends Controller
     // Booking with cash payment
     public function bookBed(Request $request, $bedId)
     {
-        Log::info('Booking request data: ', $request->all());
+        // Log::info('Booking request data: ', $request->all());
         $request->validate([
             'start_date' => 'required|date',
             'month_count' => 'required|integer|min:1',
@@ -146,12 +147,17 @@ class BedBookingController extends Controller
     {
         $gcashNumber = '09630012342'; // your number
         $staticQrUrl = asset('storage/system/gcash_static_qr.webp');
+        $paymentInfo = $ownerPaymentInfo = Bed::find($bedId)
+            ->room          // Get the room the bed belongs to
+            ->building      // Get the building the room belongs to
+            ->seller        // Get the seller who owns the building
+            ->paymentInfo;  // Get the seller's OwnerPaymentInfo
 
+        // dd($paymentInfo);
         return Inertia::render('Home/Booking/GcashPayment', [
             'bedId' => $bedId,
             'amount' => $amount,
-            'gcashNumber' => $gcashNumber,
-            'staticQrUrl' => $staticQrUrl,
+            'paymentInfo' => $paymentInfo,
         ]);
     }
 }

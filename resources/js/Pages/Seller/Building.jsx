@@ -230,38 +230,46 @@ export default function Building({ building }) {
 
                     </div>
                     {rooms.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-                                <thead>
-                                    <tr className="bg-gray-100">
-                                        <th className="px-4 py-2 text-left">Room Name</th>
-                                        <th className="px-4 py-2 text-left">Image</th>
-                                        <th className="px-4 py-2 text-left">Price</th>
-                                        <th className="px-4 py-2 text-left">Action</th>
+                        <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+                            <table className="min-w-full text-sm text-gray-800">
+                                <thead className="bg-indigo-50 text-indigo-700 uppercase text-xs">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left">Room Name</th>
+                                        <th className="px-6 py-3 text-left">Image</th>
+                                        <th className="px-6 py-3 text-left">Price</th>
+                                        <th className="px-6 py-3 text-left">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rooms.map((room) => (
-                                        <tr key={room.id} className="border-t hover:bg-gray-50">
-                                            <td className="px-4 py-2">
-                                                <Link href={`/home/room/${room.id}`} className="text-blue-500 hover:underline">
+                                        <tr
+                                            key={room.id}
+                                            className="border-t border-gray-200 hover:bg-indigo-50 transition"
+                                        >
+                                            <td className="px-6 py-4 font-medium whitespace-nowrap">
+                                                <Link
+                                                    href={`/home/room/${room.id}`}
+                                                    className="text-indigo-600 hover:underline"
+                                                >
                                                     {room.name}
                                                 </Link>
                                             </td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-6 py-4">
                                                 <img
                                                     src={`/storage/${room.image}`}
                                                     alt={room.name}
-                                                    className="w-20 h-20 object-cover rounded-md"
+                                                    className="w-20 h-20 object-cover rounded-md border"
                                                 />
                                             </td>
-                                           
-                                            <td className="px-4 py-2">
-                                                <p className="text-gray-500 font-semibold">₱{room.price}</p>
+                                            <td className="px-6 py-4">
+                                                <span className="text-gray-700 font-semibold">₱{room.price}</span>
                                             </td>
-                                            <td className="px-4 py-2">
-                                                <Link href={`/seller/room/${room.id}`} className="text-blue-500 hover:underline">
-                                                    Details
+                                            <td className="px-6 py-4">
+                                                <Link
+                                                    href={`/seller/room/${room.id}`}
+                                                    className="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow hover:bg-indigo-700 transition"
+                                                >
+                                                    View Details
                                                 </Link>
                                             </td>
                                         </tr>
@@ -269,6 +277,7 @@ export default function Building({ building }) {
                                 </tbody>
                             </table>
                         </div>
+
                     ) : (
                         <div className="text-center  text-gray-500 py-4">
                             No rooms found.

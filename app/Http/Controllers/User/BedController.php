@@ -32,10 +32,12 @@ class BedController extends Controller
                 'price' => $bed->price,
                 'sale_price' => $bed->sale_price ?? $bed->price, // Default to price if null
                 'room_name' => $bed->room->name ?? null,
+                'building_name' => $bed->room->building->name ?? null,
                 'is_favorite' =>  $bed
                     ->favorites
                     ->where('favoritable_type', Bed::class)
                     ->where('favoritable_id', $bed->id)
+                    ->where('user_id', Auth::id())
                     ->isNotEmpty(),
                 'building_address' => $bed->room->building->address ?? null,
                 'is_occupied' => $bed->bookings->whereIn('status', ['approved', 'completed'])->isNotEmpty(),

@@ -261,7 +261,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
                     {/* 🛏️ More Beds in This Room */}
                     <div className="px-6 pb-8">
-                        <h4 className="text-xl font-semibold text-gray-800 mb-4">Beds in Room <span>{bed.room.name}</span></h4>
+                        <h4 className="text-xl font-semibold text-gray-800 mb-4"> <span>{bed.room.name}</span></h4>
 
                         {sibling_beds?.length > 0 ? (
                             <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-2">
@@ -272,7 +272,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                     >
                                         <Link href={`/home/bed/${b.id}`}>
                                             <img
-                                                src={`/storage/bed/${b.image}` || '/storage/bed/default_bed.png'}
+                                                src={`/storage/${b.image}` || '/storage/bed/default_bed.png'}
                                                 alt={b.name}
                                                 className="w-full h-36 object-cover rounded-md mb-3"
                                             />

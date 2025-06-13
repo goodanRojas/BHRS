@@ -11,12 +11,14 @@ export default defineConfig({
         }),
         react(),
     ],
-    
-   /*  server: {
-        host: '192.168.100.7', // Your local IP
+
+    server: {
+        host: '10.0.0.223',  // Your local IP
         port: 5173,           // Default Vite port
-        hmr: {
-            host: '192.168.100.7', // Enable Hot Module Reload over the network
+        cors: {
+            origin: 'http://10.0.0.223:8000',  // Allow your Laravel server
+            methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+            allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
         },
-    }, */
+    },
 });
