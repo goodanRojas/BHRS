@@ -12,13 +12,17 @@ export default defineConfig({
         react(),
     ],
 
-    server: {
-        host: '10.0.0.223',  // Your local IP
-        port: 5173,           // Default Vite port
-        cors: {
-            origin: 'http://10.0.0.223:8000',  // Allow your Laravel server
-            methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
-            allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-        },
-    },
+    // server: {
+    //     // host: '192.168.100.212',  // Your local IP
+    //     // host: '192.168.100.7',  // Your local IP
+    //     host: '10.0.0.239',  // Your local IP
+    //     port: 5173,           // Default Vite port
+    //     cors: {
+    //         // origin: 'http://192.168.100.212:8000',  // Allow your Laravel server
+    //         // origin: 'http://192.168.100.7:8000',  // Allow your Laravel server
+    //         origin: 'http://10.0.0.239:8000',  // Allow your Laravel server
+    //         methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+    //         allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+    //     },
+    // },
 });

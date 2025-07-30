@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
@@ -10,36 +10,49 @@ export default function Sidebar() {
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false);
 
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
+    useEffect(() => {
+        const savedSidebarState = sessionStorage.getItem('sidebarState');
+
+        if (savedSidebarState) {
+            const state = JSON.parse(savedSidebarState);
+            setIsOpen(state.isOpen);
+            setOwnerDropdownOpen(state.ownerDropdownOpen);
+            setBuildingDropdownOpen(state.buildingDropdownOpen);
+        }
+    }, []);
+
+    useEffect(() => {
+        sessionStorage.setItem('sidebarState', JSON.stringify({
+            isOpen,
+            ownerDropdownOpen,
+            buildingDropdownOpen
+        }));
+    }, [isOpen, ownerDropdownOpen, buildingDropdownOpen]);
+    const toggleSidebar = () => setIsOpen(!isOpen);
 
     return (
-        <aside className={`bg-white shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'}`}>
+        <aside
+            onClick={toggleSidebar}
+            className={`bg-gradient-to-b from-indigo-900 to-indigio-100 bg-opacity-80 backdrop-blur-md shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'}`}>
             <div className="h-full flex flex-col">
                 {/* Header */}
                 <div className="relative h-16  flex items-center justify-center">
                     <img
-                        onClick={toggleSidebar}
                         src={`/storage/system/logo/logo-no-bg.png`}
                         alt="BH Logo"
                         className={`cursor-pointer transition-all duration-300 ${isOpen ? 'h-20 w-20' : 'h-10 w-10'}`}
                     />
-                    {isOpen && (
-                        <button
-                            onClick={toggleSidebar}
-                            className="absolute right-3 text-indigo-600 text-xl focus:outline-none"
-                        >
-                            <FontAwesomeIcon icon={faBars} />
-                        </button>
-                    )}
                 </div>
 
                 {/* Nav Links */}
                 {isOpen && (
                     <nav className="flex-1 px-4 py-6 space-y-2">
                         <div className="flex flex-col space-y-2">
-                            <NavLink href={route('admin.dashboard')} active={route().current('admin.dashboard')}>
+                            <NavLink
+                                href={route('admin.dashboard')}
+                                active={route().current('admin.dashboard')}
+                                className='text-blue-900'
+                            >
                                 Dashboard
                             </NavLink>
                             <NavLink href={route('admin.users')} active={route().current('admin.users')}>
@@ -49,10 +62,14 @@ export default function Sidebar() {
                             {/* Owners Dropdown */}
                             <div>
                                 <button
-                                    onClick={() => setOwnerDropdownOpen(!ownerDropdownOpen)}
-                                    className="flex items-center justify-between w-full pl-1  text-left rounded hover:bg-gray-100"
+                                    onClick={(e) => {
+                                        setOwnerDropdownOpen(!ownerDropdownOpen);
+                                        e.stopPropagation();
+                                    }}
+
+                                    className="flex items-center justify-between w-full pl-1  text-left rounded "
                                 >
-                                    <span className='text-sm'>Owners</span>
+                                    <span className='text-sm text-white'>Owners</span>
                                 </button>
 
                                 {ownerDropdownOpen && (
@@ -69,42 +86,39 @@ export default function Sidebar() {
                                         >
                                             Requests
                                         </SidebarLink>
-                                        <div className='relative'>
-                                            <button
-                                                onClick={() => setBuildingDropdownOpen(!buildingDropdownOpen)}
-                                                className="flex items-center justify-between w-full pl-1  text-left rounded hover:bg-gray-100"
-                                            >
-                                                <span className='text-sm'>Buildings</span>
-                                            </button>
-                                            {buildingDropdownOpen && (
-                                                <div className='w-full ml-7'>
-                                                    <div className=' flex flex-col '>
-                                                        <SidebarLink
-                                                            href={route('admin.owner.buildings.index')}
-                                                            active={route().current('admin.owner.buildings.index')}
-                                                            className='w-fit'
-                                                        >
-                                                            Buildings
-                                                        </SidebarLink>
-                                                        <SidebarLink
-                                                            href={route('admin.owner.building.application.index')}
-                                                            active={route().current('admin.owner.building.application.index')}
-                                                            className='w-fit'
-                                                        >
-                                                            Applications
-                                                        </SidebarLink>
-                                                        <SidebarLink
-                                                            href={route('admin.owner.buildings.create.show')}
-                                                            active={route().current('admin.owner.buildings.create.show')}
-                                                            className='w-fit'
-                                                        >
-                                                            Create
-                                                        </SidebarLink>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
 
+                                    </div>
+                                )}
+                            </div>
+                            <div className='relative'>
+                                <button
+                                    onClick={(e) => {
+                                        setBuildingDropdownOpen(!buildingDropdownOpen);
+                                        e.stopPropagation();
+                                    }}
+                                    className="flex items-center justify-between text-white w-full pl-1  text-left "
+                                >
+                                    <span className='text-sm'>Buildings</span>
+                                </button>
+                                {buildingDropdownOpen && (
+                                    <div className='w-full ml-7'>
+                                        <div className=' flex flex-col '>
+                                            <SidebarLink
+                                                href={route('admin.owner.buildings.index')}
+                                                active={route().current('admin.owner.buildings.index')}
+                                                className='w-fit'
+                                            >
+                                                Buildings
+                                            </SidebarLink>
+                                            <SidebarLink
+                                                href={route('admin.owner.building.application.index')}
+                                                active={route().current('admin.owner.building.application.index')}
+                                                className='w-fit'
+                                            >
+                                                Applications
+                                            </SidebarLink>
+
+                                        </div>
                                     </div>
                                 )}
                             </div>

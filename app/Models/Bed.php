@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 
 class Bed extends Model
 {
     /** @use HasFactory<\Database\Factories\BedFactory> */
     use HasFactory;
-
+    use SoftDeletes;
     protected $fillable = [
         'room_id',
         'name',
@@ -18,12 +18,18 @@ class Bed extends Model
         'price',
         'sale_price',
     ];
+    public function scopeWithActiveRoom($query)
+    {
+        return $query->whereHas('room', function ($q) {
+            $q->whereNull('deleted_at');
+        });
+    }
 
     /**
      * Relationships
      */
 
-     public function room()
+    public function room()
     {
         return $this->belongsTo(Room::class);
     }

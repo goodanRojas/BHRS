@@ -77,7 +77,6 @@ export default function Booking({ bed, userPreferences }) {
             </Modal>
 
             {/* Terms Modal */}
-            {/* Terms Modal */}
             <TermsAndConditionsModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -213,7 +212,6 @@ export default function Booking({ bed, userPreferences }) {
                             <input
                                 type="checkbox"
                                 name="agreedToTerms"
-                                checked={data.agreedToTerms}
                                 onChange={handleChange}
                                 required
                             />

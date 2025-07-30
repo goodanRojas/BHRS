@@ -10,7 +10,7 @@ class MapController extends Controller
 {
     public function index()
     {
-         $boardingHouses = Building::with(['routes', 'address', 'feedback'])->get();  // Assuming you have a model 'BoardingHouse'
+         $boardingHouses = Building::with(['seller','routes', 'address', 'feedback', 'rooms.beds.bookings.user:id,name,avatar,created_at'])->get();  // Assuming you have a model 'BoardingHouse'
         Log::info($boardingHouses);
         return Inertia::render('Map/MapBox',[
             'buildings' => $boardingHouses

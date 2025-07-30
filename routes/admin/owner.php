@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Owner\Request\RequestController;
 
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function() {
     Route::get('/owners', [OwnerController::class, 'index'])->name('owners');
+    Route::get('/owners/{id}', [OwnerController::class, 'owner'])->name('owner');
     Route::get('/owners/owners', [OwnerController::class, 'owners'])->name('owners.owners');
     Route::post('/owners/toggle-status/{id}', [OwnerController::class, 'toggleStatus'])->name('owners.toggle-status');
     Route::post('/owner/update/{id}', [OwnerController::class, 'updateOwner'])->name('owner.update');

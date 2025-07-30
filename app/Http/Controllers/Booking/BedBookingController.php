@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bed;
-use App\Models\Booking;
 use App\Events\NewBookingCreated;
-use App\Models\Address;
-use App\Models\OwnerPaymentInfo;
+use App\Models\{OwnerPaymentInfo, Payment, Address, Bed, Booking};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -128,7 +125,16 @@ class BedBookingController extends Controller
                 if ($paymentProof->isValid()) {
                     $paymentProofPath = $paymentProof->storeAs('images', $paymentProof->hashName(), 'public');
                     // Update the booking with the receipt path
-                    $pending->update(['user_receipt' => $paymentProofPath]);
+                    Payment::create([
+                        'user_id' => auth()->id(),
+                        'booking_id' => $pending->id,
+                        'amount' => $pending->total_price,
+                        'payment_method' => 'gcash',
+                        'status' => 'completed',
+                        'transaction_id' => $pending->id, // Use booking ID as transaction ID
+                        'receipt' => $paymentProofPath,
+                        'paid_at' => now(),
+                    ]);
                 } else {
                     return redirect()->back()->withErrors(['paymentProof' => 'Invalid payment proof file.']);
                 }

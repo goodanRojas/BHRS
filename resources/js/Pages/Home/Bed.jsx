@@ -7,14 +7,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faUserCheck, faMapMarkerAlt, faStar, faDoorOpen, faBuilding, faLocationPin, faMessage, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Modal from '@/Components/Modal';
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
-export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds }) {
+export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book }) {
+    console.log(able_to_book);
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
-    const { updateFavoritesCount } = useFavorite();
-    const images = bed.images;
-    console.log(bed);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [preventBookingModal, setPreventBookingModal] = useState(false);
+    const { updateFavoritesCount } = useFavorite();
+
+    const images = bed.images;
+
     const toggleFavorite = async () => {
         try {
             const response = await axios.post(`/beds/${bed.id}/favorite`, {
@@ -29,7 +33,13 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
             console.error("Error toggling favorite:", error);
         }
     };
-
+    const redirectToBook = (bedId) => {
+        if (able_to_book > 0) {
+            setPreventBookingModal(true);
+            return;
+        }
+        window.location.href = `/bed/book/${bedId}`;
+    };
     const handleNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1 === bed.images.length ? 0 : prevIndex + 1));
     };
@@ -106,26 +116,33 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
                         {/* ❤️ Favorite Icon – Top Left */}
                         <div className="absolute top-3 left-3 group">
-                            <FontAwesomeIcon
-                                icon={faHeart}
-                                className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${isFavorite
-                                    ? 'text-red-500 hover:text-red-600'
-                                    : 'text-white hover:text-gray-200'
-                                    } drop-shadow-md`}
-                                onClick={toggleFavorite}
-                            />
-                            <span className="absolute top-8 left-6 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
-                                Add to favorites
-                            </span>
+                            <div className="relative">
+                                <FontAwesomeIcon
+                                    icon={faHeart}
+                                    className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
+                                        ? 'text-red-500 hover:text-red-600'
+                                        : 'text-white hover:text-gray-200 hover:border-red-500'
+                                        } drop-shadow-md`}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        toggleFavorite(bed.id);
+                                    }}
+                                />
+                                <span className="w-[130px] text-center absolute  left-[100px] -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
+                                    Add to favorites
+                                </span>
+                            </div>
                         </div>
 
                         {/* 📦 Book Now – Bottom Right */}
-                        <Link
-                            href={`/bed/book/${bed.id}`}
-                            className="absolute bottom-3 right-3 bg-indigo-500 hover:bg-blush-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
+                        <button
+                            onClick={() => {
+                                redirectToBook(bed.id);
+                            }}
+                            className="absolute bottom-3 right-3 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
                         >
                             Book now!
-                        </Link>
+                        </button>
                     </div>
 
                     {/* 🛏️ Bed Details Section */}
@@ -304,6 +321,23 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 </div>
 
             </div>
+            {/* Modals */}
+
+            {preventBookingModal && (
+                <Modal show={true} onClose={() => setPreventBookingModal(false)}>
+                    <div className="text-center">
+                        <h2 className="text-xl font-semibold mb-4">Booking Not Allowed</h2>
+                        <p className="mb-6">You cannot proceed with the booking while you still have ongoing bookings.</p>
+                        <button
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            onClick={() => setPreventBookingModal(false)}
+                        >
+                            Okay
+                        </button>
+                    </div>
+                </Modal>
+            )}
+
         </>
     );
 }

@@ -2,6 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ChatWidget from '@/Pages/Message/ChatWidget';
+import NavNotif from '@/Pages/Home/Notification/NavNotif';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Footer from '@/Components/Footer';
 import { FavoriteContext } from '@/Contexts/FavoriteContext';
@@ -11,6 +12,7 @@ import { useState, useEffect, createContext } from 'react';
 import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
+import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
 
 export const ChatContext = createContext();
 
@@ -25,39 +27,12 @@ export default function AuthenticatedLayout({ header, children }) {
     const [botMessages, setBotMessages] = useState({});
     const [favoritesCount, setFavoritesCount] = useState(user?.favorites?.length || 0);
     const [messagesCount, setMessagesCount] = useState(0);
-    useEffect(() => {
-      
-        if (user) {
-         
-            axios.get("/direct-message")
-                .then(({ data }) => setDirectMessages(data.direct))
-                .catch((err) => console.error("Error loading direct messages:", err));
-   
 
-            Echo.private(`direct-messages.${user.id}`)
-                .listen('MessageSent', (message) => {
-                    setDirectMessages((prevMessages) => ({
-                        ...prevMessages,
-                        [message.sender_id]: [
-                            ...(prevMessages[message.sender_id] || []),
-                            message,
-                        ],
-                    }));
-                });
-
-      
-        }
-        return () => {
-            if (window.Echo) {
-                window.Echo.leave(`direct-messages.${user.id}`);
-             }
-        }
-    }, []);
 
     useEffect(() => {
         if (user) {
             console.log("Subscribing to favorites channel");
-    
+
             const channel = Echo.private(`favorites.${user.id}`)
                 .listen('FavoriteToggled', (notif) => {
                     console.log("FavoriteToggled event received:", notif);
@@ -66,11 +41,9 @@ export default function AuthenticatedLayout({ header, children }) {
                 .error((error) => {
                     console.error("Error while listening to favorites channel:", error);
                 });
-    
-            // Log the Echo object and channel subscription status
-       /*      console.log(Echo);
-            console.log(channel); */
-    
+
+
+            // console.log(isOnline);
             return () => {
                 if (window.Echo) {
                     console.log("Leaving favorites channel");
@@ -79,7 +52,9 @@ export default function AuthenticatedLayout({ header, children }) {
             };
         }
     }, [user?.id]);
-    
+
+
+
 
     const updateFavoritesCount = (newCount) => {
         setFavoritesCount(newCount);
@@ -88,18 +63,19 @@ export default function AuthenticatedLayout({ header, children }) {
         <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
 
             <div className="min-h-screen ">
-               {/* Background Image */}
-            <div
-                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
-                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
-            ></div>
-                <nav className="border-b border-gray-100 bg-white z-50 shadow-lg">
+                {/* Background Image */}
+                <div
+                    className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
+                    style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
+                ></div>
+                {/* Navigation links */}
+                <nav className="border-b border-gray-100 bg-gray-800 z-50 shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
                                 <div className="flex shrink-0 items-center">
                                     <Link href="/">
-                                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                        <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
                                     </Link>
                                 </div>
 
@@ -117,7 +93,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <div className="flex space-x-3">
                                     <div className="relative group">
                                         <Link href={route('accommodations.index')} className="p-2 text-gray-600 hover:text-blue-500 transition duration-200 hover:scale-105">
-                                            <FontAwesomeIcon icon={faBed} className="h-5 w-5" />
+                                            <FontAwesomeIcon icon={faBed} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                         </Link>
                                         <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
                                             Accommodations
@@ -126,7 +102,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <div className="relative group">
                                         <Link href={route('map.index')} className="p-2 text-gray-600 hover:text-green-500 transition duration-200 hover:scale-105">
-                                            <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5" />
+                                            <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                         </Link>
                                         <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
                                             Map
@@ -142,7 +118,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </div>
                                     )}
                                     <Link href="/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-blue-400 hover:text-blue-500" />
+                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                     </Link>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
                                         Messages
@@ -157,7 +133,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </div>
                                     )}
                                     <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-red-400 hover:text-red-500" />
+                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                     </Link>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
                                         Favorites
@@ -170,15 +146,18 @@ export default function AuthenticatedLayout({ header, children }) {
                                             {favoritesCount}
                                         </div>
                                     )}
-                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-yellow-500 hover:text-yellow-600" />
-                                    </Link>
+                                    <button
+                                        onClick={() => setNotificationsModal(!notificationsModal)}
+                                     className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                    </button>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
                                         Notificatoins
                                     </span>
+                                    {notificationsModal && <NavNotif />}
                                 </div>
 
-                              
+
 
                                 {/* User Dropdown */}
                                 <div className="relative">
@@ -186,10 +165,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <Dropdown.Trigger>
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center  px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:scale-105 transition-transform duration-200"
+                                                className="inline-flex items-center  px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-md hover:scale-105 transition-transform duration-200"
                                             >
                                                 <img src={`/storage/${user?.avatar || 'profile/default_avatar.png'}`} alt={user?.avatar} className="h-8 w-8 rounded-full mr-2 border border-gray-300" />
-                                                <span className="truncate">{user?.name.split(' ')[0]}</span>
+                                                <span className="truncate text-white">{user?.name.split(' ')[0]}</span>
 
                                                 <svg
                                                     className="ml-1 h-4 w-4 text-gray-400"
@@ -272,6 +251,71 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Home
                             </ResponsiveNavLink>
                         </div>
+                               {/* Accommodation & Map Links */}
+                                <div className="flex space-x-3">
+                                    <div className="relative group">
+                                        <Link href={route('accommodations.index')} className="p-2 text-gray-600 hover:text-blue-500 transition duration-200 hover:scale-105">
+                                            <FontAwesomeIcon icon={faBed} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                            Accommodations
+                                        </span>
+                                    </div>
+
+                                    <div className="relative group">
+                                        <Link href={route('map.index')} className="p-2 text-gray-600 hover:text-green-500 transition duration-200 hover:scale-105">
+                                            <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                            Map
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Message Icon with Badge */}
+                                <div className="relative group">
+                                    {messagesCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                            {messagesCount}
+                                        </div>
+                                    )}
+                                    <Link href="/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                    </Link>
+                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                        Messages
+                                    </span>
+                                </div>
+
+                                {/* Favorites Icon with Badge */}
+                                <div className="relative group">
+                                    {favoritesCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                            {favoritesCount}
+                                        </div>
+                                    )}
+                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                    </Link>
+                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                        Favorites
+                                    </span>
+                                </div>
+                                {/* Favorites Icon with Badge */}
+                                <div className="relative group">
+                                    {favoritesCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                            {favoritesCount}
+                                        </div>
+                                    )}
+                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                    </Link>
+                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                        Notificatoins
+                                    </span>
+                                </div>
+
 
                         <div className="pb-1 pt-4">
                             <ResponsiveNavLink href={route('profile.edit')}>
@@ -309,10 +353,11 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     </header>
                 )}
+                  {user && !user.has_completed_onboarding && <OnboardingModal />}
                 <main
                     className='min-h-screen'
                 >{children}</main>
-             
+
                 <Footer />
 
             </div>

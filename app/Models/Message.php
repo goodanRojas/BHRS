@@ -16,7 +16,14 @@ class Message extends Model
         'content',
         'is_read',
         'sent_at',
+        'sender_deleted_at',
+        'receiver_deleted_at',
     ];
+    protected $casts = [
+    'sender_deleted_at' => 'datetime',
+    'receiver_deleted_at' => 'datetime',
+];
+
 
   public function sender()
     {

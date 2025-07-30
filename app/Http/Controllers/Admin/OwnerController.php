@@ -17,7 +17,7 @@ class OwnerController extends Controller
 
         $owners = Seller::orderBy('created_at', 'desc')->paginate(10);
 
-        return inertia('Admin/Owner/Owner', [
+        return inertia('Admin/Owner/Owners', [
             'owners' => $owners,
         ]);
     }
@@ -119,6 +119,18 @@ class OwnerController extends Controller
         $owner->save();
 
         return redirect()->back()->with('success', 'User successfully update');
+    }
+
+    public function owner($id)
+    {
+        $owner = Seller::with(['address', 'buildings'])->find($id);
+        if (!$owner) {
+            return redirect()->back()->with('error', 'Owner not found');
+        }
+
+        return Inertia::render('Admin/Owner/Owner', [
+            'owner' => $owner,
+        ]);
     }
 
 

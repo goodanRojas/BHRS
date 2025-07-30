@@ -7,9 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Models\Favorite;
 use App\Events\Favorite\FavoriteToggled;
-use App\Models\Bed;
+use App\Models\{Favorite, Booking, Bed};
 
 class BedController extends Controller
 {
@@ -17,6 +16,10 @@ class BedController extends Controller
     public function index()
     {
         $beds = Bed::with(['room.building', 'feedbacks', 'bookings', 'features'])
+            ->whereDoesntHave('bookings')
+            ->orWhereHas('bookings', function ($query) {
+                $query->where('status', '!=', 'approved');
+            })
             ->paginate(10);
         Log::info($beds->getCollection());
         // Calculate min and max prices
@@ -159,7 +162,7 @@ class BedController extends Controller
             'favorites',
             'feedbacks' => function ($query) {
                 $query->orderBy('created_at', 'desc');
-            } ,
+            },
             'feedbacks.user',
             'images' => function ($query) {
                 $query->select('id', 'file_path', 'order', 'imageable_id', 'imageable_type');
@@ -203,12 +206,15 @@ class BedController extends Controller
                 $sibling->average_rating = round($sibling->feedbacks->avg('rating'), 1);
                 return $sibling;
             });
-
+        $ableToBook = Booking::where('status', '=', 'approved')
+        ->where('user_id', Auth::id())
+        ->count();
         return Inertia::render('Home/Bed', [
             'bed' => $bed,
             'completed_bookings' => $completedBookings,
             'total_booking_duration' => $totalBookingDuration,
             'sibling_beds' => $siblingBeds,
+            'able_to_book' => $ableToBook,
         ]);
     }
 

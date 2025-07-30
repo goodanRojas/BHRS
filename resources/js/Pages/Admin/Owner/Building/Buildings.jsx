@@ -26,6 +26,10 @@ export default function Buildings({ buildings }) {
             .catch((err) => console.error("Error fetching buildings:", err));
     }, []);
 
+    const openBuilding = (id) => {
+        window.location.href = `/admin/owner/buildings/${id}`;
+    };
+
 
 
     const {
@@ -109,156 +113,82 @@ export default function Buildings({ buildings }) {
             <Head title="Building" />
             {flash.success && <Toast message={flash.success} />}
 
-            <div className="">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Buildings</h1>
+            <div className="flex items-center justify-between overflow-hidden">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6">Buildings</h1>
 
-                    <div className="flex items-center space-x-4">
-                        {/* Search Bar */}
-                        <div className="relative mb-4">
-                            <FontAwesomeIcon
-                                icon={faSearch}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="pl-10 mr-10 pr-4 py-2 border border-indigo-300 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-
-
-
+                <div className="flex items-center space-x-4">
+                    {/* Search Bar */}
+                    <div className="relative mb-4">
+                        <FontAwesomeIcon
+                            icon={faSearch}
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="pl-10 mr-10 pr-4 py-2 border border-indigo-300 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
 
+
+
                 </div>
-                <div className="overflow-x-auto w-full">
-                    {buildings.data.length > 0 ? (
-                        <div>
-                            <table className="min-w-full table-auto border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-100">
-                                        <th className="px-6 py-2 text-center">Image</th>
-                                        <th className="px-6 py-2 text-center">Name</th>
-                                        <th className="px-6 py-2 text-center">Owner</th>
-                                        <th className="px-6 py-2 text-center">Status</th>
-                                        <th className="px-6 py-2 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="min-h-screen">
-                                    {filteredBuildings.map((building) => (
-                                        <tr className="border cursor-pointer">
-                                            <td className="px-6 py-2">
-                                                <img src={`/storage/${building.image}`} alt="building" className="w-16 h-16 rounded-md" />
-                                            </td>
-                                            <td className="px-6 py-2">{building.name}</td>
-                                            <td className="px-6 py-2">{building.seller.name}</td>
-                                            <td className="px-6 py-2 text-center">
-                                                <button
-                                                    onClick={() => toggleBuildingStatus(building.id)}
-                                                    className={`${building.status === 1 ? "bg-green-600" : "bg-red-600"
-                                                        } rounded-full w-10 h-10 flex items-center justify-center text-white hover:bg-opacity-80`}
-                                                >
-                                                    {building.status === 1 ? (
-                                                        <FontAwesomeIcon icon={faCheck} />
-                                                    ) : (
-                                                        <FontAwesomeIcon icon={faBan} />
-                                                    )}
-                                                </button>
-                                            </td>
-                                            <td className="px-6 py-2">
-                                                <div className="flex justify-between gap-4 items-center">
-                                                    <button
-                                                        onClick={() => openEditModal(building)}
-                                                        className="bg-blue-500 rounded-full flex items-center justify-center w-10 h-10 text-white hover:bg-blue-600"
-                                                    >
-                                                        <FontAwesomeIcon icon={faPencil} />
-                                                    </button>
 
-                                                    <Link href={`/admin/owner/buildings/${building.id}`}>
-                                                        <FontAwesomeIcon icon={faArrowRight} className="text-indigo-500" />
-                                                    </Link>
-                                                </div>
-                                            </td>
-
-                                        </tr>
-                                    ))}
-                                </tbody>
-
-                            </table>
-                            <div className="flex justify-center mt-4 space-x-2 fixed bottom-2 left-1/2 right-0">
-                                {links?.map((link, index) => (
-                                    <button
-                                        key={index}
-                                        disabled={!link.url}
-                                        onClick={() => link.url && (window.location.href = link.url)}
-                                        className={`px-3 py-1 rounded ${link.active ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
-                                            }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex justify-center mt-4 space-x-2">
-                            <div className="text-center text-gray-500 py-4">
-                                No results found.
-                            </div>
-                        </div>
-                    )}
-                </div>
             </div>
+            {buildings.data.length > 0 ? (
+                <div>
+                    <table className="min-w-full table-auto border-collapse overflow-hidden">
+                        <thead>
+                            <tr className="bg-gray-500 text-white">
+                                <th className="px-6 py-2 text-center">Id</th>
+                                <th className="px-6 py-2 text-center">Image</th>
+                                <th className="px-6 py-2 text-center">Name</th>
+                                <th className="px-6 py-2 text-center">Owner</th>
+                            </tr>
+                        </thead>
+                        <tbody className="min-h-screen">
+                            {filteredBuildings.map((building) => (
+                                <tr
+                                    onClick={() => openBuilding(building.id)}
+                                    className="border cursor-pointer hover:bg-gray-50 transition-colors duration-200 group">
+                                    <td className="px-6 py-2 text-center">{building.id}</td>
+                                    <td className="px-6 py-2">
+                                        <img src={`/storage/${building.image}`} alt="building" className="w-16 h-16 rounded-md" />
+                                    </td>
+                                    <td className="px-6 py-2 text-center group-hover:font-bold">{building.name}</td>
+                                    <td className="px-6 py-2 text-center">{building.seller.name}</td>
 
 
 
-            {/* Edit Modal */}
-            <Modal show={showEditModal} onClose={closeEditModal}>
-                <div className="p-6">
-                    <div className="flex items-center gap-2 pb-4 text-lg font-semibold text-gray-800">
-                        <FontAwesomeIcon icon={faPencil} className="text-blue-600" />
-                        <h3>{editData.email}</h3>
+                                </tr>
+                            ))}
+                        </tbody>
+
+                    </table>
+                    <div className="flex justify-center mt-4 space-x-2 fixed bottom-2 left-1/2 right-0">
+                        {links?.map((link, index) => (
+                            <button
+                                key={index}
+                                disabled={!link.url}
+                                onClick={() => link.url && (window.location.href = link.url)}
+                                className={`px-3 py-1 rounded ${link.active ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
+                                    }`}
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                            />
+                        ))}
                     </div>
-                    <form onSubmit={handleEditSubmit}>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                type="text"
-                                value={editData.name}
-                                onChange={(e) => setEditData("name", e.target.value)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Password</label>
-                            <input
-                                type="text"
-                                placeholder='New password'
-                                onChange={(e) => setEditData("password", e.target.value)}
-                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                            />
-                        </div>
-
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                type="button"
-                                onClick={closeEditModal}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={editProcessing}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                            >
-                                {editProcessing ? "Saving..." : "Save Changes"}
-                            </button>
-                        </div>
-                    </form>
                 </div>
-            </Modal>
+            ) : (
+                <div className="flex justify-center mt-4 space-x-2">
+                    <div className="text-center text-gray-500 py-4">
+                        No results found.
+                    </div>
+                </div>
+            )}
+
+
+
         </AuthenticatedLayout>
     );
 }

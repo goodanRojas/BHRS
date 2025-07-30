@@ -5,11 +5,13 @@ use App\Http\Controllers\Seller\SellerAuthenticateController;
 use Inertia\Inertia;
 
 Route::prefix('seller')->name('seller.')->group(function () {
-    Route::get('/login', function () {
-        return Inertia::render('Seller/Login');
-    })->name('login.index');
-    Route::post('/login', [SellerAuthenticateController::class, 'store'])->name('login.store');
+    Route::middleware('guest:seller')->group(function () {
+        Route::get('/login', function () {
+            return Inertia::render('Seller/Login');
+        })->name('login.index');
 
+        Route::post('/login', [SellerAuthenticateController::class, 'store'])->name('login.store');
+    });
     Route::middleware('seller')->group(function () {
         Route::get('/logout', [SellerAuthenticateController::class, 'destroy'])->name('logout.get');
         Route::post('/logout', [SellerAuthenticateController::class, 'destroy'])->name('logout.post');

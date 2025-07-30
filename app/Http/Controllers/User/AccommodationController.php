@@ -18,7 +18,7 @@ class AccommodationController extends Controller
      */
     public function index(Request $request)
     {
-        $bookings = Booking::whereIn('status', ['approved', 'waiting'])
+        $booking = Booking::whereIn('status', ['approved', 'waiting'])
             ->where('user_id', auth()->id())
             ->with([
                 'bookable' => function ($morphTo) {
@@ -27,7 +27,7 @@ class AccommodationController extends Controller
                             'room' => function ($query) {
                                 $query->select(['id', 'name', 'building_id'])
                                     ->with(['building' => function ($query) {
-                                        $query->select(['id', 'name'])->with('address');
+                                $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
                                     }]);
                             },
                             'feedbacks' => function ($query) {
@@ -36,7 +36,8 @@ class AccommodationController extends Controller
                         ],
                         Room::class => [
                             'building' => function ($query) {
-                                $query->select(['id', 'name'])->with('address');
+                                $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
+                                
                             },
                             'feedbacks' => function ($query) {
                                 $query->select( 'rating'); // adjust if necessary
@@ -46,10 +47,10 @@ class AccommodationController extends Controller
                     ]);
                 }
             ])
-            ->get();
+            ->first();
 
         return Inertia::render('Home/Accommodation/Dashboard', [
-            'bookings' => $bookings,
+            'booking' => $booking,
         ]);
     }
 

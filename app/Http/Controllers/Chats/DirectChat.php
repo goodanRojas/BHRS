@@ -17,8 +17,22 @@ class DirectChat extends Controller
         $authUserId = $request->user()->id;
 
         $messages = Message::with(["sender", "receiver"])
-            ->where('sender_id', $authUserId)
-            ->orWhere('receiver_id', $authUserId)
+            ->where(function ($query) use ($authUserId) {
+                $query->where(function ($q) use ($authUserId) {
+                    $q->where('sender_id', $authUserId)
+                        ->where(function ($q2) use ($authUserId) {
+                            $q2->whereNull('hidden_by_sender_id')
+                                ->orWhere('hidden_by_sender_id', '!=', $authUserId);
+                        });
+                })->orWhere(function ($q) use ($authUserId) {
+                    $q->where('receiver_id', $authUserId)
+                        ->where(function ($q2) use ($authUserId) {
+                            $q2->whereNull('hidden_by_receiver_id')
+                                ->orWhere('hidden_by_receiver_id', '!=', $authUserId);
+                        });
+                });
+            })
+            ->where('sender_type', User::class)
             ->orderBy('created_at', 'asc')
             ->get()
             ->groupBy(function ($message) use ($authUserId) {
@@ -26,51 +40,49 @@ class DirectChat extends Controller
                     ? $message->receiver_id
                     : $message->sender_id;
             });
-
-
+        Log::info($messages);
         return response()->json([
             'messages' => $messages,
         ]);
     }
 
+
+
     public function searchUsers(Request $request)
     {
         $query = $request->input('query');
         // Log::info('Search query: ' . $query);
-        $users = User::where('name', 'LIKE', "%$query%")
-            ->orWhere('email', 'LIKE', "%$query%")
-            ->take(10)
+        $users = User::where('name', 'like', '%' . $query . '%')
+            ->where('id', '!=', auth()->id())
+            ->select('id', 'name', 'avatar') // only what you need
             ->get();
+
 
         return response()->json(['users' => $users]);
     }
 
     public function fetchUserConversation($selectedUserId)
     {
-        $authUserId = auth()->id(); // Get the currently authenticated user's ID
-
-        // Optional: check if selected user exists
-        $selectedUser = User::findOrFail($selectedUserId);
-
-
+        $authUserId = auth()->id();
 
         $messages = Message::with(['sender', 'receiver'])
             ->where(function ($query) use ($authUserId, $selectedUserId) {
-                $query->where('sender_id', $authUserId)
-                    ->where('receiver_id', $selectedUserId);
-            })
-            ->orWhere(function ($query) use ($authUserId, $selectedUserId) {
-                $query->where('sender_id', $selectedUserId)
-                    ->where('receiver_id', $authUserId);
+                $query->where(function ($q) use ($authUserId, $selectedUserId) {
+                    $q->where('sender_id', $authUserId)
+                        ->where('receiver_id', $selectedUserId)
+                        ->whereNull('sender_deleted_at');
+                })->orWhere(function ($q) use ($authUserId, $selectedUserId) {
+                    $q->where('sender_id', $selectedUserId)
+                        ->where('receiver_id', $authUserId)
+                        ->whereNull('receiver_deleted_at');
+                });
             })
             ->orderBy('created_at', 'asc')
             ->get();
 
-
-        return response()->json([
-            'messages' => $messages
-        ]);
+        return response()->json(['messages' => $messages]);
     }
+
 
 
     public function sendMessage(Request $request)
@@ -92,6 +104,8 @@ class DirectChat extends Controller
             'sent_at' => now(),
         ]);
 
+        $message->load(['sender', 'receiver']);
+        // Log::info($message);
         // Broadcast the message
         broadcast(new MessageSent($message));
 
@@ -100,24 +114,74 @@ class DirectChat extends Controller
 
     public function getUsers(Request $request)
     {
-        Log::info($request->all());
-        // Validate the userIds parameter to ensure it is an array of integers
+        $authUserId = $request->user()->id;
+
         $validated = $request->validate([
             'userIds' => 'required|array',
-            'userIds.*' => 'integer|exists:users,id', // Ensure each ID is an integer and exists in the 'users' table
+            'userIds.*' => 'integer|exists:users,id',
         ]);
 
-        // Retrieve the userIds from the request
         $userIds = $validated['userIds'];
 
-        // Get the user details for the provided user IDs
-        $users = User::whereIn('id', $userIds)->get();
+        // Get only conversations that are not soft-deleted by the current user
+        $visibleUserIds = Message::where(function ($query) use ($authUserId) {
+            $query->where(function ($q) use ($authUserId) {
+                $q->where('sender_id', $authUserId)
+                    ->whereNull('sender_deleted_at');
+            })->orWhere(function ($q) use ($authUserId) {
+                $q->where('receiver_id', $authUserId)
+                    ->whereNull('receiver_deleted_at');
+            });
+        })
+            ->where(function ($query) use ($userIds) {
+                $query->whereIn('sender_id', $userIds)
+                    ->orWhereIn('receiver_id', $userIds);
+            })
+            ->get()
+            ->map(function ($message) use ($authUserId) {
+                return $message->sender_id === $authUserId
+                    ? $message->receiver_id
+                    : $message->sender_id;
+            })
+            ->unique()
+            ->values();
 
-        // Return the user details in JSON format
+        $users = User::whereIn('id', $visibleUserIds)->get();
+
         return response()->json([
             'users' => $users
         ]);
     }
+
+
+    public function deleteConversation($selectedUserId)
+    {
+        $currentUserId = auth()->id();
+
+        // Fetch messages where current user is sender or receiver
+        $messages = Message::where(function ($query) use ($currentUserId, $selectedUserId) {
+            $query->where(function ($q) use ($currentUserId, $selectedUserId) {
+                $q->where('sender_id', $currentUserId)
+                    ->where('receiver_id', $selectedUserId);
+            })->orWhere(function ($q) use ($currentUserId, $selectedUserId) {
+                $q->where('sender_id', $selectedUserId)
+                    ->where('receiver_id', $currentUserId);
+            });
+        })->get();
+
+        foreach ($messages as $message) {
+            if ($message->sender_id == $currentUserId && !$message->sender_deleted_at) {
+                $message->sender_deleted_at = now();
+            }
+            if ($message->receiver_id == $currentUserId && !$message->receiver_deleted_at) {
+                $message->receiver_deleted_at = now();
+            }
+            $message->save();
+        }
+
+        return response()->json(['message' => 'Conversation hidden from your view.']);
+    }
+
 
     public function chatWithSeller($sellerId, $bedId)
     {

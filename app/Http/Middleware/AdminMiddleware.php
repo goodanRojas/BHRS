@@ -17,7 +17,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::guard('admin')->check()) {
-            return redirect()->route('login')->with('error', 'Unauthorized access');
+            return redirect()->route('admin.login')->with('error', 'Unauthorized access');
         }
         Inertia::share('auth', [
             'user' => auth('admin')->user(),

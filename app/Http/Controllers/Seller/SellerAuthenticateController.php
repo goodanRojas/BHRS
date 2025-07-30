@@ -26,7 +26,7 @@ class SellerAuthenticateController
             return redirect()->intended(route('seller.dashboard.index', absolute: false));
         } else {
             Log::info("Seller is not authenticated");
-            return back()->with('error', 'Invalid Credentials');
+            return back()->withErrors(['email' =>'Invalid Credentials']);
         }
     }
 

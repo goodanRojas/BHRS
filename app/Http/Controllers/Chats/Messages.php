@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Chats;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\{Seller, User};
-use Illuminate\Support\Facades\Log;
+use App\Models\{Seller, User, Message};
+use Illuminate\Support\Facades\{Log, DB};
 
 class Messages extends Controller
 {
@@ -39,6 +39,25 @@ class Messages extends Controller
 
         // Return the data to the Inertia view
         return Inertia::render('Home/Messages/Messages', [
+            'sentMessages' => $sentMessages,
+            'receivedMessages' => $receivedMessages,
+        ]);
+    }
+    public function ownerMessages(Request $request)
+    {
+        $userId = $request->user()->id;
+        $sentMessages = Message::where('sender_id', $userId)
+            ->where('sender_type', User::class)
+            ->where('receiver_type', Seller::class)
+            ->get();
+
+        // Query received messages where sender_type or receiver_type is User::class, excluding Seller::class
+        $receivedMessages = Message::where('receiver_id', $userId)
+            ->where('receiver_type', User::class)
+            ->where('sender_type', Seller::class)
+            ->get();
+
+        return Inertia::render('Home/Messages/LandOwner', [
             'sentMessages' => $sentMessages,
             'receivedMessages' => $receivedMessages,
         ]);

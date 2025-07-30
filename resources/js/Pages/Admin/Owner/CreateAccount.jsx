@@ -6,9 +6,12 @@ import Toast from "@/Components/Toast";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 export default function CreateAccount() {
     const [toastMessage, setToastMessage] = useState(null); // State to manage the toast message
     const [step, setStep] = useState(1);
+    const [ showPassword, setShowPassword ] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
         email: "",
@@ -75,18 +78,27 @@ export default function CreateAccount() {
                             />
                             <InputError message={errors.phone} className="mt-2 text-sm text-red-600" />
                         </div>
-                        <div>
+                        <div className="mt-4">
                             <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
-                            <TextInput
-                                id="password"
-                                type="text"
-                                name="password"
-                                value={data.password}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="current-password"
-                                onChange={(e) => setData('password', e.target.value)}
-                            />
-                            <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
+
+                            <div className='relative'>
+                                <TextInput
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={data.password}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    autoComplete="current-password"
+                                    onChange={(e) => setData('password', e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute top-3 right-5 text-sm text-gray-500 focus:outline-none focus:text-gray-700 hover:text-gray-700"
+                                >
+                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                </button>
+                            </div>
                         </div>
 
                     </div>

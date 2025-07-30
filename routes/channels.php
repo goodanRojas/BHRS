@@ -30,3 +30,9 @@ Broadcast::channel('favorites.{userId}', function ($user, $userId) {
 Broadcast::channel('landlord.{landlordId}', function ($seller, $landlordId) {
     return $seller->id === (int) $landlordId;
 }, ['guards' => ['seller']]);
+
+
+Broadcast::channel('user-status', function ($user) {
+    return $user ? ['id' => $user->id, 'name' => $user->name] : false;
+});
+

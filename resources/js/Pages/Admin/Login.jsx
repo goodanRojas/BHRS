@@ -5,8 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AdminLayout from './AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status, canResetPassword, error }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -16,6 +17,9 @@ export default function Login({ status, canResetPassword }) {
         e.preventDefault();
         post(route('admin.login.store'), {
             onFinish: () => reset('password'),
+            onError: (errors) => {
+                console.log('Errors from backend:', errors);
+            },
         });
     };
 

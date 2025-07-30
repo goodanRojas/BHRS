@@ -19,7 +19,7 @@ class Buildings extends Controller
     }
     public function createShow(Request $request)
     {
-        $sellers = Seller::select('id', 'name', 'image')->get();
+        $sellers = Seller::select('id', 'name', 'avatar')->get();
         return Inertia::render('Admin/Owner/Building/CreateBuilding', [
             'sellers' => $sellers
         ]);
@@ -27,9 +27,9 @@ class Buildings extends Controller
 
     public function store(Request $request)
     {
-        Log::info($request->all());
+
         // Validate the data
-        $validate = $request->validate([
+        /*  $validate = $request->validate([
             'seller_id' => 'required|exists:sellers,id',
             'image' => 'required|image|max:2048',
             'bir' => 'required|file|max:2048',
@@ -38,7 +38,8 @@ class Buildings extends Controller
             'long' => 'required|numeric',
             'lat' => 'required|numeric',
             'number_of_floors' => 'required|numeric',
-        ]);
+        ]); */
+        Log::info("Hello 1");
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -53,19 +54,21 @@ class Buildings extends Controller
             $businessPermitPath = $businessPermit->storeAs('pdfs', $businessPermit->hashName(), 'public');
         }
 
+        Log::info("Hello 1");
         $building = Building::create([
-            'seller_id' => $request->seller_id,
-            'image' => $imagePath,
+            'seller_id' => $request->owner_id,
+            'image' => $imagePath ?? null,
             'name' => $request->name,
             'longitude' => $request->long,
             'latitude' => $request->lat,
             'number_of_floors' => $request->number_of_floors,
-            'bir' => $birPath,
-            'business_permit' => $businessPermitPath,
+            'bir' => $birPath ?? null,
+            'business_permit' => $businessPermitPath ?? null, // Use null coalescing operator to handle optional files
             'status' => 1
         ]);
-
+        Log::info($building);
         if ($building) {
+            Log::info("Building created successfully");
             $address = Address::create([
                 'addressable_id' => $building->id,
                 'addressable_type' => Building::class,
@@ -79,11 +82,15 @@ class Buildings extends Controller
                 'longitude' => $request->long,  // Longitude passed in the request
             ]);
             if ($address) {
-                return redirect(route('admin.owner.buildings.index'))->with('success', 'Building successfully created');
+                return response()->json([
+                    'message' => 'Building successfully created'
+                ]);
             }
         }
 
-        return redirect()->back()->with('error', 'An error occured while creating the building.');
+        return response()->json([
+            'message' => 'An error occurred while creating the building'
+        ], 500);
     }
 
     public function show($id)

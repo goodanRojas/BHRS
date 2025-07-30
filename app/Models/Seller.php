@@ -57,4 +57,9 @@ class Seller extends Authenticatable
     {
         return $this->hasOne(OwnerPaymentInfo::class, 'owner_id');
     }
+
+    public function aiResponseStatus()
+    {
+        return $this->hasMany(AiResponseStatus::class, 'seller_id');
+    }
 }

@@ -62,7 +62,7 @@ export default function Rooms({ initialRooms, initialPagination, isAuthenticated
                     links={[
                         { label: 'Buildings', url: '/home/buildings' },
                         { label: 'Rooms' },
-                        { label: 'Rooms', url: `/home` },
+                        { label: 'Beds', url: `/home` },
                     ]}
                 />
 

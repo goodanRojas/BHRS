@@ -12,6 +12,8 @@ class Route extends Model
     protected $fillable = [
         'building_id',
         'coordinates',
+        'category',
+        'destination_id',
     ];
 
     protected $casts = [
@@ -21,5 +23,9 @@ class Route extends Model
     public function building()
     {
         return $this->belongsTo(Building::class);
+    }
+
+    public function destination(){
+        return $this->belongsTo(RouteDestination::class, 'destination_id');
     }
 }

@@ -1,0 +1,9 @@
+TODO: After the users first login there should be a modal that asks them to set their preferences.
+
+TODO: Prefer beds that are close to the user's location.
+
+TODO: Message Websockets.
+
+
+TODO: Notifications through out the app.
+

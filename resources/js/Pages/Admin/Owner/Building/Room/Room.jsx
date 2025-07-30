@@ -1,8 +1,8 @@
 import AuthenticatedLayout from '../../../AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus, faEllipsisH, faGear, faPen, faTrash , faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -16,12 +16,36 @@ export default function Room({ room }) {
     const [addBedModalOpen, setAddBedModalOpen] = useState(false);
     const [features, setFeatures] = useState(room.features);
     const [beds, setBeds] = useState(room.beds);
+    /* This is for the option menu */
+    const [isOptionOpen, setIsOptionOpen] = useState(false);
+    const optionButtonRef = useRef(null);
+    const optionPopupRef = useRef(null);
+    const [deleteRoomModalOpen, setDeleteRoomModalOpen] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         price: '',
         image: '',
         room_id: room.id,
     });
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                optionPopupRef.current &&
+                !optionPopupRef.current.contains(event.target) &&
+                !optionButtonRef.current.contains(event.target)
+            ) {
+                setIsOptionOpen(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
+
     const handleInputSubmit = (e) => {
         setFeatureName(e.target.value);
     };
@@ -106,15 +130,73 @@ export default function Room({ room }) {
             console.error('Error creating bed:', error);
         }
     };
+
+    const handleDelete = async () => {
+        try {
+            const response = await axios.post(route('admin.confirm-password'), {
+                password: adminPassword,
+            });
+
+            if (response.data.confirmed) {
+                // Proceed to delete the boarding house
+                await axios.delete(route('admin.buildings.room.destroy', room.id));
+                setDeleteRoomModalOpen(false);
+                setAdminPassword('');
+                // Optional: show success toast or reload
+            } else {
+                setPasswordError("Incorrect password. Please try again.");
+            }
+        } catch (error) {
+            setPasswordError("An error occurred. Please try again.");
+            console.error(error);
+        }
+    };
     return (
         <AuthenticatedLayout>
             <Head title={room.name} />
-            <Breadcrumbs
-                links={[
-                    { label: 'Buildings', url: '/admin/owner/buildings' },
-                    { label: room.building.name, url: `/admin/owner/buildings/${room.building_id}` },
-                    { label: room.name },
-                ]} />
+            <div className='flex items-center justify-between'>
+                <Breadcrumbs
+                    links={[
+                        { label: 'Buildings', url: '/admin/owner/buildings' },
+                        { label: room.building.name, url: `/admin/owner/buildings/${room.building_id}` },
+                        { label: room.name },
+                    ]} />
+                <div className='flex items-center justify-end'>
+                    <div className="relative inline-block text-left">
+                        <button
+                            ref={optionButtonRef}
+                            onClick={() => setIsOptionOpen((prev) => !prev)}
+                            className="p-2 hover:font-bold hover:text-[17px] overflow-hidden transition-all duration-300"
+                        >
+                            <FontAwesomeIcon icon={faEllipsisV} className="text-gray-700 font-bold" />
+                        </button>
+
+                        {isOptionOpen && (
+                            <div
+                                ref={optionPopupRef}
+                                className={`absolute right-0 top-7 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50   `}
+                            >
+                                <div className='p-2'>
+                                    <h2 className='text-sm font-semibold text-gray-800 m-2'><FontAwesomeIcon icon={faGear} /> Options</h2>
+                                    <hr className='border-gray-200 mt-2' />
+                                    {/* Option content */}
+                                    <div className="pt-2">
+                                        <button className=" group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <FontAwesomeIcon className='group-hover:text-gray-900 transition-all duration-200' icon={faPen} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteRoomModalOpen(true)}
+                                            className="group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <FontAwesomeIcon className='group-hover:text-red-500 transition-all duration-200' icon={faTrash} /> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+            </div>
             <div>
                 <h2 className='text-lg font-semibold mb-4'>{room.name}</h2>
             </div>
@@ -250,12 +332,12 @@ export default function Room({ room }) {
             {/* Add Room Modal */}
             <Modal show={addBedModalOpen} onClose={() => setAddBedModalOpen(false)}>
                 <div>
-                    <h2>Add Room</h2>
+                    <h2>Add Bed</h2>
                     <form onSubmit={handleBedCreateSubmit} className="space-y-4">
                         <div>
                             <InputLabel htmlFor="image" value="Image" className="block text-lg font-medium text-gray-700" />
                             <TextInput
-                                id="imagea"
+                                id="image"
                                 type="file"
                                 name="image"
                                 accept="image/*"
@@ -312,6 +394,45 @@ export default function Room({ room }) {
 
                 </div>
             </Modal >
+
+
+            <Modal show={deleteRoomModalOpen} onClose={() => setDeleteRoomModalOpen(false)}>
+                <div className="p-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Are you sure you want to delete this Room? This action cannot be undone.
+                    </p>
+
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Admin Password
+                    </label>
+                    <input
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="Enter admin password"
+                    />
+                    {passwordError && (
+                        <p className="text-sm text-red-600 mt-1">{passwordError}</p>
+                    )}
+
+                    <div className="mt-6 flex justify-end space-x-2">
+                        <button
+                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                            onClick={() => setDeleteRoomModalOpen(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                            onClick={handleDelete}
+                        >
+                            Confirm Delete
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

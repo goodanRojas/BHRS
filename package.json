@@ -33,7 +33,9 @@
         "@mapbox/polyline": "^1.2.1",
         "@react-google-maps/api": "^2.20.6",
         "@tailwindcss/line-clamp": "^0.4.4",
+        "@turf/turf": "^7.2.0",
         "chart.js": "^4.4.9",
+        "dayjs": "^1.11.13",
         "file-saver": "^2.0.5",
         "framer-motion": "^11.15.0",
         "jszip": "^3.10.1",
@@ -50,6 +52,7 @@
         "react-leaflet-markercluster": "^4.2.1",
         "react-qr-code": "^2.0.15",
         "react-range": "^1.10.0",
-        "react-tailwindcss-datepicker": "^1.7.2"
+        "react-tailwindcss-datepicker": "^1.7.2",
+        "recharts": "^3.1.0"
     }
 }

@@ -17,12 +17,13 @@ export default function MapBox({ buildings }) {
   const map = useRef(null);
   const [popup, setPopup] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const debounceTimeout = useRef(null);
 
   // To track route layer and source ids for cleanup
   const routeLayerIds = useRef([]);
 
   // To track spiderfied DOM markers for cleanup
-  const spiderfiedMarkers = useRef([]);
+  const spiderfiedMarkers = useRef({});
 
   useEffect(() => {
     if (map.current) return;
@@ -39,7 +40,7 @@ export default function MapBox({ buildings }) {
 
     // Get user's current location and set the map's center
     if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
+      navigator.geolocation.getCurrentPosition(
         (position) => {
           // console.log('User location:', position.coords);
           const { latitude, longitude } = position.coords;
@@ -72,6 +73,25 @@ export default function MapBox({ buildings }) {
       features: buildings.map((b) => {
         // Check if b.address exists and is not null
         const address = b.address || {};
+        const owner = b.seller || {};
+        const users = b.rooms?.flatMap(room =>
+          room.beds?.flatMap(bed =>
+            bed.bookings?.map(booking => ({
+              ...booking.user,
+              created_at: booking.created_at // assuming you loaded booking.created_at
+            })) || []
+          ) || []
+        ) || [];
+
+        // Remove null users (in case)
+        const filteredUsers = users.filter(user => user && user.id);
+        // Sort by latest (assuming created_at exists)
+        filteredUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Get first user and count of the rest
+        const firstTenant = filteredUsers[0];
+        const restCount = Math.max(filteredUsers.length - 1, 0);
+        const displayCount = restCount > 9 ? '9+' : `+${restCount}`;
 
         return {
           type: 'Feature',
@@ -86,6 +106,15 @@ export default function MapBox({ buildings }) {
               province: address.province || '',
               postal_code: address.postal_code || '',
               country: address.country || '',
+            },
+            owner: {
+              id: owner.id,
+              avatar: owner.avatar,
+              name: owner.name,
+            },
+            tenants: {
+              first: firstTenant || null,
+              count: restCount > 0 ? displayCount : null,
             },
             rating: b.rating,
           },
@@ -126,217 +155,113 @@ export default function MapBox({ buildings }) {
 
     // Helper: Add DOM markers for unclustered points
     function addDomMarkers() {
-      // Clear previous DOM markers first
-      clearSpiderfy();
-
       const features = map.current.querySourceFeatures('buildings', {
         filter: ['!', ['has', 'point_count']],
       });
 
       features.forEach((feature) => {
+        const id = feature.properties.id;
         const coordinates = feature.geometry.coordinates;
-        console.log('Adding DOM marker for feature:', feature);
-        // console.log('Adding DOM marker for feature:', feature);
-        const { id, image, name, address, rating } = feature.properties;
-        const { street, barangay, city, province, postal_code, country } = address || {};
-        const fullAddress = `${street || 'No street available'}, ${barangay || 'No barangay available'}, ${city || 'No city available'}, ${province || 'No province available'}, ${postal_code || 'No postal code available'}, ${country || 'No country available'}`;
+
+        if (spiderfiedMarkers.current[id]) {
+          return;
+        }
 
         const el = document.createElement('div');
-        el.style.width = '40px';
-        el.style.height = '40px';
-        el.style.borderRadius = '5px';
-        el.style.overflow = 'hidden';
-        el.style.cursor = 'pointer';
-        el.style.border = '2px solid white';
-        el.style.boxShadow = '0 0 2px rgba(0,0,0,0.5)';
-        el.style.backgroundColor = 'white';
+        el.className = 'group relative flex flex-col items-center text-center cursor-pointer';
+
+        // Wrapper for image
+        const imgWrapper = document.createElement('div');
+        imgWrapper.style.width = '40px';
+        imgWrapper.style.height = '40px';
+        imgWrapper.style.borderRadius = '5px';
+        imgWrapper.style.overflow = 'hidden';
+        imgWrapper.style.border = '2px solid white';
+        imgWrapper.style.boxShadow = '0 0 2px rgba(0,0,0,0.5)';
+        imgWrapper.style.backgroundColor = 'white';
 
         const img = document.createElement('img');
-        img.src = `/storage/${image}`;
-        img.alt = name;
+        img.src = `/storage/${feature.properties.image}`;
+        img.alt = feature.properties.name;
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
 
-        el.appendChild(img);
+        imgWrapper.appendChild(img);
+        el.appendChild(imgWrapper);
 
+        // Boarding house name (always visible)
+        const nameDiv = document.createElement('div');
+        nameDiv.innerText = feature.properties.name;
+        nameDiv.style.marginTop = '2px';
+        nameDiv.style.fontSize = '10px';
+        nameDiv.style.background = 'white';
+        nameDiv.style.padding = '2px 4px';
+        nameDiv.style.borderRadius = '4px';
+        nameDiv.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
+        nameDiv.style.whiteSpace = 'nowrap';
+        nameDiv.style.maxWidth = '80px';
+        nameDiv.style.overflow = 'hidden';
+        nameDiv.style.textOverflow = 'ellipsis';
+        el.appendChild(nameDiv);
+
+        // Rating (only on hover)
+        const ratingDiv = document.createElement('div');
+        const rating = feature.properties.rating ?? 'N/A';
+        ratingDiv.innerHTML = `⭐ ${typeof rating === 'number' ? rating.toFixed(1) : rating}`;
+        ratingDiv.style.position = 'absolute';
+        ratingDiv.style.top = '100%';
+        ratingDiv.style.marginTop = '4px';
+        ratingDiv.style.fontSize = '10px';
+        ratingDiv.style.padding = '2px 4px';
+        ratingDiv.style.background = 'white';
+        ratingDiv.style.borderRadius = '4px';
+        ratingDiv.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
+        ratingDiv.style.display = 'none';
+        el.appendChild(ratingDiv);
+
+        // Hover handlers
+        el.addEventListener('mouseenter', () => {
+          ratingDiv.style.display = 'block';
+        });
+        el.addEventListener('mouseleave', () => {
+          ratingDiv.style.display = 'none';
+        });
+
+        // Add to map
         const marker = new mapboxgl.Marker(el)
           .setLngLat(coordinates)
           .addTo(map.current);
 
+        // On click show popup
         el.addEventListener('click', (e) => {
-          e.stopPropagation(); // prevent map click event
-
+          e.stopPropagation();
           closePopup();
           clearRoutes();
+          const address = JSON.parse(feature.properties.address ?? '{}');
+          const formattedAddress = `${address.street}, ${address.barangay}`;
 
-          // Show popup for building
+
           const newPopup = new mapboxgl.Popup({ offset: 25 })
             .setLngLat(coordinates)
             .setHTML(`
-              <div style="max-width:200px;">
-                <h3>${name}</h3>
-                <img src="/storage/${image}" alt="${name}" style="width:100%;height:100px;object-fit:cover;margin-bottom:8px;" />
-                <p>Address: ${fullAddress}</p>
-                <p>Rating: ${rating ?? 'N/A'}</p>
+              <div style="max-width: 240px; font-family: Arial, sans-serif; padding: 12px; border-radius: 8px; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  <h3 style="font-size: 16px; margin-bottom: 8px; color: #333;">${feature.properties.name}</h3>
+                  <img src="/storage/${feature.properties.image}" alt="${feature.properties.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;" />
+                  <p style="font-size: 14px; margin: 4px 0; color: #555;"><strong>Street:</strong> ${formattedAddress}</p>
+                  <p style="font-size: 14px; margin: 4px 0; color: #555;"><strong>Rating:</strong> ${feature.properties.rating ?? 'N/A'}</p>
               </div>
             `)
             .addTo(map.current);
 
           setPopup(newPopup);
-
-          // Show routes for this building if any
-          const buildingId = Number(id);
-          const routes = buildings.find(b => b.id === buildingId)?.routes || [];
-          routes.forEach((route, idx) => {
-            const sourceId = `route-source-${buildingId}-${idx}`;
-            const layerId = `route-layer-${buildingId}-${idx}`;
-
-            map.current.addSource(sourceId, {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: route.coordinates,
-                },
-              },
-            });
-
-            map.current.addLayer({
-              id: layerId,
-              type: 'line',
-              source: sourceId,
-              layout: {
-                'line-join': 'round',
-                'line-cap': 'round',
-              },
-              paint: {
-                'line-color': '#ff7e5f',
-                'line-width': 4,
-                'line-opacity': 0.8,
-              },
-            });
-
-            routeLayerIds.current.push(layerId);
-            routeLayerIds.current.push(sourceId);
-          });
         });
 
-        spiderfiedMarkers.current.push(marker);
+        spiderfiedMarkers.current[id] = marker;
       });
+
     }
 
-    // Spiderfy cluster markers (spread in circle)
-    function spiderfyCluster(features, clusterCenter) {
-      clearSpiderfy();
-      // console.log(features);
-
-      const spiderfyRadius = 70; // pixels
-      const centerPoint = map.current.project(clusterCenter);
-
-      const angleStep = (2 * Math.PI) / features.length;
-
-
-      features.forEach((feature, i) => {
-        const angle = i * angleStep;
-        const offsetX = spiderfyRadius * Math.cos(angle);
-        const offsetY = spiderfyRadius * Math.sin(angle);
-
-        const newPoint = {
-          x: centerPoint.x + offsetX,
-          y: centerPoint.y + offsetY,
-        };
-
-        const newLngLat = map.current.unproject(newPoint);
-
-        const { id, image, name, address, rating } = feature.properties;
-
-        const el = document.createElement('div');
-        el.style.width = '40px';
-        el.style.height = '40px';
-        el.style.borderRadius = '5px';
-        el.style.overflow = 'hidden';
-        el.style.cursor = 'pointer';
-        el.style.border = '2px solid white';
-        el.style.boxShadow = '0 0 2px rgba(0,0,0,0.5)';
-        el.style.backgroundColor = 'white';
-
-        const img = document.createElement('img');
-        img.src = `/storage/${image}`;
-        img.alt = name;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-
-        el.appendChild(img);
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat(newLngLat)
-          .addTo(map.current);
-
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-
-          closePopup();
-          clearRoutes();
-
-          // Popup for spiderfied marker
-          const newPopup = new mapboxgl.Popup({ offset: 25 })
-            .setLngLat(newLngLat)
-            .setHTML(`
-              <div style="max-width:200px;">
-                <h3>${name}</h3>
-                <img src="/storage/${image}" alt="${name}" style="width:100%;height:100px;object-fit:cover;margin-bottom:8px;" />
-                <p>Address: ${address || 'No address available'}</p>
-                <p>Rating: ${rating ?? 'N/A'}</p>
-              </div>
-            `)
-            .addTo(map.current);
-
-          setPopup(newPopup);
-
-          // Show routes
-          const buildingId = Number(id);
-          const routes = buildings.find(b => b.id === buildingId)?.routes || [];
-          routes.forEach((route, idx) => {
-            const sourceId = `route-source-${buildingId}-${idx}`;
-            const layerId = `route-layer-${buildingId}-${idx}`;
-
-            map.current.addSource(sourceId, {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: route.coordinates,
-                },
-              },
-            });
-
-            map.current.addLayer({
-              id: layerId,
-              type: 'line',
-              source: sourceId,
-              layout: {
-                'line-join': 'round',
-                'line-cap': 'round',
-              },
-              paint: {
-                'line-color': '#ff7e5f',
-                'line-width': 4,
-                'line-opacity': 0.8,
-              },
-            });
-
-            routeLayerIds.current.push(layerId);
-            routeLayerIds.current.push(sourceId);
-          });
-        });
-
-        spiderfiedMarkers.current.push(marker);
-      });
-    }
 
     // Add GeoJSON source and cluster layers
     map.current.on('load', () => {
@@ -396,12 +321,18 @@ export default function MapBox({ buildings }) {
           'circle-opacity': 0,
         },
       });
-
+      map.current.on('move', () => {
+        const bounds = map.current.getBounds();
+        Object.values(spiderfiedMarkers.current).forEach((marker) => {
+          const isVisible = bounds.contains(marker.getLngLat());
+          marker.getElement().style.display = isVisible ? 'block' : 'none';
+        });
+      });
       // Add initial DOM markers for unclustered points
       addDomMarkers();
+
     });
 
-    // Cluster click: spiderfy cluster
     map.current.on('click', 'clusters', (e) => {
       closePopup();
       clearRoutes();
@@ -410,16 +341,27 @@ export default function MapBox({ buildings }) {
       const features = map.current.queryRenderedFeatures(e.point, {
         layers: ['clusters'],
       });
+
       if (!features.length) return;
 
       const clusterId = features[0].properties.cluster_id;
-      const clusterCenter = features[0].geometry.coordinates;
+      const source = map.current.getSource('buildings');
 
-      map.current.getSource('buildings').getClusterLeaves(clusterId, 100, 0, (err, leaves) => {
+      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
         if (err) return;
-        spiderfyCluster(leaves, clusterCenter);
+
+        const coordinates = features[0].geometry.coordinates;
+        map.current.easeTo({
+          center: coordinates,
+          zoom: zoom,
+          duration: 500,
+        });
+        setTimeout(() => {
+          addDomMarkers();
+        }, 600);
       });
     });
+
 
     // Map click anywhere else: close popups, routes, spiderfy but keep zoom/center
     map.current.on('click', (e) => {
@@ -437,12 +379,18 @@ export default function MapBox({ buildings }) {
     map.current.on('zoomstart', () => {
       closePopup();
       clearRoutes();
-      clearSpiderfy();
     });
 
     // Optional: update DOM markers on map move end to handle new data/visibility
     map.current.on('moveend', () => {
-      addDomMarkers();
+
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+
+      debounceTimeout.current = setTimeout(() => {
+        addDomMarkers();
+      }, 200);
     });
   }, [buildings, popup]);
 

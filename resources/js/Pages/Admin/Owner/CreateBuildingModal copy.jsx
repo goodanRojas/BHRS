@@ -1,4 +1,4 @@
-import AdminLayout from "../../AuthenticatedLayout";
+import AdminLayout from "../AuthenticatedLayout";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import axios from 'axios';
@@ -6,13 +6,12 @@ import Toast from "@/Components/Toast";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
-export default function CreateBuilding({ sellers }) {
-    // console.log(sellers);
-    const [toastMessage, setToastMessage] = useState(null); // State to manage the toast message
+export default function CreateBuildingModal({ owner, isOpen, onClose }) {
+    // console.log(owners);
     const [step, setStep] = useState(1);
-    const [selectedSeller, setSelectedSeller] = useState({});
+
     const { data, setData, post, processing, errors, reset } = useForm({
-        seller_id: selectedSeller.id || null,
+        owner_id: selectedOwner.id || null,
         image: null,
         bir: null,
         business_permit: null,
@@ -39,12 +38,19 @@ export default function CreateBuilding({ sellers }) {
         const file = e.target.files[0];
         setData(fieldName, file);
     };
-
-    const handleSellerSelect = (seller) => {
-        setSelectedSeller(seller); // Set the selected seller
-        setData('seller_id', seller.id); // Dynamically update the seller_id in useForm
+     const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route("admin.owner.buildings.store"), {
+            onFinish: () => {
+                reset();
+                setStep(1);
+                onClose(); // close modal
+            },
+        });
     };
 
+    if(!isOpen) return null;
+   
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -309,17 +315,11 @@ export default function CreateBuilding({ sellers }) {
 
         }
     }
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        post(route('admin.owner.buildings.store'), {
-            onFinish: () => reset(['']),
-        });
-    };
     return (
         <AdminLayout>
             <Head title="Application Form" />
             <h2 className="text-lg font-semibold mb-4">Create Building</h2>
-            {selectedSeller.id ? (
+            {selectedOwner.id ? (
                 <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
                     <div>
                         <h3 className="text-lg font-semibold mb-4">
@@ -361,7 +361,7 @@ export default function CreateBuilding({ sellers }) {
                 </div>
             ) : (
                 <div>
-                    <h2 className="text-lg font-semibold mb-4">Select Seller</h2>
+                    <h2 className="text-lg font-semibold mb-4">Select Owner</h2>
                     <table className="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg">
                         <thead>
                             <tr className="bg-gray-100 text-gray-700">
@@ -371,15 +371,15 @@ export default function CreateBuilding({ sellers }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {sellers.map((seller) => (
-                                <tr key={seller.id} className="border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4">{seller.name}</td>
+                            {owners.map((owner) => (
+                                <tr key={owner.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4">{owner.name}</td>
                                     <td className="px-6 py-4">
                                         {/* Check if there's an image URL */}
-                                        {seller.image ? (
+                                        {owner.image ? (
                                             <img
-                                                src={seller.image}
-                                                alt={seller.name}
+                                                src={owner.image}
+                                                alt={owner.name}
                                                 className="w-16 h-16 object-cover rounded-full border border-gray-200"
                                             />
                                         ) : (
@@ -388,7 +388,7 @@ export default function CreateBuilding({ sellers }) {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <button
-                                            onClick={() => handleSellerSelect(seller)}
+                                            onClick={() => handleOwnerSelect(owner)}
                                             className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 focus:outline-none"
                                         >
                                             Select

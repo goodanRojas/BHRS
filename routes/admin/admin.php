@@ -5,10 +5,12 @@ use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function() {
-    Route::get('/login', [AdminController::class, 'index'])->name('login.index');
-    Route::post('/login', [AdminController::class, 'store'])->name('login.store');
-    Route::middleware('admin')->group(function(){
-        Route::get('/logout', [AdminController::class, 'logout'])->name('logout.get');
+   Route::middleware('guest:admin')->group(function() {
+        Route::get('/login', [AdminController::class, 'index'])->name('login');
+        Route::post('/login', [AdminController::class, 'store'])->name('login.store');
+    });
+        Route::middleware('admin')->group(function(){
+            Route::get('/logout', [AdminController::class, 'logout'])->name('logout.get');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout.post');
     });

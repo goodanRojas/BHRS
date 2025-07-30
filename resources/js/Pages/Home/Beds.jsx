@@ -11,7 +11,7 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import Dropdown from '@/Components/Dropdown';
 function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
     const Layout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
-    console.log(initialBeds.data);
+    // console.log(initialBeds.data);
     const [beds, setBeds] = useState(initialBeds.data);
     const [pagination, setPagination] = useState(initialPagination);
     const [featuresFilter, setFeaturesFilter] = useState([]);
@@ -137,7 +137,7 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                         {beds.map((bed) => (
                             <div
                                 key={bed.id}
-                                className="relative border rounded-lg shadow backdrop-blur hover:shadow-lg transition group"
+                                className="relative border rounded-lg shadow-md backdrop-blur hover:shadow-lg transition group"
                             >
                                 <Link href={`/home/bed/${bed.id}`}>
                                     <img
@@ -147,20 +147,22 @@ function Beds({ initialBeds, initialPagination, isAuthenticated, priceRange }) {
                                     />
                                     {/* ❤️ Favorite Icon – Top Left */}
                                     <div className="absolute top-3 left-3 group">
-                                        <FontAwesomeIcon
-                                            icon={faHeart}
-                                            className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
-                                                ? 'text-red-500 hover:text-red-600'
-                                                : 'text-white hover:text-gray-200 hover:border-red-500'
-                                                } drop-shadow-md`}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                toggleFavorite(bed.id);
-                                            }}
-                                        />
-                                        <span className="w-[130px] text-center absolute top-8 left-10 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
-                                            Add to favorites
-                                        </span>
+                                        <div className="relative">
+                                            <FontAwesomeIcon
+                                                icon={faHeart}
+                                                className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
+                                                    ? 'text-red-500 hover:text-red-600'
+                                                    : 'text-white hover:text-gray-200 hover:border-red-500'
+                                                    } drop-shadow-md`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggleFavorite(bed.id);
+                                                }}
+                                            />
+                                            <span className="w-[130px] text-center absolute  left-[100px] -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
+                                                Add to favorites
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <div className="p-2">

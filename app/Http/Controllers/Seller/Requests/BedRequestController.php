@@ -26,25 +26,6 @@ class BedRequestController extends Controller
     }
     public function accept(Request $request, Booking $booking)
     {
-        Log::info($request->all());
-
-        // Validate the incoming request (recommended)
-        $request->validate([
-            'receiptImage' => 'required|image|max:2048', // adjust rules as needed
-        ]);
-
-        // Handle receipt image upload if present
-        if ($request->hasFile('receiptImage')) {
-            // Store the file in the 'public/receipts' directory
-            $path = $request->file('receiptImage')->store('receipts', 'public');
-            $hashedFileName = basename($path); // safer than hashName() here
-            $booking->seller_receipt = $hashedFileName;
-        } else {
-            // Optional: handle case if no file is uploaded
-            // You may want to return with error or do something else
-            return redirect()->back()->withErrors(['receiptImage' => 'Receipt image is required.']);
-        }
-
         // Update booking status to approved
         $booking->status = 'approved';
 

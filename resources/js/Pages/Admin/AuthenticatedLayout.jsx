@@ -6,10 +6,10 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
-    // const [notificationsModal, setNotificationsModal] = useState(false);
+    const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen ">
             {/* Background Image */}
             <div
                 className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
@@ -22,7 +22,7 @@ export default function AuthenticatedLayout({ children }) {
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Top Navbar */}
-                <header className="flex items-center justify-between bg-white shadow px-6 h-16">
+                <header className="bg-indigo-500 flex items-center justify-between shadow px-6 h-16">
 
                     <div className="flex items-center space-x-4">
 

@@ -20,11 +20,17 @@ export default function RouteMap({ building }) {
   const map = useRef(null);
   const draw = useRef(null); // Reference to the Mapbox Draw instance
   const [route, setRoute] = useState(null);
-  const [routes, setRoutes] = useState(building.routes); // State to hold existing routes
-  const [destination, setDestination] = useState(null);
+      const [routes, setRoutes] = useState(building.routes); // State to hold existing routes
   const [isRouteSaved, setIsRouteSaved] = useState(false);
   const routeLayerIds = useRef([]); // Initialize routeLayerIds to keep track of added layers and sources
-
+  const [routeCoordinates, setRouteCoordinates] = useState(null);
+  const [category, setCategory] = useState('school');
+  const [destination, setDestination] = useState(null); // clicked map location
+  const [destinationInfo, setDestinationInfo] = useState({
+    name: '',
+    description: '',
+    image: '',
+  });
   useEffect(() => {
     if (map.current) return; // Initialize map only once
 
@@ -40,7 +46,7 @@ export default function RouteMap({ building }) {
     map.current.on('load', () => {
       // Initialize Mapbox Draw tool
       draw.current = new MapboxDraw({
-        displayControlsDefault: false, // We can enable or disable specific controls
+        displayControlsDefault: true, // We can enable or disable specific controls
         controls: {
           line_string: true,  // Allow drawing lines (routes)
           trash: true,        // Enable trash button to delete drawn features
@@ -55,7 +61,7 @@ export default function RouteMap({ building }) {
         console.log('Building data:', building);
         map.current.flyTo({
           center: [building.longitude, building.latitude], // Use building's longitude and latitude
-          zoom: 14,
+          zoom: 17,
         });
 
         // Add marker for the building location
@@ -65,77 +71,76 @@ export default function RouteMap({ building }) {
           .addTo(map.current);
 
         // Display existing routes on the map
-        if (building.routes && building.routes.length > 0) {
-          building.routes.forEach((route, idx) => {
-            const sourceId = `route-source-${idx}`;
-            const layerId = `route-layer-${idx}`;
-            console.log('Adding route:', route.coordinates);
-
-            // Check if the source already exists
-            if (!map.current.getSource(sourceId)) {
-              map.current.addSource(sourceId, {
-                type: 'geojson',
-                data: {
-                  type: 'Feature',
-                  geometry: {
-                    type: 'LineString',
-                    coordinates: route.coordinates,
-                  },
-                },
-              });
-
-              // Add the layer if it doesn't exist
-              if (!map.current.getLayer(layerId)) {
-                map.current.addLayer({
-                  id: layerId,
-                  type: 'line',
-                  source: sourceId,
-                  layout: {
-                    'line-join': 'round',
-                    'line-cap': 'round',
-                  },
-                  paint: {
-                    'line-color': '#ff7e5f',
-                    'line-width': 4,
-                    'line-opacity': 0.8,
-                  },
-                });
-              }
-
-              // Push the layer and source ids into the routeLayerIds array
-              routeLayerIds.current.push(layerId);
-              routeLayerIds.current.push(sourceId);
-            }
+        building.routes.forEach((route, idx) => {
+          const sourceId = `route-source-${idx}`;
+          const layerId = `route-layer-${idx}`;
+          console.log('Adding route:', route.coordinates);
+          map.current.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: route.coordinates,
+              },
+            },
           });
-        }
+
+          map.current.addLayer({
+            id: layerId,
+            type: 'line',
+            source: sourceId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round',
+            },
+            paint: {
+              'line-color': '#ff0000',
+              'line-width': 5,
+              'line-opacity': 1,
+            },
+          });
+
+          // Push the layer and source ids into the routeLayerIds array
+          routeLayerIds.current.push(layerId);
+          routeLayerIds.current.push(sourceId);
+
+        });
+        // Inside your map's onLoad function, after adding the existing routes
+        building.routes.forEach((routeData, idx) => {
+          if (routeData.coordinates && routeData.coordinates.length > 0) {
+            const lastCoordinate = routeData.coordinates[routeData.coordinates.length - 1]; // Last coordinate
+            const [lastLng, lastLat] = lastCoordinate; // Extract latitude and longitude
+
+            // Add marker for the last point (destination)
+            new mapboxgl.Marker()
+              .setLngLat([lastLng, lastLat])
+              .setPopup(new mapboxgl.Popup().setText(`Destination: ${building.name}`)) // Set the popup text to the destination name
+              .addTo(map.current); // Add the marker to the map
+          }
+        });
+
       }
     });
 
     // Handle map click event to set destination
     map.current.on('click', (e) => {
-      const { lngLat } = e;
-      setDestination(lngLat);
+      if (!routeCoordinates) return; // Only allow if route has been drawn
 
-      // Draw the route from the building to the clicked point (destination)
-      if (building) {
-        getRoute(
-          building.longitude, // Building longitude
-          building.latitude,  // Building latitude
-          lngLat.lng,         // Destination longitude
-          lngLat.lat          // Destination latitude
-        );
-      }
+      setDestination({
+        lat: e.lngLat.lat,
+        lng: e.lngLat.lng,
+      });
+
+      new mapboxgl.Marker()
+        .setLngLat([e.lngLat.lng, e.lngLat.lat])
+        .setPopup(new mapboxgl.Popup().setText("Selected Destination"))
+        .addTo(map.current);
     });
-
     // Listen for drawing completion
     map.current.on('draw.create', (e) => {
-      const drawnRoute = e.features[0]; // The route that was just drawn
-      const drawnCoordinates = drawnRoute.geometry.coordinates;
-
-      console.log('Captured Coordinates:', drawnCoordinates);
-
-      // Save the drawn route to the backend
-      saveRouteToBackend(drawnCoordinates);
+      const coords = e.features[0].geometry.coordinates;
+      setRouteCoordinates(coords);
     });
 
     const handleResize = () => {
@@ -216,25 +221,32 @@ export default function RouteMap({ building }) {
   };
 
   const handleSaveRoute = () => {
-    // Ensure the route and destination are valid
-    if (!route || !destination) {
-      alert("Please complete the route and select a destination.");
+    if (!routeCoordinates || !destination || !destinationInfo.name) {
+      alert("Please draw a route and click the destination on the map.");
       return;
     }
 
-    // Save the route by sending it to the backend using Axios
     axios.post('/admin/route/save', {
       buildingId: building.id,
-      routeCoordinates: route,
-      destination: destination,
-    })
-      .then((response) => {
-        setIsRouteSaved(true);
-        console.log('Route saved:', response.data); // Access response data directly
-      })
-      .catch((error) => {
-        console.error('Error saving route:', error);
-      });
+      routeCoordinates,
+      category,
+      destination: {
+        name: destinationInfo.name,
+        latitude: destination.lat,
+        longitude: destination.lng,
+        image: destinationInfo.image,
+        description: destinationInfo.description,
+      },
+    }).then(res => {
+      alert("Route saved!");
+      // Reset all
+      setRouteCoordinates(null);
+      setDestination(null);
+      setDestinationInfo({ name: '', description: '', image: '' });
+    }).catch(err => {
+      console.error(err);
+      alert("Error saving route.");
+    });
   };
 
   const handleCancelRoute = () => {
@@ -259,9 +271,52 @@ export default function RouteMap({ building }) {
   return (
     <AuthenticatedLayout>
       <Head title="Route Map" />
+      {/* Map Container */}
       <div className="flex-1 h-full">
         <div ref={mapContainer} style={{ height: '100%', width: '100%' }} />
       </div>
+
+      {routeCoordinates && destination && (
+        <div className="mt-4 bg-white p-4 rounded shadow-md space-y-4">
+          <h3 className="text-lg font-bold">Route Details</h3>
+          <input
+            type="text"
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Destination Name"
+            value={destinationInfo.name}
+            onChange={(e) => setDestinationInfo({ ...destinationInfo, name: e.target.value })}
+          />
+          <textarea
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Description"
+            value={destinationInfo.description}
+            onChange={(e) => setDestinationInfo({ ...destinationInfo, description: e.target.value })}
+          />
+          <input
+            type="text"
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Image URL (optional)"
+            value={destinationInfo.image}
+            onChange={(e) => setDestinationInfo({ ...destinationInfo, image: e.target.value })}
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full border px-3 py-2 rounded"
+          >
+            <option value="school">School</option>
+            <option value="eatery">Eatery</option>
+            <option value="school_supply">School Supply</option>
+            <option value="other">Other</option>
+          </select>
+          <button
+            onClick={handleSaveRoute}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Save Route
+          </button>
+        </div>
+      )}
       <div className="mt-4">
         {route && !isRouteSaved && (
           <div className="p-4 bg-white rounded-lg shadow-md">
