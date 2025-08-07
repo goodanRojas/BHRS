@@ -3,298 +3,115 @@ import mapboxgl from 'mapbox-gl';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Head } from '@inertiajs/react';
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-const containerStyle = {
-  width: '100%',
-  height: '500px',
-};
-
-
 export default function MapBox({ buildings }) {
-  // console.log('Buildings:', buildings);
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [popup, setPopup] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
-  const debounceTimeout = useRef(null);
-
-  // To track route layer and source ids for cleanup
   const routeLayerIds = useRef([]);
+  const domMarkers = useRef([]);
+  const currentPopup = useRef(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const selectedBuildingRef = useRef(null);
 
-  // To track spiderfied DOM markers for cleanup
-  const spiderfiedMarkers = useRef({});
+  const [activeBuildingId, setActiveBuildingId] = useState(null);
 
   useEffect(() => {
-    if (map.current) return;
+    if (map.current) return; // Prevent multiple initializations
 
-    // Initialize the Mapbox map
+    const savedView = JSON.parse(localStorage.getItem('lastMapView'));
+    // Initialize the map with a default center (e.g., Manila)
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [0, 0], // Default center, will be updated once location is fetched
-      zoom: 14,
+      center: savedView ? [savedView.lng, savedView.lat] : [124.98565169929262, 10.250049903257633], // Manila as fallback center
+      zoom: savedView ? savedView.zoom : 12,
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl());
-
-    // Get user's current location and set the map's center
-    if (navigator.geolocation) {
+    // Try to get user's current location
+    if (navigator.geolocation && !savedView) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // console.log('User location:', position.coords);
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
 
-          // Center the map on the user's location
+          // Move the map to the user's location
           map.current.flyTo({
             center: [longitude, latitude],
             zoom: 14,
+            essential: true,
           });
 
-          // Add a marker for the user's location
-          new mapboxgl.Marker()
-            .setLngLat([longitude, latitude])
-            .setPopup(new mapboxgl.Popup().setText('You are here!'))
-            .addTo(map.current);
+          // Optional: Add marker at user location
+          new mapboxgl.Marker().setLngLat([longitude, latitude]).addTo(map.current);
         },
         (error) => {
-          console.log('Error getting user location:', error);
+          console.warn('Geolocation error:', error.message);
         }
       );
-    } else {
-      console.log('Geolocation is not supported by this browser.');
     }
 
 
-    // Prepare GeoJSON features from buildings
-    const geojson = {
-      type: 'FeatureCollection',
-      features: buildings.map((b) => {
-        // Check if b.address exists and is not null
-        const address = b.address || {};
-        const owner = b.seller || {};
-        const users = b.rooms?.flatMap(room =>
-          room.beds?.flatMap(bed =>
-            bed.bookings?.map(booking => ({
-              ...booking.user,
-              created_at: booking.created_at // assuming you loaded booking.created_at
-            })) || []
-          ) || []
-        ) || [];
+  }, [buildings]);
 
-        // Remove null users (in case)
-        const filteredUsers = users.filter(user => user && user.id);
-        // Sort by latest (assuming created_at exists)
-        filteredUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  // Add buildings and clustering
 
-        // Get first user and count of the rest
-        const firstTenant = filteredUsers[0];
-        const restCount = Math.max(filteredUsers.length - 1, 0);
-        const displayCount = restCount > 9 ? '9+' : `+${restCount}`;
+  useEffect(() => {
+    if (!map.current || !buildings.length) {
+      return;
+    }
 
-        return {
+    map.current.on('load', () => {
+
+      const geojson = {
+        type: 'FeatureCollection',
+        features: buildings.map((b) => ({
           type: 'Feature',
           properties: {
             id: b.id,
             name: b.name,
             image: b.image,
-            address: {
-              street: address.street || '',
-              barangay: address.barangay || '',
-              city: address.city || '',
-              province: address.province || '',
-              postal_code: address.postal_code || '',
-              country: address.country || '',
-            },
-            owner: {
-              id: owner.id,
-              avatar: owner.avatar,
-              name: owner.name,
-            },
-            tenants: {
-              first: firstTenant || null,
-              count: restCount > 0 ? displayCount : null,
-            },
-            rating: b.rating,
+            rating: b.feedback.length > 0
+              ? (b.feedback.reduce((sum, f) => sum + f.rating, 0) / b.feedback.length).toFixed(1)
+              : "No rating",
+            owner: b.seller?.name || "Unknown",
           },
           geometry: {
             type: 'Point',
-            coordinates: [
-              parseFloat(b.longitude || '0'),  // Default to 0 if missing
-              parseFloat(b.latitude || '0'),   // Default to 0 if missing
-            ],
+            coordinates: [parseFloat(b.longitude), parseFloat(b.latitude)],
           },
-        };
-      }),
-    };
+        })),
+      };
 
-
-    // Helper: Close popup
-    function closePopup() {
-      if (popup) {
-        popup.remove();
-        setPopup(null);
+      if (map.current.getSource('buildings')) {
+        map.current.getSource('buildings').setData(geojson);
+        return;
       }
-    }
 
-    // Helper: Clear route layers and sources
-    function clearRoutes() {
-      routeLayerIds.current.forEach((id) => {
-        if (map.current.getLayer(id)) map.current.removeLayer(id);
-        if (map.current.getSource(id)) map.current.removeSource(id);
-      });
-      routeLayerIds.current = [];
-    }
-
-    // Helper: Remove spiderfied markers
-    function clearSpiderfy() {
-      spiderfiedMarkers.current.forEach((m) => m.remove());
-      spiderfiedMarkers.current = [];
-    }
-
-    // Helper: Add DOM markers for unclustered points
-    function addDomMarkers() {
-      const features = map.current.querySourceFeatures('buildings', {
-        filter: ['!', ['has', 'point_count']],
-      });
-
-      features.forEach((feature) => {
-        const id = feature.properties.id;
-        const coordinates = feature.geometry.coordinates;
-
-        if (spiderfiedMarkers.current[id]) {
-          return;
-        }
-
-        const el = document.createElement('div');
-        el.className = 'group relative flex flex-col items-center text-center cursor-pointer';
-
-        // Wrapper for image
-        const imgWrapper = document.createElement('div');
-        imgWrapper.style.width = '40px';
-        imgWrapper.style.height = '40px';
-        imgWrapper.style.borderRadius = '5px';
-        imgWrapper.style.overflow = 'hidden';
-        imgWrapper.style.border = '2px solid white';
-        imgWrapper.style.boxShadow = '0 0 2px rgba(0,0,0,0.5)';
-        imgWrapper.style.backgroundColor = 'white';
-
-        const img = document.createElement('img');
-        img.src = `/storage/${feature.properties.image}`;
-        img.alt = feature.properties.name;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-
-        imgWrapper.appendChild(img);
-        el.appendChild(imgWrapper);
-
-        // Boarding house name (always visible)
-        const nameDiv = document.createElement('div');
-        nameDiv.innerText = feature.properties.name;
-        nameDiv.style.marginTop = '2px';
-        nameDiv.style.fontSize = '10px';
-        nameDiv.style.background = 'white';
-        nameDiv.style.padding = '2px 4px';
-        nameDiv.style.borderRadius = '4px';
-        nameDiv.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-        nameDiv.style.whiteSpace = 'nowrap';
-        nameDiv.style.maxWidth = '80px';
-        nameDiv.style.overflow = 'hidden';
-        nameDiv.style.textOverflow = 'ellipsis';
-        el.appendChild(nameDiv);
-
-        // Rating (only on hover)
-        const ratingDiv = document.createElement('div');
-        const rating = feature.properties.rating ?? 'N/A';
-        ratingDiv.innerHTML = `⭐ ${typeof rating === 'number' ? rating.toFixed(1) : rating}`;
-        ratingDiv.style.position = 'absolute';
-        ratingDiv.style.top = '100%';
-        ratingDiv.style.marginTop = '4px';
-        ratingDiv.style.fontSize = '10px';
-        ratingDiv.style.padding = '2px 4px';
-        ratingDiv.style.background = 'white';
-        ratingDiv.style.borderRadius = '4px';
-        ratingDiv.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
-        ratingDiv.style.display = 'none';
-        el.appendChild(ratingDiv);
-
-        // Hover handlers
-        el.addEventListener('mouseenter', () => {
-          ratingDiv.style.display = 'block';
-        });
-        el.addEventListener('mouseleave', () => {
-          ratingDiv.style.display = 'none';
-        });
-
-        // Add to map
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat(coordinates)
-          .addTo(map.current);
-
-        // On click show popup
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          closePopup();
-          clearRoutes();
-          const address = JSON.parse(feature.properties.address ?? '{}');
-          const formattedAddress = `${address.street}, ${address.barangay}`;
-
-
-          const newPopup = new mapboxgl.Popup({ offset: 25 })
-            .setLngLat(coordinates)
-            .setHTML(`
-              <div style="max-width: 240px; font-family: Arial, sans-serif; padding: 12px; border-radius: 8px; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                  <h3 style="font-size: 16px; margin-bottom: 8px; color: #333;">${feature.properties.name}</h3>
-                  <img src="/storage/${feature.properties.image}" alt="${feature.properties.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;" />
-                  <p style="font-size: 14px; margin: 4px 0; color: #555;"><strong>Street:</strong> ${formattedAddress}</p>
-                  <p style="font-size: 14px; margin: 4px 0; color: #555;"><strong>Rating:</strong> ${feature.properties.rating ?? 'N/A'}</p>
-              </div>
-            `)
-            .addTo(map.current);
-
-          setPopup(newPopup);
-        });
-
-        spiderfiedMarkers.current[id] = marker;
-      });
-
-    }
-
-
-    // Add GeoJSON source and cluster layers
-    map.current.on('load', () => {
+      // Add the buildings data to be used later for clustering
       map.current.addSource('buildings', {
         type: 'geojson',
         data: geojson,
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 40,
+        clusterRadius: 50,
       });
 
-      // Cluster circles
+      // Add layers for clustered and unclustered points
       map.current.addLayer({
         id: 'clusters',
         type: 'circle',
         source: 'buildings',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': '#ff7e5f',
-          'circle-radius': [
-            'step',
-            ['get', 'point_count'],
-            15,
-            10,
-            20,
-            30,
-            25,
-          ],
-          'circle-opacity': 0.75,
+          'circle-color': '#3b82f6',
+          'circle-radius': 20,
+          'circle-opacity': 0.8,
         },
       });
 
-      // Cluster count labels
+      // Number of points in each cluster
       map.current.addLayer({
         id: 'cluster-count',
         type: 'symbol',
@@ -302,102 +119,325 @@ export default function MapBox({ buildings }) {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
           'text-size': 12,
         },
-        paint: {
-          'text-color': '#fff',
-        },
       });
-
-      // Invisible circle layer for unclustered points; actual markers are DOM elements
       map.current.addLayer({
         id: 'unclustered-point',
         type: 'circle',
         source: 'buildings',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': 0,
-          'circle-opacity': 0,
+          'circle-color': '#f59e0b', // Orange color for unclustered points
+          'circle-radius': 8,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff',
         },
       });
-      map.current.on('move', () => {
-        const bounds = map.current.getBounds();
-        Object.values(spiderfiedMarkers.current).forEach((marker) => {
-          const isVisible = bounds.contains(marker.getLngLat());
-          marker.getElement().style.display = isVisible ? 'block' : 'none';
+
+
+      /* // Optional: Remove the symbol layer if it exists
+      if (map.current.getLayer('unclustered-point')) {
+        map.current.removeLayer('unclustered-point');
+      } */
+
+      // Loop through buildings (unclustered ones only)
+      buildings.forEach((b) => {
+        // Create the DOM element for your custom marker
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'row'; // horizontal layout
+        container.style.alignItems = 'center';
+        container.style.background = 'white';
+        container.style.border = '1px solid #ccc';
+        container.style.borderRadius = '9999px'; // pill shape
+        container.style.boxShadow = '0 0 4px rgba(0,0,0,0.2)';
+        container.style.padding = '2px 6px';
+        container.style.paddingTop = '10px'; // adjust padding for better alignment
+        container.style.gap = '6px'; // spacing between image and label
+        container.style.cursor = 'pointer';
+
+
+        // Marker element (image)
+        const el = document.createElement('div');
+        el.style.width = '30px';
+        el.style.height = '30px';
+        el.style.borderRadius = '9999px';
+        el.style.backgroundImage = `url(/storage/${b.image})`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+        el.style.flexShrink = '0';
+        el.style.border = '2px solid white';
+        el.style.boxShadow = '0 0 3px rgba(0,0,0,0.2)';
+
+
+        // Label element (building name)
+        const label = document.createElement('div');
+        label.textContent = b.name;
+        label.style.fontSize = '13px';
+        label.style.color = '#000';
+        label.style.whiteSpace = 'nowrap';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.maxWidth = '120px'; // optional: limit width for long names
+
+        // Append to container
+        container.appendChild(el);
+        container.appendChild(label);
+
+
+        // Add the marker to the map
+        const marker = new mapboxgl.Marker({
+          element: container,
+          anchor: 'top', // Adjust anchor to align with the bottom of the image
+        })
+          .setLngLat([parseFloat(b.longitude), parseFloat(b.latitude)])
+          .addTo(map.current);
+
+        domMarkers.current.push({ marker, building: b });
+
+      });
+
+
+      map.current.on('click', 'clusters', (e) => {
+        const features = map.current.queryRenderedFeatures(e.point, {
+          layers: ['clusters'],
         });
+        const clusterId = features[0].properties.cluster_id;
+        map.current.getSource('buildings').getClusterExpansionZoom(
+          clusterId,
+          (err, zoom) => {
+            if (err) return;
+            map.current.easeTo({
+              center: features[0].geometry.coordinates,
+              zoom,
+              duration: 1000,
+            });
+          }
+        );
       });
-      // Add initial DOM markers for unclustered points
-      addDomMarkers();
 
-    });
+      map.current.on('click', 'unclustered-point', (e) => {
+        const coords = e.features[0].geometry.coordinates.slice();
+        const props = e.features[0].properties;
+        const building = buildings.find((b) => b.id === parseInt(props.id));
+        console.log('Clicked building:', building);
+        const html = `
+        <div  class="p-2">
+          <img src="/storage/${props.image}" class="rounded-lg w-full h-28 object-cover mb-2" />
+          <h3 class="text-md font-bold">${props.name}</h3>
+          <p class="text-sm text-gray-600">Owner: ${props.owner}</p>
+          <p class="text-sm text-yellow-500">Rating: ${props.rating} ⭐</p>
+        </div>
+      `;
 
-    map.current.on('click', 'clusters', (e) => {
-      closePopup();
-      clearRoutes();
-      clearSpiderfy();
-
-      const features = map.current.queryRenderedFeatures(e.point, {
-        layers: ['clusters'],
+        new mapboxgl.Popup()
+          .setLngLat(coords)
+          .setHTML(html)
+          .addTo(map.current);
+        showBuildingRoutes(building);
       });
 
-      if (!features.length) return;
+      map.current.on('click', (e) => {
+        // Close popup only if clicking blank space
+        const features = map.current.queryRenderedFeatures(e.point);
+        if (features.length === 0) {
+          clearMapOverlays();
+          setActiveBuildingId(null);
+        }
 
-      const clusterId = features[0].properties.cluster_id;
-      const source = map.current.getSource('buildings');
+      });
 
-      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err) return;
+      map.current.on('mouseenter', 'clusters', () => {
+        map.current.getCanvas().style.cursor = 'pointer';
+      });
 
-        const coordinates = features[0].geometry.coordinates;
-        map.current.easeTo({
-          center: coordinates,
-          zoom: zoom,
-          duration: 500,
+      map.current.on('mouseleave', 'clusters', () => {
+        map.current.getCanvas().style.cursor = '';
+      });
+
+      map.current.on('zoom', () => {
+        const zoom = map.current.getZoom();
+        const showMarkers = zoom >= 14; // Customize threshold if needed
+
+        domMarkers.current.forEach(({ marker }) => {
+          if (marker && typeof marker.getElement === 'function') {
+            marker.getElement().style.display = showMarkers ? 'block' : 'none';
+          }
         });
-        setTimeout(() => {
-          addDomMarkers();
-        }, 600);
+
       });
-    });
 
+      map.current.on('moveend', () => {
+        const center = map.current.getCenter();
+        const zoom = map.current.getZoom();
+        localStorage.setItem('lastMapView', JSON.stringify({
+          lng: center.lng,
+          lat: center.lat,
+          zoom,
+        }));
 
-    // Map click anywhere else: close popups, routes, spiderfy but keep zoom/center
-    map.current.on('click', (e) => {
-      const features = map.current.queryRenderedFeatures(e.point, {
-        layers: ['clusters', 'unclustered-point'],
       });
-      if (!features.length) {
-        closePopup();
-        clearRoutes();
-        clearSpiderfy();
-      }
+
+    });
+  }, [buildings]);
+
+  const showBuildingRoutes = (building) => {
+    // Clean up previous routes
+    routeLayerIds.current.forEach((id) => {
+      if (map.current.getLayer(id)) map.current.removeLayer(id);
+      if (map.current.getSource(id)) map.current.removeSource(id);
+    });
+    routeLayerIds.current = [];
+
+    building.routes.forEach((route, index) => {
+      const coordinates = JSON.parse(route.coordinates).map((pt) => [
+        parseFloat(pt.lng),
+        parseFloat(pt.lat),
+      ]);
+
+      const id = `route-${building.id}-${index}`;
+
+      map.current.addSource(id, {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates,
+          },
+        },
+      });
+
+      map.current.addLayer({
+        id,
+        type: 'line', //Change to dashed line when the route is clicked or the distination is clicked
+        source: id,
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#3b82f6', // Blue color
+          'line-width': 4,
+          'line-dasharray': [1, 0], // Dashed line
+        },
+      });
+
+      routeLayerIds.current.push(id);
+
+      // Destination marker
+      const dest = route.destination;
+      // console.log('Destination:', dest);
+      // Create a custom DOM element for the marker + label
+      const markerContainer = document.createElement('div');
+      markerContainer.className = 'relative flex flex-col items-center group';
+
+      // Marker circle (dot)
+      const markerDot = document.createElement('div');
+      markerDot.className = 'w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow';
+      markerContainer.appendChild(markerDot);
+
+      // Category label (always visible)
+      const label = document.createElement('div');
+      label.className = 'text-xs mt-1 bg-white px-2 py-1 rounded shadow text-gray-800 whitespace-nowrap';
+      label.innerText = dest.category;
+      markerContainer.appendChild(label);
+
+      // 4. Create a popup
+      const popup = new mapboxgl.Popup().setHTML(`
+        <div class="text-sm">
+          <strong>${dest.name}</strong><br/>
+          <img src="/storage/${dest.image}" class="rounded w-full h-20 object-cover my-1"/>
+          <span class="text-gray-500">${dest.category}</span>
+        </div>
+      `);
+
+      // 5. Create the marker with the DOM element
+      const destinationMarker = new mapboxgl.Marker({ element: markerContainer })
+        .setLngLat([parseFloat(dest.longitude), parseFloat(dest.latitude)])
+        .setPopup(popup)
+        .addTo(map.current);
+
+      // Highlight the route when the marker is clicked
+      destinationMarker.getElement().addEventListener('click', () => {
+        const matchingRoute = building.routes.find(r => r.destination_id === dest.id);
+
+        if (matchingRoute) {
+          const routeIndex = building.routes.indexOf(matchingRoute);
+          const layerId = `route-${building.id}-${routeIndex}`;
+          highlightRoute(layerId);
+        } else {
+          console.warn('No matching route found for destination:', dest.id);
+        }
+      });
+
+      // 6. Toggle label on popup open/close
+      popup.on('open', () => {
+        label.style.display = 'none';
+      });
+
+      popup.on('close', () => {
+        label.style.display = 'block';
+      });
+
+
+      // Save this destination marker for later cleanup
+      domMarkers.current.push({ destinationMarker });
+
+    });
+  };
+
+  const clearMapOverlays = () => {
+    // Remove popup
+    if (currentPopup.current) {
+      currentPopup.current.remove();
+      currentPopup.current = null;
+    }
+
+    // Remove all route lines
+    routeLayerIds.current.forEach((id) => {
+      if (map.current.getLayer(id)) map.current.removeLayer(id);
+      if (map.current.getSource(id)) map.current.removeSource(id);
+    });
+    routeLayerIds.current = [];
+
+    // Remove destination markers
+    domMarkers.current.forEach(({ destinationMarker }) => {
+      if (destinationMarker) destinationMarker.remove();
     });
 
-    // On zoom start: clear spiderfied markers and routes
-    map.current.on('zoomstart', () => {
-      closePopup();
-      clearRoutes();
+    // Clean up destination markers from ref
+    domMarkers.current = domMarkers.current.map((item) => ({
+      ...item,
+      destinationMarker: null,
+    }));
+  };
+  const highlightRoute = (routeId) => {
+    // First reset all other routes to default (optional if only one is active)
+    routeLayerIds.current.forEach((id) => {
+      if (!id) return; // Skip if id is undefined
+      if (!map.current.getLayer(id)) return; // Skip if layer doesn't exist
+
+      map.current.setPaintProperty(id, 'line-color', '#3b82f6'); // blue
+      map.current.setPaintProperty(id, 'line-dasharray', [1, 0]); // solid
     });
 
-    // Optional: update DOM markers on map move end to handle new data/visibility
-    map.current.on('moveend', () => {
+    // Highlight the selected one
+    map.current.setPaintProperty(routeId, 'line-color', '#f59e0b'); // orange
+    map.current.setPaintProperty(routeId, 'line-dasharray', [2, 2]); // dashed
+  };
 
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
 
-      debounceTimeout.current = setTimeout(() => {
-        addDomMarkers();
-      }, 200);
-    });
-  }, [buildings, popup]);
 
   return (
     <AuthenticatedLayout>
       <Head title="Map" />
-      <div ref={mapContainer} style={containerStyle} />
+
+      <div className="p-4">
+        <h1 className="text-2xl font-semibold mb-4">Explore Boarding Houses</h1>
+        <div ref={mapContainer} className="w-full h-[80vh] rounded-lg shadow-md border" />
+      </div>
     </AuthenticatedLayout>
   );
 }

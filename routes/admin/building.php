@@ -19,11 +19,4 @@ Route::prefix('admin/owner/buildings')->name('admin.owner.buildings.')->middlewa
     Route::post('/add-feature', [Buildings::class, 'addFeature'])->name('add.building.feature');
     Route::delete('/delete-feature/{id}', [Buildings::class, 'deleteFeature'])->name('delete.feature');
 
-    Route::post('/room/add-feature', [Buildings::class, 'addRoomFeature'])->name('add.room.feature');
-    Route::post('/add-room', [Buildings::class, 'addRoom'])->name('add.room');
-    Route::get('/show-room/{id}', [Buildings::class, 'showRoom'])->name('show.room');
-
-    Route::post('/bed/add-feature', [Buildings::class, 'addBedFeature'])->name('add.bed.feature');
-    Route::post('/add-bed', [Buildings::class, 'addBed'])->name('add.bed');
-    Route::get('/show-bed/{id}', [Buildings::class, 'showBed'])->name('show.bed');
 });

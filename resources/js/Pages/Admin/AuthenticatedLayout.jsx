@@ -2,6 +2,7 @@ import Sidebar from './Sidebar';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
+import Footer from '@/Components/Footer';
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function AuthenticatedLayout({ children }) {
@@ -9,7 +10,7 @@ export default function AuthenticatedLayout({ children }) {
     const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     return (
-        <div className="flex h-screen ">
+        <div className="flex min-h-screen ">
             {/* Background Image */}
             <div
                 className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
@@ -79,6 +80,8 @@ export default function AuthenticatedLayout({ children }) {
                 <main className="flex-1 p-6 overflow-y-auto">
                     {children}
                 </main>
+                <Footer className="" />
+                {/* Footer */}
             </div>
         </div>
     );

@@ -4,13 +4,13 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faFilter, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faFilter, faSearch, faStar } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 export default function Buildings({ initialBuildings }) {
     const [buildings, setBuildings] = useState(initialBuildings);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
-        // console.log(buildings);
+    console.log(buildings);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -46,42 +46,9 @@ export default function Buildings({ initialBuildings }) {
                     ]}
                 />
 
-
-                {/* Filters */}
-                <div className="flex  sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                    {/* Filter Dropdown */}
-                    <div className="relative inline-block text-left">
-                        <Dropdown>
-                            <Dropdown.Trigger>
-                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-150">
-                                    <FontAwesomeIcon icon={faFilter} />
-                                    <span>Filters</span>
-                                </button>
-                            </Dropdown.Trigger>
-
-                            <Dropdown.Content className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                <Dropdown.Link className="block px-4 py-2 hover:bg-gray-100">Rating</Dropdown.Link>
-                                <Dropdown.Link className="block px-4 py-2 hover:bg-gray-100">Price</Dropdown.Link>
-                            </Dropdown.Content>
-                        </Dropdown>
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="flex w-full sm:w-80">
-                        <input
-                            type="text"
-                            placeholder="Search building name..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="flex-grow border border-indigo-600 px-4 py-2 rounded-l-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                        />
-                        <button
-                            onClick={() => setDebouncedSearch(search)}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-r-full hover:bg-indigo-700 transition duration-200"
-                        >
-                            <FontAwesomeIcon icon={faSearch} />
-                        </button>
-                    </div>
+                {/* Title */}
+                <div className="mb-4">
+                    <h1 className="text-2xl font-semibold mb-4">Explore Boarding Houses</h1>
                 </div>
 
                 {/* Buildings List */}
@@ -89,31 +56,69 @@ export default function Buildings({ initialBuildings }) {
                     {buildings.map((building) => (
                         <div
                             key={building.id}
-                            className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                            className="flex flex-col  border border-gray-200 rounded-2xl shadow hover:shadow-lg transition duration-300"
                         >
                             <Link href={`/home/building/${building.id}`} className="block">
-                                {/* Image Section */}
-                                <div className="overflow-hidden rounded-t-lg">
+                                {/* Image */}
+                                <div className="overflow-hidden rounded-t-2xl">
                                     <img
                                         src={`/storage/${building.image}`}
                                         alt={building.name}
-                                        className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
+                                        className="w-full h-44 object-cover hover:scale-105 transition-transform duration-300"
                                     />
                                 </div>
 
-                                {/* Content Section */}
-                                <div className="p-4 flex flex-col justify-between">
-                                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
-                                    <p><FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />{building.seller.name}</p>
-                                    <div className="flex items-center text-gray-600 text-sm">
-                                        <i className="fas fa-location-arrow text-blue-500 mr-2"></i>
-                                        <span>{building.address}</span>
+                                {/* Content */}
+                                <div className="p-4 space-y-3 bg-gradient-to-t from-indigo-700 to-gray-300 backdrop-blur-sm rounded-md">
+                                    {/* Title */}
+                                    <div className='relative'>
+                                        <h2 className="text-xl font-semibold text-gray-600 truncate">{building.name}</h2>
+                                        <span className='absolute bg-opacity-90 top-7 left-1 block bg-white rounded shadow-md h-1 w-40'></span>
+                                    </div>
+                                    {/* Seller Info */}
+                                    <div className="flex items-center space-x-2">
+                                        <img
+                                            src={building.seller?.avatar ? `/storage/${building.seller.avatar}` : '/storage/profile/default_avatar.png'}
+                                            alt={building.seller?.name || 'Default Avatar'}
+                                            className="w-8 h-8 rounded-full border-2 border-white"
+                                        />
+                                        <span className="text-sm text-gray-100 font-medium truncate">{building.seller?.name}</span>
+                                    </div>
+
+                                    {/* Address */}
+                                    <div className="flex items-center text-white text-xs">
+                                        <i className="fas fa-location-arrow text-green-500 mr-2"></i>
+                                        <span>
+                                            {building.address?.street || ''}, {building.address?.barangay || ''}, {building.address?.city || ''}, {building.address?.province || ''}
+                                        </span>
+
+                                    </div>
+
+                                    {/* Ratings and Tenants */}
+                                    <div className="flex items-center justify-between text-white">
+                                        {/* Ratings */}
+                                        <div className="text-sm text-yellow-500 flex items-center space-x-1">
+                                            <FontAwesomeIcon icon={faStar} />
+                                            <span className="text-white  text-sm font-bold">4.2</span>
+                                            <span className="text-white text-sm">(<span className='font-bold'>192</span> reviews)</span>
+                                        </div>
+
+                                        {/* Overlapping Tenant Avatars */}
+                                        <div className="flex -space-x-3">
+                                            <img src="/storage/profile/rojas.png" alt="Avatar 1" className="w-8 h-8 rounded-full border-2 border-white" />
+                                            <img src="/storage/profile/rojas.png" alt="Avatar 2" className="w-8 h-8 rounded-full border-2 border-white" />
+                                            <img src="/storage/profile/rojas.png" alt="Avatar 3" className="w-8 h-8 rounded-full border-2 border-white" />
+                                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 text-xs font-semibold rounded-full border-2 border-white">
+                                                +9
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </Link>
                         </div>
                     ))}
                 </div>
+
 
             </div>
         </AuthenticatedLayout>

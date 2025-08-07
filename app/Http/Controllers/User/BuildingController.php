@@ -16,11 +16,22 @@ use Inertia\Inertia;
 class BuildingController  extends Controller
 {
 
-    public function showToUserBuilding(Request $request, Building $building)
+    public function showBuildings(Request $request, Building $building)
+    {
+
+
+        $buildings = Building::with('rooms', 'address',  'seller')->get();
+        // dd($buildings->toArray());
+
+        return Inertia::render('Home/Buildings', [
+            'initialBuildings' => $buildings->toArray(),
+        ]);
+    }
+    public function showBuilding(Request $request, Building $building)
     {
         if ($building->id) {
             // Eager load relationships
-            $building->load(['rooms' => function($query){
+            $building->load(['rooms' => function ($query) {
                 $query->withCount('beds');
             }, 'seller', 'address']);
 
@@ -72,23 +83,20 @@ class BuildingController  extends Controller
                 'totalCompletedBookings' => $totalCompletedBookings,
             ]);
         }
-
-        $buildings = Building::with('rooms', 'seller')->get();
-        return Inertia::render('Home/Buildings', [
-            'initialBuildings' => $buildings,
-        ]);
     }
 
     public function searchBuildings(Request $request)
     {
         $search = $request->query('search');
 
-        $buildings = Building::with('rooms', 'seller')
-            ->when($search, fn ($query) =>
+        $buildings = Building::with('rooms', 'address', 'seller')
+            ->when(
+                $search,
+                fn($query) =>
                 $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('address', 'like', '%' . $search . '%')
+                    ->orWhere('address', 'like', '%' . $search . '%')
             )
-            ->get();    
+            ->get();
 
         return response()->json($buildings);
     }

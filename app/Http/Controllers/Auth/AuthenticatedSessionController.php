@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
         auth()->user()->update(['is_online' => true]);
         event(new UserStatusUpdated(auth()->user()->id, true));
 
-        return redirect()->intended(route('home', absolute: false));
+        return redirect()->intended(route('to.user.buildings', absolute: false));
     }
 
     /**

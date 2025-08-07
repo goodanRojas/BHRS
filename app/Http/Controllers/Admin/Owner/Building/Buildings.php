@@ -120,23 +120,6 @@ class Buildings extends Controller
             'feature' => $feature
         ]);
     }
-    public function addRoomFeature(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'featureable_id' => 'required|exists:rooms,id', // Assuming featureable_id is related to Building
-        ]);
-        $feature = Feature::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'featureable_id' => $request->featureable_id,
-            'featureable_type' => Room::class
-        ]);
-        return response()->json([
-            'feature' => $feature
-        ]);
-    }
 
     public function deleteFeature($id)
     {
@@ -152,92 +135,5 @@ class Buildings extends Controller
         ], 200);
     }
 
-    public function addRoom(Request $request)
-    {
-        // Log::info($request->all());
-        $validated = $request->validate([
-            'image' => 'required|image|max:2048',
-            'price' => 'required|numeric',
-            'name' => 'required|string|max:255',
-            'building_id' => 'required|exists:buildings,id'
-        ]);
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
-        }
-
-        $rooms = Room::create([
-            'building_id' => $validated['building_id'],
-            'name' => $validated['name'],
-            'image' => $imagePath,
-            'price' => $validated['price'],
-        ]);
-        $id = $rooms->id;
-        $room = Room::find($id);
-        Log::info($room);
-        return response()->json([
-            'room' => $room
-        ]);
-    }
-
-    public function showRoom($id)
-    {
-        $room = Room::with('images', 'building', 'features', 'beds',)->find($id);
-        return Inertia::render('Admin/Owner/Building/Room/Room', [
-            'room' => $room
-        ]);
-    }
-
-    public function addBed(Request $request)
-    {
-        // Log::info($request->all());
-        $validated = $request->validate([
-            'image' => 'required|image',
-            'price' => 'required|numeric',
-            'name' => 'required|string|max:255',
-            'room_id' => 'required|exists:rooms,id'
-        ]);
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
-        }
-
-        $beds = Bed::create([
-            'room_id' => $validated['room_id'],
-            'name' => $validated['name'],
-            'image' => $imagePath,
-            'price' => $validated['price'],
-        ]);
-        $id = $beds->id;
-        $bed = Bed::find($id);
-        return response()->json([
-            'bed' => $bed
-        ]);
-    }
-    public function showBed($id)
-    {
-        $bed = Bed::with('images', 'room.building', 'features')->find($id);
-        return Inertia::render('Admin/Owner/Building/Room/Bed', [
-            'bed' => $bed
-        ]);
-    }
-    public function addBedFeature(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'featureable_id' => 'required|exists:beds,id', // Assuming featureable_id is related to Building
-        ]);
-        $feature = Feature::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'featureable_id' => $request->featureable_id,
-            'featureable_type' => Bed::class
-        ]);
-        return response()->json([
-            'feature' => $feature
-        ]);
-    }
+  
 }
