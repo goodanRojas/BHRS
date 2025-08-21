@@ -28,3 +28,4 @@ require __DIR__ . '\history.php';
 require __DIR__ . '\request.php';
 require __DIR__ . '\building_application.php';
 require __DIR__ . '\message.php';
+require __DIR__ . '\payment_details.php';

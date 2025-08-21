@@ -1,109 +1,187 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm, Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import axios from 'axios';
+import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFaceSadTear, faMobileScreen, faQrcode, faUser } from '@fortawesome/free-solid-svg-icons';
 import PrimaryButton from '@/Components/PrimaryButton';
+import Modal from '@/Components/Modal';
+const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
+  console.log(booking);
+  const [preview, setPreview] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const fileInputRef = useRef(null);
 
-const GCashPaymentPage = ({ amount, bedId, paymentInfo }) => {
-  console.log('Payment Info:', paymentInfo);
-  const [paymentProof, setPaymentProof] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null); // State to hold the image preview URL
-
-  // Safely generate the payment link only if bedId is defined
-  const safeBedId = bedId || 'NA';
-  const paymentLink = `gcash://pay?recipient=${paymentInfo.gcash_number}&amount=${amount}&currency=PHP&reference=Booking${safeBedId}`;
-  const fallbackUrl = 'gcash://';
-
-  // Use Inertia's useForm for form handling
   const { data, setData, post, processing, errors } = useForm({
-    paymentProof: null, // Start with no payment proof
-    bedId: safeBedId,
+    payment_proof: null,
+    remarks: '',
+    ref_number: '',
+    booking_id: booking.id,
   });
-
-  // Handle opening the GCash app
-  const openGCashApp = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      // Try to open the GCash app via the custom URL scheme
-      window.location.href = paymentLink;
-
-      // Give the app some time to open, and fallback to the website if it doesn't
-      setTimeout(() => {
-        window.location.href = fallbackUrl; // If the app doesn't open, fallback to the website
-      }, 10000); // Reduced the timeout to 1500ms for faster fallback
-    } else {
-      alert('To proceed with GCash payment, please use your mobile device.');
-    }
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setPaymentProof(file);
-
-    // Create a URL for the selected image and store it in state for preview
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
-
-    setData('paymentProof', file); // Update Inertia form state
-  };
-
-  const submit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    post(route('bed.book.confirm.gcash'), {
-      onFinish: () => reset('paymentProof'),
+    setConfirmModal(true); // open modal instead of posting directly
+  };
+  const handleConfirmSubmit = () => {
+    setConfirmModal(false);
+    post(`/bed/book/gcash/confirm`, data, {
+      onSuccess: () => setSuccessModal(true),
+      onError: (error) => console.error(error),
     });
   };
 
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      setData('payment_proof', file);
+    }
+  }
   return (
     <AuthenticatedLayout>
       <Head title="GCash Payment" />
-      <div className="text-center p-6 max-w-md mx-auto border rounded-md">
-        <h1 className="text-2xl font-bold mb-4">Complete Your GCash Payment</h1>
-        <p className="mb-4 text-lg">Amount to Pay: ₱{amount}</p>
 
-        <img src={`/storage/qrcodes/${paymentInfo.qr_code}`} alt="GCash QR Code" className="mx-auto mb-4 w-48 h-48" />
-
-        <p className="mb-4">
-          Scan this QR code in your GCash app and enter the amount manually.
-        </p>
-
-        <button
-          onClick={openGCashApp}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition mb-6"
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white shadow-lg rounded-2xl p-6 max-w-lg w-full text-center"
         >
-          Open GCash App to Pay
-        </button>
+          {/* Sad Icon */}
+          <FontAwesomeIcon icon={faFaceSadTear} className="text-blue-400 text-5xl mb-4" />
 
-        <form onSubmit={submit} className="text-left">
-          <h3 className="mb-2 font-semibold">Upload Payment Proof</h3>
-          <input
-            type="file"
-            onChange={handleFileChange}
-            accept="image/*"
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">GCash Payment</h1>
+          <p className="text-gray-600 mb-6">
+            Sorry, we don’t have instant GCash integration yet.
+            Please send your payment manually using the details below.
+          </p>
+
+          {/* Owner Name */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-3"
+          >
+            <FontAwesomeIcon icon={faUser} className="text-blue-500" />
+            <span className="font-semibold text-gray-800">{paymentInfo.gcash_name}</span>
+          </motion.div>
+
+          {/* GCash Number */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-4"
+          >
+            <FontAwesomeIcon icon={faMobileScreen} className="text-green-500" />
+            <span className="font-semibold text-gray-800">{paymentInfo.gcash_number}</span>
+          </motion.div>
+
+          {/* QR Code */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4 }}
             className="mb-4"
-          />
-          {errors.paymentProof && <p className="text-red-500">{errors.paymentProof}</p>}
+          >
+            <FontAwesomeIcon icon={faQrcode} className="text-gray-500 mb-2 text-xl" />
+            <img
+              src={`/storage/qrcodes/${paymentInfo.qr_code}`}
+              alt="GCash QR Code"
+              className="mx-auto w-48 h-48 object-cover border rounded-lg shadow-md"
+            />
+          </motion.div>
 
-          {/* Display the selected image if available */}
-          {imagePreview && (
-            <div className="mt-4">
-              <img
-                src={imagePreview}
-                alt="Payment Proof Preview"
-                className="mx-auto mb-4 w-48 h-48 object-cover"
+          {/* Amount Notice */}
+          <p className="text-lg font-semibold text-gray-700 mb-6">
+            Amount to Pay: <span className="text-blue-600">₱{amount}</span>
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <PrimaryButton type="button" onClick={() => fileInputRef.current.click()}>
+                Upload Payment Proof
+              </PrimaryButton>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
               />
-            </div>
-          )}
 
-          <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
-            Finish
-          </PrimaryButton>
-        </form>
-        <p className="mt-4 text-sm text-gray-600">
-          If you don't have the app, this will redirect you to the GCash website.
-        </p>
+              {preview && (
+                <div className="mt-2">
+                  <img
+                    src={preview}
+                    alt="Payment Proof Preview"
+                    className="rounded-lg border max-w-xs"
+                  />
+                </div>
+              )}
+              <textarea
+                className={`w-full h-24 p-3 border rounded-lg ${errors.remarks ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                placeholder="Remarks (optional)"
+                value={data.remarks}
+                onChange={(e) => setData('remarks', e.target.value)}
+                disabled={processing}
+              />
+              {errors.remarks && (
+                <p className="text-sm text-red-500 mt-1">{errors.remarks}</p>
+              )}
+
+              <input
+                className={`w-full p-3 border rounded-lg ${errors.ref_number ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                placeholder="Reference Number (optional)"
+                value={data.ref_number}
+                onChange={(e) => setData('ref_number', e.target.value)}
+                disabled={processing}
+                type="number"
+              />
+              {errors.ref_number && (
+                <p className="text-sm text-red-500 mt-1">{errors.ref_number}</p>
+              )}
+
+
+            </div>
+            <PrimaryButton type="submit" disabled={processing} className="w-full">
+              {processing ? 'Processing...' : 'Confirm Payment'}
+            </PrimaryButton>
+            {errors.payment_proof && (
+              <div className="text-red-500 text-sm mt-2">
+                {errors.payment_proof}
+              </div>
+            )}
+          </form>
+
+        </motion.div>
       </div>
+
+
+      {/* Confirm Modal */}
+      <Modal show={confirmModal} onClose={() => setConfirmModal(false)}>
+        <div className="p-6 text-center">
+          <h2 className="text-lg font-bold mb-4">Confirm Payment</h2>
+          <p className="mb-6">Make sure you upload the right payment proof. Otherwise, you will not be able to process your booking.</p>
+
+          <div className="flex justify-center gap-4">
+            <PrimaryButton onClick={handleConfirmSubmit} disabled={processing}>
+              {processing ? 'Processing...' : 'Yes, Submit'}
+            </PrimaryButton>
+            <PrimaryButton type="button" onClick={() => setConfirmModal(false)}>
+              Cancel
+            </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+
     </AuthenticatedLayout>
   );
 };

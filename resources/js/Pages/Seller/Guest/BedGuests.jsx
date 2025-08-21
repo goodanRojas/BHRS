@@ -56,11 +56,7 @@ export default function BedGuests({ bookings }) {
                   </p>
                 </td>
 
-                {/* Payment Info */}
-                <td className="px-6 py-4 text-right whitespace-nowrap">
-                  <p className="font-semibold text-gray-800">&#8369;{booking.payment.amount}</p>
-                  <p className="text-xs text-gray-500">{booking.payment.payment_method}</p>
-                </td>
+                <td> </td>
               </tr>
             ))}
           </tbody>

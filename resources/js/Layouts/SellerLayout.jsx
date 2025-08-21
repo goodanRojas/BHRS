@@ -207,6 +207,11 @@ export default function SellerLayout({ header, children }) {
                                             Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
+                                            href={route('seller.payment-details.index')}
+                                        >
+                                            Payment Details
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
                                             href={route('seller.logout.post')}
                                             method="post"
                                             as="button"
@@ -313,7 +318,9 @@ export default function SellerLayout({ header, children }) {
                 </header>
             )}
 
-            <main>{children}</main>
+            <main
+                className='min-h-screen'
+            >{children}</main>
 
             <Footer />
         </div>

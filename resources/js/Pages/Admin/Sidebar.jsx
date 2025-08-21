@@ -111,6 +111,13 @@ export default function Sidebar() {
                                                 Buildings
                                             </SidebarLink>
                                             <SidebarLink
+                                                href={route('admin.owner.buildings.map.destination.index')}
+                                                active={route().current('admin.owner.buildings.map.destination.index')}
+                                                className='w-fit'
+                                            >
+                                                Destinations
+                                            </SidebarLink>
+                                            <SidebarLink
                                                 href={route('admin.owner.building.application.index')}
                                                 active={route().current('admin.owner.building.application.index')}
                                                 className='w-fit'

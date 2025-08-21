@@ -6,26 +6,39 @@ export default function Layout({ title, children }) {
             <Head title={title} />
             <div className="min-h-screen">
                 <div className="p-8 space-y-6">
-                    <nav className="flex space-x-4 border-b pb-4 mb-6">
+                    <nav className="flex space-x-2 border-b pb-3 mb-6">
                         <Link
                             href="/accommodations"
                             className={
                                 route().current('accommodations.index')
-                                    ? 'bg-blue-600 text-white px-4 py-2 rounded'
-                                    : 'text-blue-600 hover:bg-blue-100 px-4 py-2 rounded'
+                                    ? 'bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm'
+                                    : 'text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-sm font-medium'
                             }
-                        >Dashboard</Link>
-                        <Link className={
-                            route().current('accommodations.history')
-                                ? 'bg-blue-600 text-white px-4 py-2 rounded'
-                                : 'text-blue-600 hover:bg-blue-100 px-4 py-2 rounded'
-                        } href="/accommodations/history" >History</Link>
-                        <Link className={
-                            route().current('accommodations.canceled')
-                                ? 'bg-blue-600 text-white px-4 py-2 rounded'
-                                : 'text-blue-600 hover:bg-blue-100 px-4 py-2 rounded'
-                        } href="/accommodations/cancelled">Cancelled</Link>
+                        >
+                            Dashboard
+                        </Link>
+                        <Link
+                            href="/accommodations/history"
+                            className={
+                                route().current('accommodations.history')
+                                    ? 'bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm'
+                                    : 'text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-sm font-medium'
+                            }
+                        >
+                            History
+                        </Link>
+                        <Link
+                            href="/accommodations/cancelled"
+                            className={
+                                route().current('accommodations.canceled')
+                                    ? 'bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm'
+                                    : 'text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-sm font-medium'
+                            }
+                        >
+                            Cancelled
+                        </Link>
                     </nav>
+
 
                     <div>
                         {children}

@@ -6,11 +6,36 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
-  
+
     return (
         <>
-            <GuestLayout>
+            <GuestLayout
+
+            >
                 <Head title="Welcome" />
+
+                <nav className='flex justify-between items-center px-5'>
+                    <div className="mb-6">
+                        <Link href="/">
+                            <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
+                        </Link>
+                    </div>
+                    <div className="mt-6 flex space-x-4 justify-center">
+                        <Link
+                            href={route('login')}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
+                        >
+                            Log in
+                        </Link>
+                        <Link
+                            href={route('register')}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
+                        >
+                            Register
+                        </Link>
+                    </div>
+
+                </nav>
                 {/* Hero Section */}
                 <motion.section
                     className="relative bg-cover bg-center h-screen flex items-center justify-center"
@@ -19,7 +44,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}
                 >
-                    <div className="text-center  px-4">
+                    <div className="text-center  px-4"
+                    >
                         <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to the Boarding House Reservation System</h1>
                         <p className="text-lg mb-6">Easily book your stay and find the best accommodations tailored for your needs.</p>
                         <Link
@@ -32,10 +58,20 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </motion.section>
 
                 {/* Blog Pages Section */}
-                <section className="py-16 bg-white text-light-blue-600">
-                    <div className="container mx-auto px-4">
+                <section className="py-16 bg-white text-light-blue-600"
+                    style={{
+                        backgroundImage: "url('/storage/system/landingpage/backyard.webp')",
+                        backgroundSize: "cover",   // makes the image cover the container
+                        backgroundPosition: "center", // centers the image
+                        height: "100%", // give it a height
+                        width: "100%",
+                    }}>
+
+                    <div className="container mx-auto px-4"
+
+                    >
                         <motion.h2
-                            className="text-3xl font-semibold text-center mb-8"
+                            className="text-3xl font-semibold text-center mb-8 text-white"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 1 }}
@@ -116,7 +152,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </section>
 
                 {/* Carousel Section: Best Rated Beds */}
-          
+
 
                 {/* Footer Section */}
                 <Footer />

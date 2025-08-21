@@ -37,90 +37,114 @@ export default function Buildings({ initialBuildings }) {
     return (
         <AuthenticatedLayout>
             <Head title="Buildings" />
-            <div className="p-4">
-                <Breadcrumbs
-                    links={[
-                        { label: 'Buildings', },
-                        { label: 'Rooms', url: `/home/rooms` },
-                        { label: 'Beds', url: '/home' },
-                    ]}
-                />
 
-                {/* Title */}
-                <div className="mb-4">
-                    <h1 className="text-2xl font-semibold mb-4">Explore Boarding Houses</h1>
+            <div className="p-6">
+
+                {/* Page Title */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-800">
+                        Explore Boarding Houses
+                    </h1>
+                    <p className="text-gray-500 text-sm">
+                        Find the perfect place that suits your needs
+                    </p>
                 </div>
 
-                {/* Buildings List */}
+                {/* Buildings Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {buildings.map((building) => (
-                        <div
+                        <Link
                             key={building.id}
-                            className="flex flex-col  border border-gray-200 rounded-2xl shadow hover:shadow-lg transition duration-300"
+                            href={`/home/building/${building.id}`}
+                            className="group flex flex-col rounded-xl bg-white shadow-md overflow-hidden 
+               hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                         >
-                            <Link href={`/home/building/${building.id}`} className="block">
-                                {/* Image */}
-                                <div className="overflow-hidden rounded-t-2xl">
+                            {/* Image */}
+                            <div className="relative overflow-hidden">
+                                <img
+                                    src={`/storage/${building.image}`}
+                                    alt={building.name}
+                                    className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-5 space-y-4">
+                                {/* Title */}
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-800 truncate group-hover:text-indigo-600 transition">
+                                        {building.name}
+                                    </h2>
+                                    <div className="h-0.5 w-12 bg-indigo-500 rounded mt-2"></div>
+                                </div>
+
+                                {/* Seller Info */}
+                                <div className="flex items-center space-x-3">
                                     <img
-                                        src={`/storage/${building.image}`}
-                                        alt={building.name}
-                                        className="w-full h-44 object-cover hover:scale-105 transition-transform duration-300"
+                                        src={
+                                            building.seller?.avatar
+                                                ? `/storage/${building.seller.avatar}`
+                                                : '/storage/profile/default_avatar.png'
+                                        }
+                                        alt={building.seller?.name || 'Default Avatar'}
+                                        className="w-9 h-9 rounded-full border border-gray-200 object-cover shadow-sm"
                                     />
+                                    <span className="text-sm font-medium text-gray-700 truncate">
+                                        {building.seller?.name}
+                                    </span>
                                 </div>
 
-                                {/* Content */}
-                                <div className="p-4 space-y-3 bg-gradient-to-t from-indigo-700 to-gray-300 backdrop-blur-sm rounded-md">
-                                    {/* Title */}
-                                    <div className='relative'>
-                                        <h2 className="text-xl font-semibold text-gray-600 truncate">{building.name}</h2>
-                                        <span className='absolute bg-opacity-90 top-7 left-1 block bg-white rounded shadow-md h-1 w-40'></span>
-                                    </div>
-                                    {/* Seller Info */}
-                                    <div className="flex items-center space-x-2">
-                                        <img
-                                            src={building.seller?.avatar ? `/storage/${building.seller.avatar}` : '/storage/profile/default_avatar.png'}
-                                            alt={building.seller?.name || 'Default Avatar'}
-                                            className="w-8 h-8 rounded-full border-2 border-white"
-                                        />
-                                        <span className="text-sm text-gray-100 font-medium truncate">{building.seller?.name}</span>
-                                    </div>
+                                {/* Address */}
+                                <div className="flex items-start text-gray-500 text-xs space-x-2">
+                                    <i className="fas fa-location-arrow text-indigo-500 mt-0.5"></i>
+                                    <span className="leading-snug line-clamp-2">
+                                        {[building.address?.street, building.address?.barangay, building.address?.city, building.address?.province]
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                    </span>
+                                </div>
 
-                                    {/* Address */}
-                                    <div className="flex items-center text-white text-xs">
-                                        <i className="fas fa-location-arrow text-green-500 mr-2"></i>
-                                        <span>
-                                            {building.address?.street || ''}, {building.address?.barangay || ''}, {building.address?.city || ''}, {building.address?.province || ''}
+                                {/* Ratings & Tenants */}
+                                <div className="flex items-center justify-between">
+                                    {/* Ratings */}
+                                    <div className="flex items-center space-x-1 text-yellow-500">
+                                        <FontAwesomeIcon icon={faStar} />
+                                        <span className="font-semibold text-gray-700">4.2</span>
+                                        <span className="text-xs text-gray-500">
+                                            (<span className="font-medium">192</span> reviews)
                                         </span>
-
                                     </div>
 
-                                    {/* Ratings and Tenants */}
-                                    <div className="flex items-center justify-between text-white">
-                                        {/* Ratings */}
-                                        <div className="text-sm text-yellow-500 flex items-center space-x-1">
-                                            <FontAwesomeIcon icon={faStar} />
-                                            <span className="text-white  text-sm font-bold">4.2</span>
-                                            <span className="text-white text-sm">(<span className='font-bold'>192</span> reviews)</span>
-                                        </div>
-
-                                        {/* Overlapping Tenant Avatars */}
-                                        <div className="flex -space-x-3">
-                                            <img src="/storage/profile/rojas.png" alt="Avatar 1" className="w-8 h-8 rounded-full border-2 border-white" />
-                                            <img src="/storage/profile/rojas.png" alt="Avatar 2" className="w-8 h-8 rounded-full border-2 border-white" />
-                                            <img src="/storage/profile/rojas.png" alt="Avatar 3" className="w-8 h-8 rounded-full border-2 border-white" />
-                                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 text-xs font-semibold rounded-full border-2 border-white">
-                                                +9
-                                            </div>
+                                    {/* Overlapping Tenant Avatars */}
+                                    <div className="flex -space-x-2">
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 1"
+                                            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 2"
+                                            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 3"
+                                            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <div className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border-2 border-white shadow-sm">
+                                            +9
                                         </div>
                                     </div>
                                 </div>
-                            </Link>
-                        </div>
+                            </div>
+                        </Link>
+
                     ))}
                 </div>
-
-
             </div>
         </AuthenticatedLayout>
+
     );
 }

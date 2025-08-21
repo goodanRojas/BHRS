@@ -21,6 +21,9 @@ Route::prefix('seller/request/bed')->name('seller.request.bed.')->middleware('se
 
 });
 
-Route::prefix('/seller/request/info')->name('seller.request.info.')->middleware('seller')->group(function () {
-    Route::post('/update', [PaymentInfo::class, 'update'])->name('update');
+
+Route::prefix('seller/request/payments')->name('seller.request.payments.')->middleware('seller')->group(function () {
+    Route::get('/', [PaymentInfo::class, 'index'])->name('index');
+    Route::get('/{id}', [PaymentInfo::class, 'show'])->name('show');
+    Route::post('/confirm', [PaymentInfo::class, 'confirm'])->name('confirm');
 });

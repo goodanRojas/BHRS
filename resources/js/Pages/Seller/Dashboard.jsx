@@ -5,10 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBuilding, faDoorOpen, faBed, faUser, faCalendarDays, faRepeat } from '@fortawesome/free-solid-svg-icons';
 import BarChart from '@/Components/BarChart';
 export default function Dashboard({ count, revenueData, occupancyData }) {
-    console.log(count);
-    console.log(revenueData);
-    console.log(occupancyData);
-
+  
     return (
         <SellerLayout>
             <Head title="Dashboard" />
@@ -101,13 +98,13 @@ export default function Dashboard({ count, revenueData, occupancyData }) {
                 {/* Occupancy Rate Graph */}
                 <div className="p-6 bg-green-600 rounded-2xl shadow-lg text-white">
                     <h3 className="text-xl sm:text-2xl font-bold mb-4">Occupancy Rate</h3>
-                    <BarChart data={occupancyData} />
+                    {/* <BarChart data={occupancyData} /> */}
                 </div>
 
                 {/* Revenue Graph */}
                 <div className="p-6 bg-yellow-600 rounded-2xl shadow-lg text-white">
                     <h3 className="text-xl sm:text-2xl font-bold mb-4">Total Revenue</h3>
-                    <BarChart data={revenueData} />
+                    {/* <BarChart data={revenueData} /> */}
                 </div>
             </div>
 

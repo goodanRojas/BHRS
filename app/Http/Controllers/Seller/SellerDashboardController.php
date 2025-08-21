@@ -32,40 +32,11 @@ class SellerDashboardController extends Controller
             ->orWhereIn('bookable_id', $roomIds)
             ->count();
 
-        // Completed bookings count (for revenue)
-        $payedBookingsCount = Payment::where('status', 'completed')
-            ->whereIn('booking_id', function ($query) use ($bedIds, $roomIds) {
-                $query->select('id')
-                    ->from('bookings')
-                    ->where(function ($q) use ($bedIds, $roomIds) {
-                        $q->whereIn('bookable_id', $bedIds)
-                            ->where('bookable_type', Bed::class)
-                            ->orWhereIn('bookable_id', $roomIds)
-                            ->where('bookable_type', Room::class);
-                    });
-            })->count();
-
-        // Calculate occupancy rate (percentage of booked rooms/beds)
-        $totalBedsAndRooms = $bedCount + $roomCount;
-        $occupancyRate = $totalBedsAndRooms ? ($payedBookingsCount / $totalBedsAndRooms) * 100 : 0;
-
-        // Total revenue (sum of payments for completed bookings)
-        $totalRevenue = Payment::where('status', 'completed')
-            ->whereIn('booking_id', function ($query) use ($bedIds, $roomIds) {
-                $query->select('id')
-                    ->from('bookings')
-                    ->where(function ($q) use ($bedIds, $roomIds) {
-                        $q->whereIn('bookable_id', $bedIds)
-                            ->where('bookable_type', Bed::class)
-                            ->orWhereIn('bookable_id', $roomIds)
-                            ->where('bookable_type', Room::class);
-                    });
-            })->sum('amount');
 
         // Average booking length (stay duration)
         $averageStayDuration = Booking::whereIn('bookable_id', $bedIds)
             ->orWhereIn('bookable_id', $roomIds)
-            ->avg(DB::raw('DATEDIFF(end_date, start_date)'));
+            ->avg(DB::raw('DATEDIFF(month_count, start_date)'));
 
         // Frequency of bookings (how often a user books)
         $bookingFrequency = Booking::select(DB::raw('user_id, count(*) as bookings_count'))
@@ -101,44 +72,18 @@ class SellerDashboardController extends Controller
             'title' => 'Occupancy Rate'
         ];
 
-        $monthlyRevenue = Payment::where('status', 'completed')
-            ->whereIn('booking_id', function ($query) use ($bedIds, $roomIds) {
-                $query->select('id')
-                    ->from('bookings')
-                    ->where(function ($q) use ($bedIds, $roomIds) {
-                        $q->whereIn('bookable_id', $bedIds)
-                            ->where('bookable_type', Bed::class)
-                            ->orWhereIn('bookable_id', $roomIds)
-                            ->where('bookable_type', Room::class);
-                    });
-            })
-            ->selectRaw('MONTH(created_at) as month, SUM(amount) as total_revenue')
-            ->groupByRaw('MONTH(created_at)')
-            ->orderBy('month')
-            ->get();
 
-        // Format the data for the graph
-        $revenueData = [
-            'labels' => $monthlyRevenue->map(function ($item) {
-                return Carbon::createFromFormat('m', $item->month)->format('F'); // Convert to month names (e.g., January)
-            }),
-            'values' => $monthlyRevenue->pluck('total_revenue'),
-            'title' => 'Total Revenue',
-        ];
-
+       
 
         return Inertia::render("Seller/Dashboard", [
             'count' => [
                 'buildings' => $buildingCount,
                 'rooms' => $roomCount,
                 'beds' => $bedCount,
-                'payedBookingsCount' => $payedBookingsCount,
-                'occupancyRate' => $occupancyRate,
-                'totalRevenue' => $totalRevenue,
+              
                 'averageStayDuration' => $averageStayDuration,
                 'bookingFrequency' => $bookingFrequency,
             ],
-            'revenueData' => $revenueData,  // Pass the revenue data for graph
             'occupancyData' => $occupancyGraphData,  // Pass the occupancy data for graph
         ]);
     }

@@ -1,13 +1,13 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import SellerLayout from '@/Layouts/SellerLayout';
 import BedRequests from './BedRequests';
 import RoomRequests from './RoomRequests';
-import PaymentInfo from './PaymentInfo';
+import Payments from './Payments';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
-export default function Request({ bedRequests = [], roomRequests = [], paymentInfo = {} }) {
+export default function Request({ bedRequests = [], roomRequests = [], payments = {} }) {
     const [activeTab, setActiveTab] = useState('beds');
     const [searchQuery, setSearchQuery] = useState(''); // Added state for search query
 
@@ -57,13 +57,14 @@ export default function Request({ bedRequests = [], roomRequests = [], paymentIn
                         >
                             Room
                         </button>
-                        <button
-                            onClick={() => setActiveTab('payment')}
-                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ease-in-out ${activeTab === 'payment' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:text-blue-600'
+                      
+                        <Link
+                            href={route('seller.request.payments.index')}
+                            className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ease-in-out ${activeTab === 'payments' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:text-blue-600'
                                 }`}
                         >
-                            Payment Info
-                        </button>
+                            Payments
+                        </Link>
                     </div>
 
 
@@ -94,7 +95,7 @@ export default function Request({ bedRequests = [], roomRequests = [], paymentIn
                             <RoomRequests requests={filteredRoomRequests} />
                         ) :
                             activeTab === 'payment' ? (
-                                <PaymentInfo paymentInfo={paymentInfo} />
+                                <Payments payments={payments} />
                             ) : null
                 }
             </div>

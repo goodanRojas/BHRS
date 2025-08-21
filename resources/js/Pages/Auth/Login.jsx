@@ -7,15 +7,30 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
-export default function Login({ status, canResetPassword }) {
+import { useState, useEffect } from 'react';
 
+export default function Login({ status }) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
-        remeber: false,
+        remember: false,
     });
+
+    // rotating welcome text
+    const messages = [
+        "Welcome to BoardingHub 🚀",
+        "Find your perfect stay 🏡",
+        "Fast, easy, and reliable booking 💳",
+    ];
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % messages.length);
+        }, 3000); // change text every 3s
+        return () => clearInterval(interval);
+    }, []);
 
     const submit = (e) => {
         e.preventDefault();
@@ -28,77 +43,124 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {/* Gradient background wrapper */}
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
+                {/* Card container */}
+                <div className="flex flex-col md:flex-row w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30">
 
-            <form onSubmit={submit} className="w-full backdrop-blur max-w-lg mx-auto p-6 rounded-lg shadow-md space-y-6">
-                <div>
-                    <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
-
-                    <div className='relative'>
-                        <TextInput
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            value={data.password}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="current-password"
-                            onChange={(e) => setData('password', e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute top-3 right-5 text-sm text-gray-500 focus:outline-none focus:text-gray-700 hover:text-gray-700"
+                    {/* LEFT WELCOME CARD (desktop only) */}
+                    <div className="hidden md:flex flex-col justify-center items-center w-1/2 p-10 text-white bg-gradient-to-br from-indigo-600/80 to-purple-600/80">
+                        <h2
+                            key={index} // triggers re-render for animation
+                            className="text-3xl font-bold mb-4 animate-fade"
                         >
-                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                        </button>
+                            {messages[index]}
+                        </h2>
+                        <p className="text-lg opacity-90 text-center">
+                            Book your boarding house with ease and comfort.
+                        </p>
                     </div>
 
-                    <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
-                </div>
-                <div className="flex items-center gap-3 mt-4">
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        value="1"
-                        checked={data.remember}
-                        onChange={(e) => setData('remember', e.target.checked)}
-                    />
-                    <label htmlFor="remember">Remember Me</label>
+                    {/* LOGIN CARD */}
+                    <div className="w-full md:w-1/2 p-10 bg-white/80 backdrop-blur-xl rounded-r-2xl">
+                        <form
+                            onSubmit={submit}
+                            className="space-y-6"
+                        >
+                            {/* Title */}
+                            <div className="text-center mb-6">
+                                <h2 className="text-3xl font-bold text-gray-800">Welcome Back!</h2>
+                                <p className="text-gray-500">Login to continue your journey</p>
+                            </div>
+
+                            {/* Status message */}
+                            {status && (
+                                <div className="mb-4 text-sm font-medium text-green-600 bg-green-100 px-4 py-2 rounded-lg">
+                                    {status}
+                                </div>
+                            )}
+
+                            {/* Email */}
+                            <div>
+                                <InputLabel htmlFor="email" value="Email" className="block text-sm font-semibold text-gray-700" />
+                                <TextInput
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={data.email}
+                                    className="mt-2 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                    autoComplete="username"
+                                    isFocused={true}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                />
+                                <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
+                            </div>
+
+                            {/* Password */}
+                            <div className="mt-4">
+                                <InputLabel htmlFor="password" value="Password" className="block text-sm font-semibold text-gray-700" />
+                                <div className="relative mt-2">
+                                    <TextInput
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={data.password}
+                                        className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                        autoComplete="current-password"
+                                        onChange={(e) => setData('password', e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                    </button>
+                                </div>
+                                <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
+                            </div>
+
+                            {/* Remember + Register */}
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        name="remember"
+                                        value="1"
+                                        checked={data.remember}
+                                        onChange={(e) => setData('remember', e.target.checked)}
+                                        className="rounded text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor="remember" className="text-sm text-gray-600">Remember Me</label>
+                                </div>
+                                <p className="text-sm text-gray-500">
+                                    Not a member?{" "}
+                                    <Link href={route('register')} className="text-indigo-600 font-semibold hover:underline">
+                                        Register
+                                    </Link>
+                                </p>
+                            </div>
+
+                            {/* Forgot + Login button */}
+                            <div className="mt-6 flex items-center justify-between">
+                                <Link
+                                    href={route('password.request')}
+                                    className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+                                >
+                                    Forgot your password?
+                                </Link>
+                                <PrimaryButton
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
+                                    disabled={processing}
+                                >
+                                    Log in
+                                </PrimaryButton>
+                            </div>
+                        </form>
+                    </div>
 
                 </div>
-                <div className="mt-4 flex items-center justify-between">
-                    <Link
-                        href={route('password.request')}
-                        className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
-                    >
-                        Forgot your password?
-                    </Link>
-                    <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
+            </div>
         </GuestLayout>
     );
 }

@@ -157,6 +157,9 @@ class BedController extends Controller
             'room.building.seller' => function ($query) {
                 $query->select('id', 'name', 'avatar');
             },
+            'bookings' => function ($query) {
+                $query->where('status', 'completed');
+            },
             'features',
             'room.building.address',
             'favorites',
@@ -207,14 +210,19 @@ class BedController extends Controller
                 return $sibling;
             });
         $ableToBook = Booking::where('status', '=', 'approved')
-        ->where('user_id', Auth::id())
-        ->count();
+            ->where('user_id', Auth::id())
+            ->count();
+        $isBooked = Booking::where('bookable_id', $bed->id)
+            ->where('bookable_type', Bed::class)
+            ->where('status', 'completed')
+            ->exists();
         return Inertia::render('Home/Bed', [
             'bed' => $bed,
             'completed_bookings' => $completedBookings,
             'total_booking_duration' => $totalBookingDuration,
             'sibling_beds' => $siblingBeds,
             'able_to_book' => $ableToBook,
+            'is_booked' => $isBooked,
         ]);
     }
 

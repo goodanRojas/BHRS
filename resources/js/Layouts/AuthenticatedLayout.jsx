@@ -81,8 +81,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                 <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                     <NavLink
-                                        href={route('home')}
-                                        active={route().current('home')}
+                                        href={route('to.user.buildings')}
+                                        active={route().current('to.user.buildings')}
                                     >
                                         Home
                                     </NavLink>
@@ -148,7 +148,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     )}
                                     <button
                                         onClick={() => setNotificationsModal(!notificationsModal)}
-                                     className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
                                         <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                     </button>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
@@ -251,70 +251,70 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Home
                             </ResponsiveNavLink>
                         </div>
-                               {/* Accommodation & Map Links */}
-                                <div className="flex space-x-3">
-                                    <div className="relative group">
-                                        <Link href={route('accommodations.index')} className="p-2 text-gray-600 hover:text-blue-500 transition duration-200 hover:scale-105">
-                                            <FontAwesomeIcon icon={faBed} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                        </Link>
-                                        <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                            Accommodations
-                                        </span>
-                                    </div>
+                        {/* Accommodation & Map Links */}
+                        <div className="flex space-x-3">
+                            <div className="relative group">
+                                <Link href={route('accommodations.index')} className="p-2 text-gray-600 hover:text-blue-500 transition duration-200 hover:scale-105">
+                                    <FontAwesomeIcon icon={faBed} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                </Link>
+                                <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                    Accommodations
+                                </span>
+                            </div>
 
-                                    <div className="relative group">
-                                        <Link href={route('map.index')} className="p-2 text-gray-600 hover:text-green-500 transition duration-200 hover:scale-105">
-                                            <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                        </Link>
-                                        <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                            Map
-                                        </span>
-                                    </div>
-                                </div>
+                            <div className="relative group">
+                                <Link href={route('map.index')} className="p-2 text-gray-600 hover:text-green-500 transition duration-200 hover:scale-105">
+                                    <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                </Link>
+                                <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                    Map
+                                </span>
+                            </div>
+                        </div>
 
-                                {/* Message Icon with Badge */}
-                                <div className="relative group">
-                                    {messagesCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {messagesCount}
-                                        </div>
-                                    )}
-                                    <Link href="/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                    </Link>
-                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Messages
-                                    </span>
+                        {/* Message Icon with Badge */}
+                        <div className="relative group">
+                            {messagesCount > 0 && (
+                                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                    {messagesCount}
                                 </div>
+                            )}
+                            <Link href="/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                            </Link>
+                            <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                Messages
+                            </span>
+                        </div>
 
-                                {/* Favorites Icon with Badge */}
-                                <div className="relative group">
-                                    {favoritesCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {favoritesCount}
-                                        </div>
-                                    )}
-                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                    </Link>
-                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Favorites
-                                    </span>
+                        {/* Favorites Icon with Badge */}
+                        <div className="relative group">
+                            {favoritesCount > 0 && (
+                                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                    {favoritesCount}
                                 </div>
-                                {/* Favorites Icon with Badge */}
-                                <div className="relative group">
-                                    {favoritesCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {favoritesCount}
-                                        </div>
-                                    )}
-                                    <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                    </Link>
-                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Notificatoins
-                                    </span>
+                            )}
+                            <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                            </Link>
+                            <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                Favorites
+                            </span>
+                        </div>
+                        {/* Favorites Icon with Badge */}
+                        <div className="relative group">
+                            {favoritesCount > 0 && (
+                                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                    {favoritesCount}
                                 </div>
+                            )}
+                            <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                            </Link>
+                            <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                Notificatoins
+                            </span>
+                        </div>
 
 
                         <div className="pb-1 pt-4">
@@ -353,7 +353,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     </header>
                 )}
-                  {user && !user.has_completed_onboarding && <OnboardingModal />}
+                {user && !user.has_completed_onboarding && <OnboardingModal />}
                 <main
                     className='min-h-screen'
                 >{children}</main>

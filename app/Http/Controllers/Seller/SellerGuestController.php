@@ -22,7 +22,7 @@ class SellerGuestController extends Controller
         $roomIds = Room::whereIn('building_id', $buildingIds)->pluck('id');
         $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
 
-        $bedBookings = Booking::with(['user','payment' ,'bookable' => function ($morph) {
+        $bedBookings = Booking::with(['user' ,'bookable' => function ($morph) {
             $morph->with(['room.building']);
         }])
         ->where('bookable_type', Bed::class)
@@ -30,7 +30,7 @@ class SellerGuestController extends Controller
         ->where('status', 'approved')
         ->get();
 
-        $roomBookings = Booking::with(relations: ['user', 'payment' ,'bookable' => function ($morph){
+        $roomBookings = Booking::with(relations: ['user' ,'bookable' => function ($morph){
             $morph->with('building');
         }])
         ->where('bookable_type', Room::class)   

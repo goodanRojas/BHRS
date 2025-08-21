@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
 use App\Events\NewBookingCreated;
-use App\Models\{OwnerPaymentInfo, Payment, Address, Bed, Booking};
+use App\Http\Controllers\Admin\OwnerController;
+use App\Models\{OwnerPaymentInfo, Receipt, Address, Bed, Booking};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -32,7 +33,7 @@ class BedBookingController extends Controller
     // Booking with cash payment
     public function bookBed(Request $request, $bedId)
     {
-        // Log::info('Booking request data: ', $request->all());
+        Log::info('Booking request data: ', $request->all());
         $request->validate([
             'start_date' => 'required|date',
             'month_count' => 'required|integer|min:1',
@@ -47,123 +48,97 @@ class BedBookingController extends Controller
             'address.postal_code' => 'nullable|string|max:20',
             'address.country' => 'required|string|max:100',
         ]);
+        $booking = Booking::create([
+            'user_id' => auth()->id(),
+            'bookable_type' => Bed::class,
+            'bookable_id' => $bedId,
+            'start_date' => Carbon::parse($request->start_date),
+            'month_count' => $request->month_count,
+            'total_price' => $request->total_price,
+            'status' => 'pending',
+            'payment_method' => $request->payment_method,
+            'special_request' => $request->special_request,
+            'agreed_to_terms' => $request->agreedToTerms,
+        ]);
+        Address::create([
+            'addressable_id'   => $booking->id,
+            'addressable_type' => Booking::class,
+            'street'           => $request->address['street'],
+            'barangay'         => $request->address['barangay'],
+            'city'             => $request->address['city'],
+            'province'         => $request->address['province'],
+            'postal_code'      => $request->address['postal_code'],
+            'country'          => $request->address['country'],
+        ]);
+
+       return redirect()->route('accommodations.index')->with('success', 'Booking request created successfully.');
 
         // Only allow cash payment here
 
 
-        $bed = Bed::findOrFail($bedId);
-        $startDate = Carbon::parse($request->start_date);
-        $endDate = $startDate->copy()->addMonths($request->month_count);
 
-        $totalPrice = $bed->price * $request->month_count;
-
-        $booking = Booking::create([
-            'user_id' => auth()->id(),
-            'bookable_id' => $bed->id,
-            'bookable_type' => Bed::class,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'total_price' => $totalPrice,
-            'fullname' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'special_request' => $request->special_request,
-            'status' => 'pending',
-            'agreed_to_terms' => $request->agreedToTerms,
-            'payment_method' => $request->payment_method,
-        ]);
-
-        if ($booking) {
-            $address = Address::create([
-                'addressable_id' => $booking->id,
-                'addressable_type' => Booking::class,
-                'street' => $request->input('address.street'),
-                'barangay' => $request->input('address.barangay'),
-                'city' => $request->input('address.city'),
-                'province' => $request->input('address.province'),
-                'postal_code' => $request->input('address.postal_code'),
-                'country' => $request->input('address.country'),
-            ]);
-
-            if ($address) {
-                $booking->load('bookable.room.building.seller');
-                $monthCount = $request->month_count;
-                event(new NewBookingCreated($booking, $monthCount));
-            }
-        }
-        if ($request->payment_method == 'gcash') {
-            return redirect()->route('bed.book.initiate.gcash', [
-                'bedId' => $bedId,
-                'amount' => $request->total_price,
-            ]);
-        }
-
-        return back()->with(['success' => true, 'booking' => $booking]);
     }
 
-    public function initiateGCashBooking(Request $request)
-    {
-        // Find the bed based on the provided bed ID
-        $bed = Bed::findOrFail($request->bedId);
 
-        // Check if there is an existing 'pending' booking for the logged-in user and the selected bed
-        $pending = Booking::where('user_id', auth()->id())
-            ->where('bookable_id', $bed->id)
-            ->where('bookable_type', Bed::class)
-            ->where('status', 'pending')
-            ->first();
-
-        if ($pending) {
-            // Update the pending booking to 'waiting'
-            $pending->update(['status' => 'waiting']);
-
-            // Handle the payment proof file if present
-            if ($request->hasFile('paymentProof')) {
-                $paymentProof = $request->file('paymentProof');
-
-                // Ensure the file is valid and store it
-                if ($paymentProof->isValid()) {
-                    $paymentProofPath = $paymentProof->storeAs('images', $paymentProof->hashName(), 'public');
-                    // Update the booking with the receipt path
-                    Payment::create([
-                        'user_id' => auth()->id(),
-                        'booking_id' => $pending->id,
-                        'amount' => $pending->total_price,
-                        'payment_method' => 'gcash',
-                        'status' => 'completed',
-                        'transaction_id' => $pending->id, // Use booking ID as transaction ID
-                        'receipt' => $paymentProofPath,
-                        'paid_at' => now(),
-                    ]);
-                } else {
-                    return redirect()->back()->withErrors(['paymentProof' => 'Invalid payment proof file.']);
-                }
-            }
-        } else {
-            // No pending booking found
-            return redirect()->back()->withErrors(['booking' => 'No pending booking found for this bed.']);
-        }
-
-        // Redirect to accommodations index
-        return redirect(route('accommodations.index'));
-    }
 
     // Show GCash payment page with React/Inertia
-    public function showGCashPaymentPage($bedId, $amount)
+    public function showGCashPaymentPage($booking_id)
     {
-        $gcashNumber = '09630012342'; // your number
-        $staticQrUrl = asset('storage/system/gcash_static_qr.webp');
-        $paymentInfo = $ownerPaymentInfo = Bed::find($bedId)
-            ->room          // Get the room the bed belongs to
-            ->building      // Get the building the room belongs to
-            ->seller        // Get the seller who owns the building
-            ->paymentInfo;  // Get the seller's OwnerPaymentInfo
-
-        // dd($paymentInfo);
+        $booking = Booking::where('id', $booking_id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'approved')
+            ->with([
+                'bookable.room.building.seller.paymentInfo' => function ($query) {
+                    $query->select('owner_id', 'gcash_number', 'gcash_name', 'qr_code');
+                }
+            ])
+            ->first();
+        if (!$booking) {
+            return redirect()->route('accommodations.index')->with('error', 'Booking not found or not authorized.');
+        }
+        $ammount = $booking->total_price;
+        $paymentInfo = $booking->bookable->room->building->seller->paymentInfo;
         return Inertia::render('Home/Booking/GcashPayment', [
-            'bedId' => $bedId,
-            'amount' => $amount,
+            'booking' => $booking,
             'paymentInfo' => $paymentInfo,
+            'amount' => $ammount,
         ]);
+    }
+
+    public function confirmGcashPayment(Request $request)
+    {
+         $request->validate([
+        'booking_id' => 'required|exists:bookings,id',
+        'remarks' => 'nullable|string|max:255',
+        'ref_number' => 'nullable|string|max:255',
+        'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+    ]);
+        Log::info('Booking request data: ', $request->all());
+        $booking = Booking::where('id', $request->booking_id)->first();
+        $booking->status = "paid";
+        $booking->save();
+
+        $path = $request->file('payment_proof')->store('receipts', 'public');
+
+        Receipt::create([
+            'booking_id' => $booking->id,
+            'user_receipt' => $path,
+            'payment_method' => 'gcash',
+            'user_remarks' => $request->remarks,
+            'user_ref_number' => $request->ref_number,
+            'status' => 'pending',
+            'amount' => $booking->total_price,
+            'paid_at' => Carbon::now(),
+        ]);
+
+        return redirect()->route('accommodations.index');
+    }
+
+    /* Cancel booking */
+    public function cancelBooking(Request $request,Booking $booking)
+    {
+        $booking->status = 'canceled';
+        $booking->save();
+        return redirect()->route('accommodations.cancelled')->with('success', 'Booking cancelled successfully.');
     }
 }

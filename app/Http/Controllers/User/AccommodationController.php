@@ -18,7 +18,7 @@ class AccommodationController extends Controller
      */
     public function index(Request $request)
     {
-        $booking = Booking::whereIn('status', ['approved', 'waiting'])
+        $booking = Booking::whereIn('status', ['approved', 'waiting', 'pending', 'paid', 'completed'])
             ->where('user_id', auth()->id())
             ->with([
                 'bookable' => function ($morphTo) {

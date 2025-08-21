@@ -18,11 +18,8 @@ class Booking extends Model
         'bookable_id',
         'bookable_type',
         'start_date',
-        'end_date',
+        'month_count',
         'total_price',
-        'fullname',
-        'email',
-        'phone',
         'special_request',
         'agreed_to_terms',
         'status',
@@ -40,10 +37,8 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function payment()
-    {
-        return $this->hasOne(Payment::class);
+    public function receipt(){
+        return $this->hasOne(Receipt::class);
     }
     public function address()
     {

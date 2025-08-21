@@ -3,25 +3,20 @@ import mapboxgl from 'mapbox-gl';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Head } from '@inertiajs/react';
-
+import ReactDOM from 'react-dom/client';
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-export default function MapBox({ buildings }) {
+export default function MapBox({ buildings, destinations }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const routeLayerIds = useRef([]);
   const domMarkers = useRef([]);
   const currentPopup = useRef(null);
-  const [userLocation, setUserLocation] = useState(null);
-  const selectedBuildingRef = useRef(null);
-
-  const [activeBuildingId, setActiveBuildingId] = useState(null);
-
   useEffect(() => {
     if (map.current) return; // Prevent multiple initializations
 
     const savedView = JSON.parse(localStorage.getItem('lastMapView'));
-    // Initialize the map with a default center (e.g., Manila)
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -34,7 +29,6 @@ export default function MapBox({ buildings }) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
 
           // Move the map to the user's location
           map.current.flyTo({
@@ -83,9 +77,31 @@ export default function MapBox({ buildings }) {
           },
         })),
       };
+      const destGeojson = {
+        type: 'FeatureCollection',
+        features: destinations.map((d) => ({
+          type: 'Feature',
+          properties: {
+            name: d.name,
+            image: d.image,
+            category: d.category,
+            description: d.description,
+            latitude: d.latitude,
+            longitude: d.longitude,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(d.longitude), parseFloat(d.latitude)],
+          },
+        })),
+      };
 
       if (map.current.getSource('buildings')) {
         map.current.getSource('buildings').setData(geojson);
+        return;
+      }
+      if (map.current.getSource('destinations')) {
+        map.current.getSource('destinations').setData(destGeojson);
         return;
       }
 
@@ -96,6 +112,41 @@ export default function MapBox({ buildings }) {
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 50,
+      });
+      // Add the destinations data to be used later for clustering
+      map.current.addSource('destinations', {
+        type: 'geojson',
+        data: destGeojson,
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+      // Add the dot for destinations
+      map.current.addLayer({
+        id: "destinations-points",
+        type: "circle",
+        source: "destinations",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "#16a34a", // green
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff"
+        }
+      });
+      //  Add the label text for destinations
+      map.current.addLayer({
+        id: "destinations-labels",
+        type: "symbol",
+        source: "destinations",
+        layout: {
+          "text-field": ["get", "category"], // use the property as label
+          "text-size": 12,
+          "text-offset": [0, 1.2], // move below/above the circle
+          "text-anchor": "top"
+        },
+        paint: {
+          "text-color": "#333333"
+        }
       });
 
       // Add layers for clustered and unclustered points
@@ -136,11 +187,6 @@ export default function MapBox({ buildings }) {
       });
 
 
-      /* // Optional: Remove the symbol layer if it exists
-      if (map.current.getLayer('unclustered-point')) {
-        map.current.removeLayer('unclustered-point');
-      } */
-
       // Loop through buildings (unclustered ones only)
       buildings.forEach((b) => {
         // Create the DOM element for your custom marker
@@ -148,48 +194,38 @@ export default function MapBox({ buildings }) {
         container.style.display = 'flex';
         container.style.flexDirection = 'row'; // horizontal layout
         container.style.alignItems = 'center';
+        container.style.whiteSpace = 'nowrap'; // prevent text wrapping
+        container.style.flexWrap = 'nowrap'; // prevent text wrapping
+        container.style.maxWidth = "160px";
+        container.style.overflow = 'hidden'; // hide overflow
         container.style.background = 'white';
         container.style.border = '1px solid #ccc';
         container.style.borderRadius = '9999px'; // pill shape
         container.style.boxShadow = '0 0 4px rgba(0,0,0,0.2)';
         container.style.padding = '2px 6px';
-        container.style.paddingTop = '10px'; // adjust padding for better alignment
         container.style.gap = '6px'; // spacing between image and label
         container.style.cursor = 'pointer';
-
-
-        // Marker element (image)
-        const el = document.createElement('div');
-        el.style.width = '30px';
-        el.style.height = '30px';
-        el.style.borderRadius = '9999px';
-        el.style.backgroundImage = `url(/storage/${b.image})`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.style.flexShrink = '0';
-        el.style.border = '2px solid white';
-        el.style.boxShadow = '0 0 3px rgba(0,0,0,0.2)';
 
 
         // Label element (building name)
         const label = document.createElement('div');
         label.textContent = b.name;
-        label.style.fontSize = '13px';
+        label.style.fontSize = '10px';
+        label.style.fontWeight = 'bold';
         label.style.color = '#000';
         label.style.whiteSpace = 'nowrap';
         label.style.overflow = 'hidden';
         label.style.textOverflow = 'ellipsis';
         label.style.maxWidth = '120px'; // optional: limit width for long names
 
-        // Append to container
-        container.appendChild(el);
         container.appendChild(label);
 
 
         // Add the marker to the map
         const marker = new mapboxgl.Marker({
           element: container,
-          anchor: 'top', // Adjust anchor to align with the bottom of the image
+          anchor: 'bottom', // Adjust anchor to align with the bottom of the image
+          offset: [50, 35], // Adjust offset to position the marker above the image
         })
           .setLngLat([parseFloat(b.longitude), parseFloat(b.latitude)])
           .addTo(map.current);
@@ -198,43 +234,92 @@ export default function MapBox({ buildings }) {
 
       });
 
+      //Loop through destinations (unclustered ones only)
+      destinations.forEach((d) => {
+        const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true });
 
-      map.current.on('click', 'clusters', (e) => {
-        const features = map.current.queryRenderedFeatures(e.point, {
-          layers: ['clusters'],
+        map.current.on('click', 'destinations-points', (e) => {
+          const feature = e.features[0];
+          popup
+            .setLngLat(feature.geometry.coordinates)
+            .setHTML(`
+      <div class="text-sm">
+        <strong>${feature.properties.name}</strong><br/>
+        <img src="/storage/${feature.properties.image}" class="rounded w-full h-20 object-cover my-1"/>
+        <span class="text-gray-500">${feature.properties.category}</span>
+      </div>
+    `)
+            .addTo(map.current);
         });
-        const clusterId = features[0].properties.cluster_id;
-        map.current.getSource('buildings').getClusterExpansionZoom(
-          clusterId,
-          (err, zoom) => {
-            if (err) return;
-            map.current.easeTo({
-              center: features[0].geometry.coordinates,
-              zoom,
-              duration: 1000,
-            });
-          }
-        );
+
+        map.current.on('mouseenter', 'destinations-points', () => {
+          map.current.getCanvas().style.cursor = 'pointer';
+        });
+        map.current.on('mouseleave', 'destinations-points', () => {
+          map.current.getCanvas().style.cursor = '';
+        });
+
       });
 
+      map.current.on('click', 'clusters',
+        (e) => {
+          const features = map.current.queryRenderedFeatures(e.point, {
+            layers: ['clusters'],
+          });
+          const clusterId = features[0].properties.cluster_id;
+          map.current.getSource('buildings').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+              if (err) return;
+              map.current.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom,
+                duration: 1000,
+              });
+            }
+          );
+        });
+
       map.current.on('click', 'unclustered-point', (e) => {
+
         const coords = e.features[0].geometry.coordinates.slice();
         const props = e.features[0].properties;
-        const building = buildings.find((b) => b.id === parseInt(props.id));
-        console.log('Clicked building:', building);
+        const buildingId = parseInt(props.id);
+        const building = buildings.find((b) => b.id === parseInt(buildingId));
+        const targetMarker = domMarkers.current.find(
+          ({ building: b }) => b.id === buildingId
+        );
+
         const html = `
-        <div  class="p-2">
-          <img src="/storage/${props.image}" class="rounded-lg w-full h-28 object-cover mb-2" />
-          <h3 class="text-md font-bold">${props.name}</h3>
-          <p class="text-sm text-gray-600">Owner: ${props.owner}</p>
-          <p class="text-sm text-yellow-500">Rating: ${props.rating} ⭐</p>
-        </div>
+        <a href="/home/building/${buildingId}" class="flex flex-col items-center">
+          <div  class="p-2">
+              <img src="/storage/${props.image}" class="rounded-lg w-full h-28 object-cover mb-2" />
+              <h3 class="text-md font-bold">${props.name}</h3>
+              <p class="text-sm text-gray-600"> ${props.owner}</p>
+              <p class="text-sm text-yellow-500">Rating: ${props.rating} ⭐</p>
+          </div>
+        </a>   
       `;
 
-        new mapboxgl.Popup()
+        const popup = new mapboxgl.Popup({
+          offset: {
+            'top': [0, 10],
+            'bottom': [0, -30],
+            'left': [10, 0],
+            'right': [-10, 0]
+          }
+        })
           .setLngLat(coords)
           .setHTML(html)
           .addTo(map.current);
+
+        if (targetMarker) {
+          targetMarker.marker.getElement().style.display = 'none'; // Hide the marker when clicked\
+          popup.on('close', () => {
+            targetMarker.marker.getElement().style.display = 'flex'; // Hide the marker when clicked\
+
+          });
+        }
         showBuildingRoutes(building);
       });
 
@@ -243,7 +328,6 @@ export default function MapBox({ buildings }) {
         const features = map.current.queryRenderedFeatures(e.point);
         if (features.length === 0) {
           clearMapOverlays();
-          setActiveBuildingId(null);
         }
 
       });
@@ -265,6 +349,8 @@ export default function MapBox({ buildings }) {
             marker.getElement().style.display = showMarkers ? 'block' : 'none';
           }
         });
+
+
 
       });
 
@@ -318,74 +404,18 @@ export default function MapBox({ buildings }) {
           'line-cap': 'round',
         },
         paint: {
-          'line-color': '#3b82f6', // Blue color
-          'line-width': 4,
+          'line-color': '#400bc7', // Blue color
+          'line-width': 2,
           'line-dasharray': [1, 0], // Dashed line
         },
       });
-
+      // 🔹 Listen for clicks on this route
+      map.current.on('click', id, () => {
+        highlightRoute(id);
+      });
       routeLayerIds.current.push(id);
-
-      // Destination marker
-      const dest = route.destination;
-      // console.log('Destination:', dest);
-      // Create a custom DOM element for the marker + label
-      const markerContainer = document.createElement('div');
-      markerContainer.className = 'relative flex flex-col items-center group';
-
-      // Marker circle (dot)
-      const markerDot = document.createElement('div');
-      markerDot.className = 'w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow';
-      markerContainer.appendChild(markerDot);
-
-      // Category label (always visible)
-      const label = document.createElement('div');
-      label.className = 'text-xs mt-1 bg-white px-2 py-1 rounded shadow text-gray-800 whitespace-nowrap';
-      label.innerText = dest.category;
-      markerContainer.appendChild(label);
-
-      // 4. Create a popup
-      const popup = new mapboxgl.Popup().setHTML(`
-        <div class="text-sm">
-          <strong>${dest.name}</strong><br/>
-          <img src="/storage/${dest.image}" class="rounded w-full h-20 object-cover my-1"/>
-          <span class="text-gray-500">${dest.category}</span>
-        </div>
-      `);
-
-      // 5. Create the marker with the DOM element
-      const destinationMarker = new mapboxgl.Marker({ element: markerContainer })
-        .setLngLat([parseFloat(dest.longitude), parseFloat(dest.latitude)])
-        .setPopup(popup)
-        .addTo(map.current);
-
-      // Highlight the route when the marker is clicked
-      destinationMarker.getElement().addEventListener('click', () => {
-        const matchingRoute = building.routes.find(r => r.destination_id === dest.id);
-
-        if (matchingRoute) {
-          const routeIndex = building.routes.indexOf(matchingRoute);
-          const layerId = `route-${building.id}-${routeIndex}`;
-          highlightRoute(layerId);
-        } else {
-          console.warn('No matching route found for destination:', dest.id);
-        }
-      });
-
-      // 6. Toggle label on popup open/close
-      popup.on('open', () => {
-        label.style.display = 'none';
-      });
-
-      popup.on('close', () => {
-        label.style.display = 'block';
-      });
-
-
-      // Save this destination marker for later cleanup
-      domMarkers.current.push({ destinationMarker });
-
     });
+
   };
 
   const clearMapOverlays = () => {
@@ -413,21 +443,35 @@ export default function MapBox({ buildings }) {
       destinationMarker: null,
     }));
   };
-  const highlightRoute = (routeId) => {
-    // First reset all other routes to default (optional if only one is active)
-    routeLayerIds.current.forEach((id) => {
-      if (!id) return; // Skip if id is undefined
-      if (!map.current.getLayer(id)) return; // Skip if layer doesn't exist
 
+  const highlightRoute = (routeId) => {
+    // Hide all other routes
+    routeLayerIds.current.forEach((id) => {
+      if (!id) return;
+      if (!map.current.getLayer(id)) return;
+
+      if (id === routeId) {
+        // Show and style the selected route
+        map.current.setLayoutProperty(id, 'visibility', 'visible');
+        map.current.setPaintProperty(id, 'line-color', '#f59e0b'); // orange
+        map.current.setPaintProperty(id, 'line-dasharray', [2, 2]); // dashed
+      } else {
+        // Hide other routes
+        map.current.setLayoutProperty(id, 'visibility', 'none');
+      }
+    });
+  };
+
+  // Optional function to show all routes again
+  const showAllRoutes = () => {
+    routeLayerIds.current.forEach((id) => {
+      if (!id) return;
+      if (!map.current.getLayer(id)) return;
+      map.current.setLayoutProperty(id, 'visibility', 'visible');
       map.current.setPaintProperty(id, 'line-color', '#3b82f6'); // blue
       map.current.setPaintProperty(id, 'line-dasharray', [1, 0]); // solid
     });
-
-    // Highlight the selected one
-    map.current.setPaintProperty(routeId, 'line-color', '#f59e0b'); // orange
-    map.current.setPaintProperty(routeId, 'line-dasharray', [2, 2]); // dashed
   };
-
 
 
   return (
@@ -435,9 +479,13 @@ export default function MapBox({ buildings }) {
       <Head title="Map" />
 
       <div className="p-4">
-        <h1 className="text-2xl font-semibold mb-4">Explore Boarding Houses</h1>
         <div ref={mapContainer} className="w-full h-[80vh] rounded-lg shadow-md border" />
       </div>
+
+
     </AuthenticatedLayout>
   );
 }
+
+
+

@@ -1,19 +1,34 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import Layout from './Layout';
-import { CheckCircle } from 'lucide-react';
-
+import { CheckCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
+import Modal from '@/Components/Modal';
+import { useForm } from '@inertiajs/inertia-react';
+import { useState } from 'react';
 export default function Dashboard({ booking }) {
     const user = usePage().props.auth.user;
-    console.log(booking);
+
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const {post, processing, errors, data, reset} = useForm({
+        reason: '',
+        booking_id: booking.id,
+    });
+
+    const handleCancelSubmit = (e) => {
+        e.preventDefault();
+        post(route('booking.cancel', booking.id), {
+            onSuccess: () => setShowCancelModal(false),
+            onError: (error) => console.error(error),
+        });
+    };
     if (!booking) {
         return (
             <Layout>
                 <Head title="Accommodation Dashboard" />
                 <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-4">
-                    <h2 className="text-2xl font-semibold">No current booking found</h2>
+                    <h2 className="text-2xl font-semibold text-gray-800">No current booking found</h2>
                     <Link
                         href="/home"
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
                     >
                         Browse to find your stay
                     </Link>
@@ -33,70 +48,188 @@ export default function Dashboard({ booking }) {
         ? bookable?.room?.building?.address
         : bookable?.building?.address;
 
-    const duration = booking.start_date && booking.end_date
-        ? Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 3600 * 24)) + " days"
-        : 'N/A';
-
     return (
         <Layout>
-            <Head title="Booking Confirmation" />
-            <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-8">
-                <div className="flex flex-col md:flex-row justify-between gap-6">
-                    {/* Booking Summary Card */}
-                    <div className="flex-1 bg-white rounded-xl shadow-lg p-4">
+            <Head title="Booking Dashboard" />
+
+            <div className="space-y-8">
+                {/* Booking Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left: Image + Details */}
+                    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
                         <img
-                            src={image ? `/storage/${image}` : 'https://via.placeholder.com/300x200?text=No+Image'}
+                            src={image ? `/storage/${image}` : 'https://via.placeholder.com/600x400?text=No+Image'}
                             alt={name}
-                            className="w-full h-48 object-cover rounded-lg"
+                            className="w-full h-56 md:h-64 object-cover"
                         />
-                        <span className='w-full h-[2px] bg-indigo-400 block'> </span>
-                        <div className="mt-4">
-                            <h3 className="text-xl font-semibold text-gray-800">{bookable.name}</h3>
-                            <p className="mt-2 text-sm text-gray-700 italic">{roomName}</p>
-                            <p className="text-sm text-gray-600">{buildingName}</p>
-                            <p className="text-sm text-gray-500 mb-2">{address?.street}, {address?.barangay}, {address?.city}, {address?.province}</p>
+                        <div className="p-5 space-y-2">
+                            <h3 className="text-xl font-bold text-gray-800">{bookable.name}</h3>
+                            <p className="text-gray-600">{roomName} • {buildingName}</p>
+                            <p className="text-sm text-gray-500 leading-snug">
+                                {address?.street}, {address?.barangay}, {address?.city}, {address?.province}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Confirmation */}
-                    <div className="flex flex-col items-center justify-center text-center space-y-3 p-4">
-                        <CheckCircle className="text-green-500 w-16 h-16" />
-                        <h2 className="text-xl font-semibold text-green-600">Your booking is now confirmed!</h2>
+                    {/* Right: Status */}
+                    <div className="flex items-center justify-center">
+                        {booking.status === 'confirmed' && (
+                            <div className="text-center space-y-3">
+                                <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-medium">
+                                    Confirmed
+                                </span>
+                                <p className="text-gray-600">Your booking is successfully confirmed.</p>
+                            </div>
+                        )}
+
+                        {(booking.status === 'waiting' || booking.status === 'pending' || booking.status === 'paid') && (
+                            <div className="text-center space-y-3">
+                                <Clock className="text-yellow-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-sm rounded-full font-medium">
+                                    Awaiting Confirmation
+                                </span>
+                                <p className="text-gray-600">Thanks! Please wait for the owner’s response.</p>
+                            </div>
+                        )}
+
+                        {booking.status === 'approved' && (
+                            <div className="text-center space-y-3">
+                                <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-medium">
+                                    Approved
+                                </span>
+                                <p className="text-gray-600">Please proceed with your GCash payment.</p>
+                                <Link
+                                    href={route('gcash.payment.page', booking.id)}
+                                    className="text-blue-600 hover:underline text-sm"
+                                >
+                                    Pay with GCash →
+                                </Link>
+                            </div>
+                        )}
+
+                        {booking.status === 'completed' && (
+                            <div className="text-center space-y-3">
+                                <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
+                                    Completed
+                                </span>
+                                <p className="text-gray-600">Congrats! Your booking has been booked successfully.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Trip Details */}
-                <div className="bg-white rounded-xl shadow p-6 space-y-4">
-                    <h4 className="text-lg font-bold text-gray-800">
-                        Your trip starts {new Date(booking.start_date).toDateString()}
+                <div className="bg-white rounded-2xl shadow-md p-6 space-y-6">
+                    <h4 className="text-lg md:text-xl font-bold text-gray-800 border-b pb-3">
+                        Trip Details
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div>
-                            <p><strong>📅 Check-in:</strong> {new Date(booking.start_date).toLocaleDateString('en-US', {month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'})}</p>
-                            <p><strong>📅 Check-out:</strong> {new Date(booking.end_date).toLocaleDateString('en-US', {month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'})}</p> 
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-700">
+                        <div className="space-y-3">
+                            <p className="flex items-center gap-2">
+                                <CalendarDays className="w-4 h-4 text-gray-500" />
+                                <strong>Check-in:</strong>{' '}
+                                {new Date(booking.start_date).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                })}
+                            </p>
+
+                            <p className="flex items-center gap-2">
+                                <CalendarDays className="w-4 h-4 text-gray-500" />
+                                <strong>Check-out:</strong>{' '}
+                                {(() => {
+                                    const start = new Date(booking.start_date);
+                                    const end = new Date(start);
+                                    end.setMonth(end.getMonth() + booking.month_count);
+                                    return end.toLocaleDateString('en-US', {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    });
+                                })()}
+                            </p>
                         </div>
-                        <div>
-                            <p><strong>🏨 Address:</strong> {address?.street}, {address?.barangay}, {address?.city}</p>
-                            <p><strong>📧 Email:</strong> {bookable.room.building.seller.email}</p>
-                            <p><strong>📞 Telephone:</strong> {bookable.room.building.seller.phone}</p>
+
+                        <div className="space-y-3">
+                            <p className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-gray-500" />
+                                <strong>Address:</strong> {address?.street}, {address?.barangay}, {address?.city}
+                            </p>
+                            <p className="flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-gray-500" />
+                                <strong>Email:</strong> {bookable.room.building.seller.email}
+                            </p>
+                            <p className="flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-gray-500" />
+                                <strong>Telephone:</strong> {bookable.room.building.seller.phone}
+                            </p>
                         </div>
                     </div>
-                    <div className="flex justify-between items-center pt-4 border-t text-sm">
-                        <div>
-                            <strong>Total price:</strong> ₱{booking.total_price?.toFixed(2) ?? '0.00'}{' '}
-                            <span className="ml-2 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">paid</span>
+
+                    {/* Footer Actions */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 border-t">
+                        <div className="flex items-center space-x-2 text-sm">
+                            <span className="font-semibold">Total price:</span>
+                            <span className="text-lg font-bold text-gray-800">
+                                ₱{booking.total_price?.toFixed(2) ?? '0.00'}
+                            </span>
+                            {booking.status === 'paid' && (
+                                <span className="ml-2 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+                                    Paid
+                                </span>
+                            )}
                         </div>
-                        <div className="space-x-3">
-                            <Link href="#" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                Contact property
+
+                        <div className="flex w-full flex-wrap justify-end gap-2">
+                            <Link
+                                href="#"
+                                className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition text-sm"
+                            >
+                                Contact
                             </Link>
-                            <Link href="#" className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100">
-                                Cancel reservation
-                            </Link>
+                            {booking.status !== 'completed' && booking.status !== 'paid' && (
+                                <button
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-100 transition text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            <Modal show={showCancelModal} onClose={() => setShowCancelModal(false)}>
+                <div className="p-6 text-center">
+                    <h2 className="text-lg font-bold mb-4">Cancel Booking</h2>
+                    <p className="mb-6">Are you sure you want to cancel this booking?</p>
+
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition w-full sm:w-auto"
+                            onClick={() => setShowCancelModal(false)}
+                            disabled={processing}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="px-5 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-indigo-300 disabled:cursor-not-allowed transition w-full sm:w-auto"
+                            onClick={handleCancelSubmit}
+                            disabled={processing}
+                        >
+                            {processing ? "Processing..." : "Confirm"}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </Layout>
     );
 }

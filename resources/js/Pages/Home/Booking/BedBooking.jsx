@@ -25,7 +25,7 @@ export default function Booking({ bed, userPreferences }) {
         start_date: userPreferences?.start_date || '',
         month_count: 1,
         message: userPreferences?.special_request || '',
-        payment_method: '',
+        payment_method: userPreferences?.payment_method || '',
         total_price: bed.sale_price ? bed.sale_price : bed.price,
         status: userPreferences?.status || 'pending',
         agreedToTerms: userPreferences?.agreed_to_terms === 1,
@@ -135,39 +135,45 @@ export default function Booking({ bed, userPreferences }) {
                             name="name"
                             value={data.name}
                             onChange={handleChange}
-                            required
+                            error={errors.name}
+                            
                         />
                         <InputField
                             label="Email"
                             name="email"
                             type="email"
+                            error={errors.email}
                             value={data.email}
                             onChange={handleChange}
-                            required
+                            
                         />
                         <InputField
                             label="Phone"
                             name="phone"
                             type="tel"
+                            error={errors.phone}
                             value={data.phone}
                             onChange={handleChange}
-                            required
+                            
                         />
                         <InputField
                             label="Booking Date"
                             name="start_date"
                             type="date"
+                            error={errors.start_date}
                             value={data.start_date}
                             onChange={handleChange}
-                            required
+                            
                         />
                         <InputField
                             label="Duration (Months)"
                             name="month_count"
                             type="number"
+                            min="1"
+                            error={errors.month_count}
                             value={data.month_count}
                             onChange={handleChange}
-                            required
+                            
                         />
                         <div className="relative w-full">
                             <label htmlFor="payment_method" className="absolute -top-2 left-3 text-xs bg-white px-1 text-gray-500 z-10">
@@ -177,8 +183,9 @@ export default function Booking({ bed, userPreferences }) {
                                 name="payment_method"
                                 value={data.payment_method === 'gcash' ? 'gcash' : 'cash'}
                                 onChange={handleChange}
+                                error={errors.payment_method}
                                 className="mt-2 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
-                                required
+                                
                             >
                                 <option value="">Select</option>
                                 <option value="cash">Cash</option>
@@ -196,7 +203,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name={`address.${field}`}
                                 value={data.address[field]}
                                 onChange={handleChange}
-                                required
+                                error={errors.address?.[field]}
                             />
                         ))}
                     </div>
@@ -213,7 +220,8 @@ export default function Booking({ bed, userPreferences }) {
                                 type="checkbox"
                                 name="agreedToTerms"
                                 onChange={handleChange}
-                                required
+                                checked={data.agreedToTerms}
+                                
                             />
                             <span>
                                 I agree to the{" "}

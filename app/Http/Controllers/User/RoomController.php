@@ -16,14 +16,12 @@ class RoomController extends Controller
 {
     public function showToUserRoom(Room $room)
     {
-        $room->load('building', 'images', 'beds', 'feedbacks.user', 'bookings', 'favorites');
-        $bedAvailability = !$room->beds->contains(function ($bed) {
-            return $bed->status === 'active';
-        });
+        $room->load(['building', 'images', 'beds.bookings' => function ($query) {
+            $query->where('status', 'completed');
+        }, 'feedbacks.user', 'bookings', 'favorites']);
+    
         $roomId = $room->id;
-        // Get all Bed IDs in those rooms
-        $bedIds = Bed::where('room_id', $room->id)->pluck('id');
-
+     
             // Total Ratings (Average & Count)
             $averageRating = Feedback::where(function ($query) use ( $roomId) {
                 $query->where(function ($q) use ($roomId) {
@@ -63,7 +61,6 @@ class RoomController extends Controller
             ],
             'totalCompletedBookings' => $totalCompletedBookings,
             'roomAvailablity' => $roomAvailablity,
-            'bedAvailability' => $bedAvailability,
         ]);
     }
 

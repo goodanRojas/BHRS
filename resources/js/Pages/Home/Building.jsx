@@ -3,15 +3,15 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faStar, faBed, faBedPulse, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faStar, faBed, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, ratingStats, totalCompletedBookings }) {
-    console.log(building);
     return (
         <AuthenticatedLayout>
             <Head title={building.name} />
 
-            <div className="p-4">
+            <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
+                {/* Breadcrumbs */}
                 <Breadcrumbs
                     links={[
                         { label: 'Buildings', url: '/home/buildings' },
@@ -19,81 +19,125 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                     ]}
                 />
 
-                {/* Image Section */}
-                <div className="overflow-hidden rounded-t-lg">
+                {/* Building Header */}
+                <div className="overflow-hidden rounded-xl shadow-lg mb-6">
                     <img
                         src={`/storage/${building.image}`}
                         alt={building.name}
-                        className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
+                        className="w-full h-40 sm:h-48 md:h-72 object-cover transition-transform duration-300 hover:scale-105"
                     />
                 </div>
 
-                {/* Content Section */}
-                <div className="p-4 flex flex-col justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
-                    <p>
-                        <FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />
-                        {building.seller.name}
-                    </p>
-                    <p className="flex items-center text-gray-600 text-sm mb-2 line-clamp-2">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-500" />
+                {/* Building Info */}
+                <div className="bg-white rounded-xl shadow p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+                        {building.name}
+                    </h2>
+
+                    {/* Seller */}
+                    <div className="flex items-center text-gray-600 text-xs sm:text-sm">
+                        <FontAwesomeIcon icon={faUserTie} className="mr-2 text-gray-500" />
+                        <span className="font-medium">{building.seller.name}</span>
+                    </div>
+
+                    {/* Address */}
+                    <p className="flex items-start text-gray-600 text-xs sm:text-sm leading-relaxed">
+                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-gray-500 mt-0.5" />
                         {building.address
                             ? `${building.address.street}, ${building.address.barangay}, ${building.address.city}, ${building.address.province} ${building.address.postal_code}, ${building.address.country}`
                             : "N/A"}
                     </p>
 
-                    {/* Rating and Booking Stats */}
-                    <div className="flex gap-6 text-sm text-gray-700 mt-2">
-                        <div>
-                            <span className="font-semibold text-yellow-600"><FontAwesomeIcon icon={faStar} /> {ratingStats.average || 0}</span><span className="ml-1">
-                                (
-                                {ratingStats.average > 0 ? <span>from {ratingStats.total} </span> : null}
-                                reviews)
+                    {/* Stats */}
+                    <div className="flex flex-wrap gap-4 sm:gap-6 text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4">
+                        <div className="flex items-center">
+                            <span className="font-semibold text-yellow-500 flex items-center">
+                                <FontAwesomeIcon icon={faStar} className="mr-1" /> {ratingStats.average || 0}
                             </span>
-
+                            <span className="ml-1">
+                                ({ratingStats.average > 0 ? <>from {ratingStats.total} </> : null}reviews)
+                            </span>
                         </div>
-                        <div>
+
+                        <div className="flex items-center">
                             <span className="font-semibold text-green-600">{totalCompletedBookings}</span>
                             <span className="ml-1">completed bookings</span>
                         </div>
                     </div>
                 </div>
+                {/* Rooms Section */}
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-gray-800">
+                    Rooms
+                </h3>
 
-                {/* Display Rooms */}
-                <h3 className="text-xl font-semibold mb-2 mt-4">Rooms</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5   gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 md:gap-8">
                     {building.rooms.map((room) => (
-                        <div
+                        <Link
                             key={room.id}
-                            className=" border rounded-lg shadow-md hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                            href={`/home/room/${room.id}`}
+                            className="group rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border border-gray-200 overflow-hidden"
                         >
-                            <Link href={`/home/room/${room.id}`} className="block">
-                                <div className="flex flex-col">
-                                    {/* Image */}
-                                    <div className="overflow-hidden rounded-t-lg mb-4">
-                                        <img
-                                            src={`/storage/${room.image}`}
-                                            alt={room.name}
-                                            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
-                                        />
-                                    </div>
+                            {/* Room Image */}
+                            <div className="relative">
+                                <img
+                                    src={`/storage/${room.image}`}
+                                    alt={room.name}
+                                    className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                                <span className="absolute top-3 left-3 bg-indigo-600 text-white text-[11px] sm:text-xs font-medium px-2.5 py-1 rounded-full shadow-md">
+                                    ₱{room.price}
+                                </span>
+                            </div>
 
-                                    <div className='p-3'>
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="text-xl font-semibold text-gray-800">{room.name}</h4>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <p className="text-sm text-gray-500">&#8369;{room.price}</p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <FontAwesomeIcon icon={faBed} className="mr-1 text-sm text-gray-500" />{room.beds_count}
-                                        </div>
+                            {/* Room Content */}
+                            <div className="p-3 sm:p-4 bg-white">
+                                <div className="flex items-center justify-between mb-2 pb-2">
+                                    <h4 className="text-sm sm:text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition">
+                                        {room.name}
+                                    </h4>
+
+                                    {/* Beds count */}
+                                    <div className="flex items-center text-gray-500 text-xs sm:text-sm">
+                                        <FontAwesomeIcon icon={faBed} className="mr-1 text-indigo-500" />
+                                        {room.beds_count} {room.beds_count > 1 ? 'beds' : 'bed'}
                                     </div>
                                 </div>
-                            </Link>
-                        </div>
+
+                                <div className='flex items-center justify-between'>
+                                    {/* Ratings */}
+                                    <div className="flex items-center space-x-1 mb-3">
+                                        <FontAwesomeIcon icon={faStar} className="text-yellow-400" />
+                                        <span className="text-[11px] sm:text-xs text-gray-600">4.5 (12 reviews)</span>
+                                    </div>
+
+                                    {/* Overlapping Tenant Avatars */}
+                                    <div className="flex -space-x-3">
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 1"
+                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 2"
+                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <img
+                                            src="/storage/profile/rojas.png"
+                                            alt="Tenant 3"
+                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
+                                        />
+                                        <div className="w-7 h-7 flex items-center justify-center bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border-2 border-white shadow-sm">
+                                            +9
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </Link>
                     ))}
                 </div>
+
             </div>
         </AuthenticatedLayout>
     );

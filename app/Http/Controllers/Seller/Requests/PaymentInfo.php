@@ -6,49 +6,55 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log, Hash, Storage};
 
-use App\Models\{OwnerPaymentInfo};
+use App\Models\{OwnerPaymentInfo, Receipt};
 
 class PaymentInfo extends Controller
 {
-    public function update(Request $request)
+    public function index(Request $request)
     {
-        // dd($request->all());
-        $request->validate([
-            'gcash_number' => 'required|numeric|digits_between:10,11',
-            'qr_code' => 'required|image|max:2048', // adjust rules as needed
+        $ownerId = auth()->guard('seller')->user()->id;
+        $receipts = Receipt::whereHas('booking.bookable.room.building', function ($query) use ($ownerId) {
+            $query->where('seller_id', $ownerId);
+        })
+            ->with(['booking.user', 'booking.bookable'])
+            ->get();
+        return inertia('Seller/Guest/Request/Payments', [
+            'payments' => $receipts,
         ]);
-        $id = auth()->guard('seller')->id();
-        $paymentInfo = OwnerPaymentInfo::where('owner_id', $id)->first();
+    }
+    public function show(Request $request, $id)
+    {
 
-        if ($request->hasFile('qr_code')) {
-            // Delete the old QR code file if it exists
-            if ($paymentInfo && $paymentInfo->qr_code) {
-                // Delete the old QR code file from storage
-                Storage::disk('public')->delete('QRcodes/' . $paymentInfo->qr_code);
-            }
+        $payment = Receipt::findOrFail($id)->with(['booking.user', 'booking.bookable'])->first();
+        return inertia('Seller/Guest/Request/Payment', [
+            'payment' => $payment,
+        ]);
+    }
 
-            // Store the new QR code file (will generate a new unique name)
-            $path = $request->file('qr_code')->store('QRcodes', 'public');
-            $hashedFileName = basename($path); // Get the new file name
-            $qrCode = $hashedFileName; // Set the new QR code filename
-        } else {
-            // If no new file is uploaded, use the existing one
-            $qrCode = $paymentInfo->qr_code; // Use the existing QR code filename
+    public function confirm(Request $request)
+    {
+        $request->validate([
+            'payment_id' => 'required|exists:receipts,id',
+            'remarks' => 'nullable',
+            'ref_number' => 'nullable',
+            'receipt' => 'image|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+        Log::info($request);
+        $receipt = Receipt::find($request->payment_id);
+        $receipt->status = 'completed';
+        $receipt->owner_remarks = $request->remarks;
+        $receipt->owner_ref_number = $request->ref_number;
+
+
+        if ($request->hasFile('receipt')) {
+            $path = $request->file('receipt')->store('receipts', 'public');
+            $receipt->seller_receipt = $path;
         }
-
-        if (!$paymentInfo) {
-            OwnerPaymentInfo::create([
-                'owner_id' => $id,
-                'gcash_number' => $request->gcash_number,
-                'qr_code' => $qrCode,
-            ]);
-            return redirect()->route('seller.request.index')->with('success', 'Payment information created successfully.');
-        } else {
-           $paymentInfo->gcash_number = $request->gcash_number;
-           $paymentInfo->qr_code = $qrCode;
-           $paymentInfo->save();
-
-            return redirect()->route('seller.request.index')->with('success', 'Payment information updated successfully.');
-        }
+        $receipt->save();
+        $booking = $receipt->booking;
+        $booking->status = 'completed';
+        $booking->save();
+        return redirect()->route('seller.request.payments.index')
+            ->with('success', 'Payment has been confirmed successfully.');
     }
 }

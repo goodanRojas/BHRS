@@ -23,23 +23,24 @@ class SellerRequestController extends Controller
 
         $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
         // dd($bedIds);
-        $bedRequests = Booking::with(['user', 'payment', 'bookable' => function ($morph) {
+        $bedRequests = Booking::with(['user', 'bookable' => function ($morph) {
             $morph->with(['room.building']);
         }])
             ->where('bookable_type', Bed::class)
             ->whereIn('bookable_id', $bedIds)
 
             ->where('status', 'waiting')
-            ->where('payment_method', 'gcash')
+            ->orWhere('status', 'pending')
+            // ->where('payment_method', 'gcash')
             ->get();
 
-        $roomRequests = Booking::with(relations: ['user', 'payment', 'bookable' => function ($morph) {
+        $roomRequests = Booking::with(relations: ['user', 'bookable' => function ($morph) {
             $morph->with('building');
         }])
             ->where('bookable_type', Room::class)
             ->whereIn('bookable_id', $roomIds)
             ->where('status', 'waiting')
-            ->whereRaw('LOWER(payment_method) = ?', ['gcash'])
+            // ->whereRaw('LOWER(payment_method) = ?', ['gcash'])
             ->get();
         $paymentInfo = OwnerPaymentInfo::where('owner_id', $seller->id)->first();
         // dd($paymentInfo);
@@ -51,4 +52,5 @@ class SellerRequestController extends Controller
             'paymentInfo' => $paymentInfo,
         ]);
     }
+    
 }

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use App\Models\{Booking, Rejection, Payment, BookingCancelled};
+use App\Models\{Booking, Rejection, Receipt, BookingCancelled};
 
 class BedRequestController extends Controller
 {
@@ -14,10 +14,17 @@ class BedRequestController extends Controller
     {
         // Eager load the related models for the booking
         $booking = Booking::where('id', $id)
-            ->with(['user', 'payment', 'bookable' => function ($morph) {
+            ->where('status' ,'pending')
+            ->with(['user', 'receipt', 'bookable' => function ($morph) {
                 $morph->with(['room.building']);
             }])
-            ->firstOrFail();
+            ->first();
+        
+
+        if($booking->status === 'approved' || $booking->status === 'rejected' || $booking->status === 'cancelled') {
+            return redirect()->route('seller.request.index')->with('error', 'This booking has already been processed.');
+        };
+        
 
         // Return the Inertia page with the booking data
         return inertia('Seller/Guest/Request/BedRequest', [
@@ -26,23 +33,16 @@ class BedRequestController extends Controller
     }
     public function accept(Request $request, Booking $booking)
     {
-        // Update booking status to approved
-        $booking->status = 'approved';
 
-        // Save the updated booking record
+        $booking->status = 'approved';
         $booking->save();
+        
 
         return redirect()->route('seller.request.index')->with('success', 'Booking accepted and payment completed.');
     }
 
 
-    /**
-     * Reject the booking.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Booking  $booking
-     * @return \Illuminate\Http\RedirectResponse
-     */
+
     public function reject(Request $request)
     {
         // dd($request);

@@ -13,7 +13,6 @@ class Route extends Model
         'building_id',
         'coordinates',
         'category',
-        'destination_id',
     ];
 
     protected $casts = [
@@ -25,7 +24,4 @@ class Route extends Model
         return $this->belongsTo(Building::class);
     }
 
-    public function destination(){
-        return $this->belongsTo(RouteDestination::class, 'destination_id');
-    }
 }

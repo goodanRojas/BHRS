@@ -9,30 +9,8 @@ export default function GuestLayout({ children }) {
                 style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
             ></div>
 
-            <nav className='flex justify-between items-center px-5'>
-                <div className="mb-6">
-                    <Link href="/">
-                        <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                    </Link>
-                </div>
-                <div className="mt-6 flex space-x-4 justify-center">
-                    <Link
-                        href={route('login')}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
-                    >
-                        Log in
-                    </Link>
-                    <Link
-                        href={route('register')}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
-                    >
-                        Register
-                    </Link>
-                </div>
 
-            </nav>
-
-            <div className="w-full px-6 ">
+            <div className="w-full">
                 {children}
             </div>
 

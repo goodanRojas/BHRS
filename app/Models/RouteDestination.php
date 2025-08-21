@@ -11,8 +11,4 @@ class RouteDestination extends Model
 
     protected $fillable = ['name', 'image', 'latitude', 'longitude', 'category', 'description'];
 
-    public function routes()
-    {
-        return $this->hasMany(Route::class, 'destination_id');
-    }
 }

@@ -10,8 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@/Components/Modal';
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
-export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book }) {
-    console.log(able_to_book);
+export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked }) {
+
+    console.log(bed);
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(0);
     const [preventBookingModal, setPreventBookingModal] = useState(false);
@@ -78,8 +79,8 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 <div className="bg-white shadow-lg rounded-xl overflow-hidden">
                     {/* 📸 Bed Image Section */}
                     <div className="relative group">
-                        {/* 🖼️ Image Carousel */}
-                        {images.length > 0 && (
+                        {/* 🖼️ Image Carousel or Single Image */}
+                        {images.length > 0 ? (
                             <div className="relative w-full h-60 overflow-hidden rounded-md">
                                 <img
                                     src={`/storage/${images[currentIndex].file_path}`}
@@ -112,7 +113,16 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                     ))}
                                 </div>
                             </div>
+                        ) : (
+                            <div className="w-full h-60 overflow-hidden rounded-md">
+                                <img
+                                    src={`/storage/${bed.image}`}
+                                    alt="Bed"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
                         )}
+
 
                         {/* ❤️ Favorite Icon – Top Left */}
                         <div className="absolute top-3 left-3 group">
@@ -135,14 +145,17 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         </div>
 
                         {/* 📦 Book Now – Bottom Right */}
-                        <button
-                            onClick={() => {
-                                redirectToBook(bed.id);
-                            }}
-                            className="absolute bottom-3 right-3 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
-                        >
-                            Book now!
-                        </button>
+                        {bed.bookings.some(booking => booking.status === 'completed') ? (
+                            null
+                        ) : (
+                            <button
+                                onClick={() => redirectToBook(bed.id)}
+                                className="absolute bottom-3 right-3 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
+                            >
+                                Book now!
+                            </button>
+                        )}
+
                     </div>
 
                     {/* 🛏️ Bed Details Section */}
@@ -278,41 +291,61 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
                     {/* 🛏️ More Beds in This Room */}
                     <div className="px-6 pb-8">
-                        <h4 className="text-xl font-semibold text-gray-800 mb-4"> <span>{bed.room.name}</span></h4>
+                        <h4 className="text-2xl font-bold text-gray-800 mb-6">
+                            More Beds in <span className="text-indigo-600">{bed.room.name}</span>
+                        </h4>
 
                         {sibling_beds?.length > 0 ? (
-                            <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-2">
-                                {sibling_beds.map((b) => (
-                                    <div
-                                        key={b.id}
-                                        className="min-w-[250px] max-w-[250px] bg-white border rounded-lg shadow-sm p-4 flex-shrink-0 hover:shadow-md transition-shadow duration-200"
-                                    >
-                                        <Link href={`/home/bed/${b.id}`}>
-                                            <img
-                                                src={`/storage/${b.image}` || '/storage/bed/default_bed.png'}
-                                                alt={b.name}
-                                                className="w-full h-36 object-cover rounded-md mb-3"
-                                            />
-                                            <h5 className="text-lg font-semibold text-gray-700 truncate">{b.name}</h5>
 
-                                            <div className="text-yellow-500 text-sm flex items-center gap-1 mb-1">
+                            <div
+                                className="
+                                            flex gap-6 overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-4 
+                                            scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent pb-4
+                                    "
+                            >
+                                {sibling_beds.map((b) => (
+                                    <Link key={b.id} href={`/home/bed/${b.id}`}>
+                                        <div
+                                            className="
+                                                        min-w-[240px] max-w-[240px] md:min-w-0 
+                                                        bg-gradient-to-br from-indigo-50 via-white to-indigo-100
+                                                        border rounded-xl shadow-sm p-4 flex-shrink-0 
+                                                        hover:shadow-lg hover:-translate-y-1 transition-all duration-300
+                                                    "
+                                        >
+                                            <img
+                                                src={b.image ? `/storage/${b.image}` : '/storage/bed/default_bed.png'}
+                                                alt={b.name}
+                                                className="w-full h-40 object-cover rounded-lg mb-3"
+                                            />
+
+                                            <h5 className="text-lg font-semibold text-gray-800 truncate">
+                                                {b.name}
+                                            </h5>
+
+                                            <div className="text-yellow-500 text-sm flex items-center gap-1 mb-2">
                                                 <span>{b.average_rating ?? 'N/A'}</span>
                                                 <span>★</span>
                                             </div>
 
                                             <p className="text-sm text-gray-600 mb-1">
-                                                Price: <span className="font-medium text-gray-800">₱{b.price}</span>
+                                                Price:{' '}
+                                                <span className="font-medium text-gray-900">
+                                                    ₱{b.price}
+                                                </span>
                                             </p>
 
                                             <p className="text-xs text-gray-500">
                                                 Completed Bookings: {b.bookings_count ?? 0}
                                             </p>
-                                        </Link>
-                                    </div>
+                                        </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-gray-500">No other beds available in this room.</p>
+                            <p className="text-sm text-gray-500">
+                                No other beds available in this room.
+                            </p>
                         )}
                     </div>
 
