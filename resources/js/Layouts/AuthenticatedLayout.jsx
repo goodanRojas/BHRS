@@ -13,7 +13,7 @@ import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
-
+import NotificationPopup from '@/Components/Notifications/NotificationPopup';
 export const ChatContext = createContext();
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -22,17 +22,14 @@ export default function AuthenticatedLayout({ header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
 
-    const [directMessages, setDirectMessages] = useState({});
-    const [groupMessages, setGroupMessages] = useState({});
-    const [botMessages, setBotMessages] = useState({});
     const [favoritesCount, setFavoritesCount] = useState(user?.favorites?.length || 0);
     const [messagesCount, setMessagesCount] = useState(0);
 
+    const [notifications, setNotifications] = useState([]);
+    const [notifVisiblt, setNotifVisible] = useState(null);
 
     useEffect(() => {
         if (user) {
-            console.log("Subscribing to favorites channel");
-
             const channel = Echo.private(`favorites.${user.id}`)
                 .listen('FavoriteToggled', (notif) => {
                     console.log("FavoriteToggled event received:", notif);
@@ -46,22 +43,31 @@ export default function AuthenticatedLayout({ header, children }) {
             // console.log(isOnline);
             return () => {
                 if (window.Echo) {
-                    console.log("Leaving favorites channel");
                     // channel.leave();
                 }
             };
         }
     }, [user?.id]);
 
-
-
+    // Listen for new notifications
+    useEffect(() => {
+        window.Echo.private(`App.Models.User.${user.id}`)
+            .notification((notification) => {
+                console.log('🔔 New notification received!', notification);
+                setNotifications((prev) => [notification, ...prev]);
+                setNotifVisible(notification);
+            });
+    }, [user?.id]);
 
     const updateFavoritesCount = (newCount) => {
         setFavoritesCount(newCount);
     };
     return (
         <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
+            <NotificationPopup notification={notifVisiblt}  onClose={() => setNotifVisible(null)} />
 
+            {/* (Optional) keep history */}
+            {/* <NotificationList notifications={notifications} /> */}
             <div className="min-h-screen ">
                 {/* Background Image */}
                 <div
@@ -152,7 +158,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
                                     </button>
                                     <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Notificatoins
+                                        Notifications
                                     </span>
                                     {notificationsModal && <NavNotif />}
                                 </div>

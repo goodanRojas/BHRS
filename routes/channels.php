@@ -36,3 +36,7 @@ Broadcast::channel('user-status', function ($user) {
     return $user ? ['id' => $user->id, 'name' => $user->name] : false;
 });
 
+
+
+require __DIR__ . '/channels/owner/owner.php';
+require __DIR__ . '/channels/user/user.php';

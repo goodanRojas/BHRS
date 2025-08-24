@@ -1,23 +1,27 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\User;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-class NewBookingNotification extends Notification
+use App\Models\Booking;
+
+class BookingExpiredNotify extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public $booking)
+    public $booking;
+    public function __construct(Booking $booking )
     {
-        //
+        $this->booking = $booking;
     }
+
     /**
      * Get the notification's delivery channels.
      *
@@ -28,12 +32,11 @@ class NewBookingNotification extends Notification
         return ['mail', 'database', 'broadcast'];
     }
 
-
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('New Booking Received')
-            ->line('A new tenant has booked one of your beds.')
+            ->subject('Booking expired')
+            ->line('Your booking has expired.')
             ->action('View Booking', url('/seller/bookings'));
     }
 

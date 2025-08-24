@@ -3,14 +3,55 @@ import Layout from './Layout';
 import { CheckCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
 import Modal from '@/Components/Modal';
 import { useForm } from '@inertiajs/inertia-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 export default function Dashboard({ booking }) {
+
+
     const user = usePage().props.auth.user;
+    /* Booking Approved Channel */
+    useEffect(() => {
+
+        const channel = window.Echo.private(`user_booking_approved.${user?.id}`)
+            .listen('.UserBookingApproved', (e) => {
+                console.log('🔔 New booking approved received!', e);
+                setBookingStatus(e.booking.status);
+            });
+
+        return () => {
+            channel.stopListening('.UserBookingApproved');
+        };
+    }, [user?.id]);
+    useEffect(() => {
+
+        const channel = window.Echo.private(`user_payment_confirmed.${user?.id}`)
+            .listen('.UserPaymentConfirmed', (e) => {
+                console.log('🔔 New booking approved received!', e);
+                setBookingStatus(e.booking.status);
+            });
+
+        return () => {
+            channel.stopListening('.UserPaymentConfirmed');
+        };
+    }, [user?.id]);
+  
+    useEffect(() => {
+
+        const channel = window.Echo.private(`user_booking_expired.${user?.id}`)
+            .listen('.UserBookingExpiredEvent', (e) => {
+                console.log('Booking is expired', e);
+                setBookingStatus(e.booking.status);
+            });
+
+        return () => {
+            channel.stopListening('.UserBookingExpiredEvent');
+        };
+    }, [user?.id]);
 
     const [showCancelModal, setShowCancelModal] = useState(false);
-    const {post, processing, errors, data, reset} = useForm({
+    const [bookingStatus, setBookingStatus] = useState(booking?.status);
+    const { post, processing, errors, data, reset } = useForm({
         reason: '',
-        booking_id: booking.id,
+        booking_id: booking?.id ?? null,
     });
 
     const handleCancelSubmit = (e) => {
@@ -27,7 +68,7 @@ export default function Dashboard({ booking }) {
                 <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-4">
                     <h2 className="text-2xl font-semibold text-gray-800">No current booking found</h2>
                     <Link
-                        href="/home"
+                        href="/home/buildings"
                         className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
                     >
                         Browse to find your stay
@@ -73,17 +114,17 @@ export default function Dashboard({ booking }) {
 
                     {/* Right: Status */}
                     <div className="flex items-center justify-center">
-                        {booking.status === 'confirmed' && (
+                        {bookingStatus === 'confirmed' && (
                             <div className="text-center space-y-3">
                                 <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
                                 <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-medium">
                                     Confirmed
                                 </span>
-                                <p className="text-gray-600">Your booking is successfully confirmed.</p>
+                                <p className="text-gray-600">Your booking is confirmed.</p>
                             </div>
                         )}
 
-                        {(booking.status === 'waiting' || booking.status === 'pending' || booking.status === 'paid') && (
+                        {(bookingStatus === 'waiting' || bookingStatus === 'pending' || bookingStatus === 'paid') && (
                             <div className="text-center space-y-3">
                                 <Clock className="text-yellow-500 w-14 h-14 mx-auto" />
                                 <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-sm rounded-full font-medium">
@@ -93,7 +134,7 @@ export default function Dashboard({ booking }) {
                             </div>
                         )}
 
-                        {booking.status === 'approved' && (
+                        {bookingStatus === 'approved' && (
                             <div className="text-center space-y-3">
                                 <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
                                 <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-medium">
@@ -109,7 +150,17 @@ export default function Dashboard({ booking }) {
                             </div>
                         )}
 
-                        {booking.status === 'completed' && (
+                        {bookingStatus === 'ended' && (
+                            <div className="text-center space-y-3">
+                                <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
+                                    Booking Expired
+                                </span>
+                                <p className="text-gray-600">Your booking has expired.</p>
+                            </div>
+                        )}
+
+                        {bookingStatus === 'completed' && (
                             <div className="text-center space-y-3">
                                 <CheckCircle className="text-green-500 w-14 h-14 mx-auto" />
                                 <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full font-medium">
@@ -180,7 +231,7 @@ export default function Dashboard({ booking }) {
                             <span className="text-lg font-bold text-gray-800">
                                 ₱{booking.total_price?.toFixed(2) ?? '0.00'}
                             </span>
-                            {booking.status === 'paid' && (
+                            {bookingStatus === 'paid' && (
                                 <span className="ml-2 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">
                                     Paid
                                 </span>
@@ -194,7 +245,7 @@ export default function Dashboard({ booking }) {
                             >
                                 Contact
                             </Link>
-                            {booking.status !== 'completed' && booking.status !== 'paid' && (
+                            {bookingStatus !== 'completed' && bookingStatus !== 'paid' && (
                                 <button
                                     onClick={() => setShowCancelModal(true)}
                                     className="border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-100 transition text-sm"

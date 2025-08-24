@@ -1,18 +1,19 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useFavorite } from '@/Contexts/FavoriteContext'; // 👈 Add this line
 
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faUserCheck, faMapMarkerAlt, faStar, faDoorOpen, faBuilding, faLocationPin, faMessage, faUserTie } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@/Components/Modal';
+import Toast from '@/Components/Toast'; 
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked }) {
 
-    console.log(bed);
+    const {flash} = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(0);
     const [preventBookingModal, setPreventBookingModal] = useState(false);
@@ -65,7 +66,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
     return (
         <>
             <Head title={`Bed in ${bed.name}`} />
-
+            {flash?.error && <Toast message={flash.error} isType="error" isTrue={true} />}
             <div className="p-6 space-y-6">
                 {/* Breadcrumbs */}
                 <Breadcrumbs

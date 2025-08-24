@@ -64,6 +64,19 @@ export default {
                     900: '#998000',
                 },
             },
+            keyframes: {
+                "infinite-scroll": {
+                    "0%": {
+                        transform: "translateX(0)",
+                    },
+                    "100%": {
+                        transform: "translateX(calc(-50% - 20px))",
+                    },
+                }
+            },
+            animation: {
+                "infinite-scroll": "infinite-scroll 5s linear infinite",
+            }
         },
        
     },

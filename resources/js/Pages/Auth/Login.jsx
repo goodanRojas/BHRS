@@ -8,6 +8,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login({ status }) {
     const [showPassword, setShowPassword] = useState(false);
@@ -19,16 +20,16 @@ export default function Login({ status }) {
 
     // rotating welcome text
     const messages = [
-        "Welcome to BoardingHub 🚀",
-        "Find your perfect stay 🏡",
-        "Fast, easy, and reliable booking 💳",
+        "Welcome to BoardingHub",
+        "Find your perfect stay",
+        "Fast, easy, and reliable booking",
     ];
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
         const interval = setInterval(() => {
             setIndex((prev) => (prev + 1) % messages.length);
-        }, 3000); // change text every 3s
+        }, 3000); 
         return () => clearInterval(interval);
     }, []);
 
@@ -46,38 +47,68 @@ export default function Login({ status }) {
             {/* Gradient background wrapper */}
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
                 {/* Card container */}
-                <div className="flex flex-col md:flex-row w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col md:flex-row w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30"
+                >
 
-                    {/* LEFT WELCOME CARD (desktop only) */}
-                    <div className="hidden md:flex flex-col justify-center items-center w-1/2 p-10 text-white bg-gradient-to-br from-indigo-600/80 to-purple-600/80">
-                        <h2
-                            key={index} // triggers re-render for animation
-                            className="text-3xl font-bold mb-4 animate-fade"
-                        >
-                            {messages[index]}
-                        </h2>
+                    {/* LEFT WELCOME CARD */}
+                    <motion.div
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.7 }}
+                        className="hidden md:flex flex-col justify-center items-center w-1/2 p-10 text-white bg-gradient-to-br from-indigo-600/80 to-purple-600/80"
+                    >
+                        <AnimatePresence mode="wait">
+                            <motion.h2
+                                key={index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.6 }}
+                                className="text-3xl font-bold mb-4 text-center"
+                            >
+                                {messages[index]}
+                            </motion.h2>
+                        </AnimatePresence>
                         <p className="text-lg opacity-90 text-center">
                             Book your boarding house with ease and comfort.
                         </p>
-                    </div>
+                    </motion.div>
 
                     {/* LOGIN CARD */}
-                    <div className="w-full md:w-1/2 p-10 bg-white/80 backdrop-blur-xl rounded-r-2xl">
+                    <motion.div
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.7, delay: 0.2 }}
+                        className="w-full md:w-1/2 p-10 bg-white/80 backdrop-blur-xl rounded-r-2xl"
+                    >
                         <form
                             onSubmit={submit}
                             className="space-y-6"
                         >
                             {/* Title */}
-                            <div className="text-center mb-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="text-center mb-6"
+                            >
                                 <h2 className="text-3xl font-bold text-gray-800">Welcome Back!</h2>
                                 <p className="text-gray-500">Login to continue your journey</p>
-                            </div>
+                            </motion.div>
 
                             {/* Status message */}
                             {status && (
-                                <div className="mb-4 text-sm font-medium text-green-600 bg-green-100 px-4 py-2 rounded-lg">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="mb-4 text-sm font-medium text-green-600 bg-green-100 px-4 py-2 rounded-lg"
+                                >
                                     {status}
-                                </div>
+                                </motion.div>
                             )}
 
                             {/* Email */}
@@ -149,17 +180,18 @@ export default function Login({ status }) {
                                 >
                                     Forgot your password?
                                 </Link>
-                                <PrimaryButton
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
-                                    disabled={processing}
-                                >
-                                    Log in
-                                </PrimaryButton>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <PrimaryButton
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
+                                        disabled={processing}
+                                    >
+                                        Log in
+                                    </PrimaryButton>
+                                </motion.div>
                             </div>
                         </form>
-                    </div>
-
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </GuestLayout>
     );

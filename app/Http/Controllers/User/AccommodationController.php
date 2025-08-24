@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\Feedback;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Bed;
-use App\Models\Room;
+use App\Models\{Booking, Bed, Room};
 
 class AccommodationController extends Controller
 {
@@ -27,20 +25,19 @@ class AccommodationController extends Controller
                             'room' => function ($query) {
                                 $query->select(['id', 'name', 'building_id'])
                                     ->with(['building' => function ($query) {
-                                $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
+                                        $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
                                     }]);
                             },
                             'feedbacks' => function ($query) {
-                                $query->select( 'rating'); // adjust if necessary
+                                $query->select('rating'); // adjust if necessary
                             },
                         ],
                         Room::class => [
                             'building' => function ($query) {
                                 $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
-                                
                             },
                             'feedbacks' => function ($query) {
-                                $query->select( 'rating'); // adjust if necessary
+                                $query->select('rating'); // adjust if necessary
                             },
                         ],
                         // add other morph types if any
@@ -58,86 +55,24 @@ class AccommodationController extends Controller
     {
         $userId = auth()->id();
 
-        // Function to retrieve completed bookings with payment and feedbacks
-        $getHistoryData = function ($model) use ($userId) {
-            return $model::whereHas('bookings', function ($query) use ($userId) {
-                $query->where('status', 'completed')
-                    ->whereHas('payment', function ($q) use ($userId) {
-                        $q->where('status', 'completed')
-                            ->where('user_id', $userId);
-                    });
-            })
-                ->with([
-                    'bookings' => function ($query) {
-                        $query->where('status', 'completed')
-                            ->whereHas('payment', function ($q) {
-                                $q->where('status', 'completed');
-                            })
-                            ->with(['payment:id,booking_id,payment_method,receipt,amount']);
-                    },
-                    'feedbacks' => function ($query) use ($userId) {
-                        $query->where('user_id', $userId)
-                            ->orderBy('created_at', 'desc');
-                    }
-                ])
-                ->withAvg('feedbacks', 'rating')
-                ->get();
-        };
-
-        // Get history data for beds and rooms
-        $beds = $getHistoryData(Bed::class);
-        $rooms = $getHistoryData(Room::class);
-
+        $bookings = Booking::where('user_id', $userId)
+            ->where('status', 'ended')
+            ->with('bookable.room.building.seller')
+            ->get();
         return Inertia::render('Home/Accommodation/Histories', [
-            'beds' => $beds,
-            'rooms' => $rooms,
+            'bookings' => $bookings
         ]);
     }
 
 
     public function showCancelled(Request $request)
     {
-        $beds = Bed::whereHas('bookings', function ($query) {
-            $query->whereIn('status', ['cancelled', 'rejected'])
-                ->where('user_id', auth()->id());
-        })
-            ->with([
-                'bookings' => function ($query) {
-                    $query->whereIn('status', ['cancelled', 'rejected'])
-                        ->where('user_id', auth()->id());
-                },
-                'room' => function ($query) {
-                    $query->select(['name', 'id', 'building_id']);
-                },
-                'room.building' => function ($query) {
-                    $query->select(['name', 'id',]);
-                },
-                'room.building.address'
-            ])
-            ->withAvg('feedbacks', 'rating')
-            ->get();
-
-
-        $rooms = Room::whereHas('bookings', function ($query) {
-            $query->whereIn('status', ['cancelled', 'rejected'])
-                ->where('user_id', auth()->id());
-        })
-            ->with([
-                'bookings' => function ($query) {
-                    $query->whereIn('status', ['cancelled', 'rejected'])
-                        ->where('user_id', auth()->id());
-                },
-                'building' => function ($query) {
-                    $query->select('name');
-                },
-                'building.address'
-            ])
-            ->withAvg('feedbacks', 'rating')
-            ->get();
+        $bookings = Booking::whereIn('status', ['canceled', 'rejected'])
+            ->where('user_id', auth()->id())
+            ->with('bookable.room.building.seller')->get();
 
         return Inertia::render('Home/Accommodation/Cancelled', [
-            'beds' => $beds,
-            'rooms' => $rooms,
+            'bookings' => $bookings,
         ]);
     }
 

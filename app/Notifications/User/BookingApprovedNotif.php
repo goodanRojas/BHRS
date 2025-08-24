@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\User;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Models\Booking;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-class NewBookingNotification extends Notification
+class BookingApprovedNotif extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public $booking)
+    public $booking;
+    public function __construct(Booking $booking)
     {
-        //
+        $this->booking = $booking;
     }
+
     /**
      * Get the notification's delivery channels.
      *
@@ -27,7 +30,6 @@ class NewBookingNotification extends Notification
     {
         return ['mail', 'database', 'broadcast'];
     }
-
 
     public function toMail($notifiable)
     {

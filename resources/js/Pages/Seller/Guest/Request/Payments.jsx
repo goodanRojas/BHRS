@@ -1,7 +1,26 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link , usePage} from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
-export default function Payments({ payments }) {
-    console.log(payments);
+import { useEffect, useState } from 'react';
+
+export default function Payments({ Payments }) {
+    const user = usePage().props.auth.seller;
+    const [payments, setPayments] = useState(Payments? Payments : []);
+    useEffect(() => {
+        const ownerId = user?.id; // however you get it
+
+        if (!ownerId) return;
+
+        const channel = window.Echo.private(`owner_user_paid.${ownerId}`)
+            .listen('.UserGcashPaid', (e) => {
+                console.log('New Payment received!', e);
+                setPayments(prevPayments => [...prevPayments, e.receipt]);
+            });
+
+
+        return () => {
+            channel.stopListening('.UserGcashPaid');
+        };
+    }, [user?.id]);
     return (
 
         <SellerLayout>

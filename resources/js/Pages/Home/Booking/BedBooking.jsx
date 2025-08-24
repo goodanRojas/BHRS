@@ -10,6 +10,7 @@ import Modal from '@/Components/Modal';
 export default function Booking({ bed, userPreferences }) {
     // console.log(bed);
     // console.log(userPreferences);
+
     const { data, setData, post, processing, errors, reset } = useForm({
         name: userPreferences?.fullname || '',
         email: userPreferences?.email || '',
@@ -25,7 +26,7 @@ export default function Booking({ bed, userPreferences }) {
         start_date: userPreferences?.start_date || '',
         month_count: 1,
         message: userPreferences?.special_request || '',
-        payment_method: userPreferences?.payment_method || '',
+        payment_method: userPreferences?.payment_method || 'cash',
         total_price: bed.sale_price ? bed.sale_price : bed.price,
         status: userPreferences?.status || 'pending',
         agreedToTerms: userPreferences?.agreed_to_terms === 1,

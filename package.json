@@ -53,6 +53,7 @@
         "react-qr-code": "^2.0.15",
         "react-range": "^1.10.0",
         "react-tailwindcss-datepicker": "^1.7.2",
+        "react-use-measure": "^2.1.7",
         "recharts": "^3.1.0"
     }
 }

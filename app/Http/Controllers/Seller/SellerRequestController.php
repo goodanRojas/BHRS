@@ -29,9 +29,8 @@ class SellerRequestController extends Controller
             ->where('bookable_type', Bed::class)
             ->whereIn('bookable_id', $bedIds)
 
-            ->where('status', 'waiting')
-            ->orWhere('status', 'pending')
-            // ->where('payment_method', 'gcash')
+            // ->where('status', 'waiting')
+            ->Where('status', 'pending')
             ->get();
 
         $roomRequests = Booking::with(relations: ['user', 'bookable' => function ($morph) {

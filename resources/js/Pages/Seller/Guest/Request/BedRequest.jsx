@@ -7,9 +7,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faTimes, faCheckCircle, faPhone, faMapMarkerAlt, faBed, faCalendarAlt, faMoneyBillWave, faCreditCard } from "@fortawesome/free-solid-svg-icons";
 import SellerLayout from '@/Layouts/SellerLayout';
 import Modal from '@/Components/Modal';
-
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
 export default function BedRequest({ booking }) {
-    console.log("Booking Data:", booking);
+    useEffect(() => {
+        const ownerId = user?.id; // however you get it
+
+        if (!ownerId) return;
+
+        const channel = window.Echo.private(`owner.${ownerId}`)
+            .listen('.NewBooking', (e) => {
+                console.log('🔔 New booking received!', e);
+             
+            });
+
+
+        return () => {
+            channel.stopListening('.NewBooking');
+        };
+    }, [user?.id]);
+
 
     const user = usePage().props.auth.seller;
 
@@ -20,14 +37,32 @@ export default function BedRequest({ booking }) {
     // Modal visibility states
     const [showModalAccept, setShowModalAccept] = useState(false);
     const [showModalReject, setShowModalReject] = useState(false);
+    const [showCashPaymentModal, setShowCashPaymentModal] = useState(false);
 
-    const { post, processing } = useForm();
+    const [preview, setPreview] = useState(false);
+    const { post, errors, data, setData, reset, processing } = useForm({
+        'booking_id': booking.id,
+        'remarks': "",
+        'amount': "",
+        'receipt': null,
+    });
+
     // Handle Accept submission
     const handleAccept = () => {
+        if (booking.payment_method === "cash") {
+            console.log("Booking ID:", booking.id);
+            setShowModalAccept(false);
+            setShowCashPaymentModal(true);
+            return;
+        }
 
         post(route('seller.request.bed.accept', booking.id),);
     };
 
+    const handleSubminCash = (e) => {
+        e.preventDefault();
+        post(route('seller.request.bed.accept.cash', data),);
+    };
     // Handle Reject submission
     const handleReject = async () => {
 
@@ -69,6 +104,14 @@ export default function BedRequest({ booking }) {
             channel.stopListening('.NewBookingCreated');
         };
     }, [user?.id]);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setPreview(URL.createObjectURL(file));
+            setData('receipt', file);
+        }
+    };
 
 
     return (
@@ -246,8 +289,109 @@ export default function BedRequest({ booking }) {
                         </div>
                     </motion.div>
                 </Modal>
-
             )}
+            {/* Cash Payment Modal */}
+            <Modal show={showCashPaymentModal} onClose={() => setShowCashPaymentModal(false)}>
+                <div className="p-6 text-center">
+                    <h2 className="text-lg font-bold mb-4">Confirm Payment</h2>
+                    <p className="mb-6">Make sure you upload the right payment proof. Otherwise, you will not be able to process your booking.</p>
+
+                    <form onSubmit={handleSubminCash}>
+                        {/* Receipt Upload */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Upload Receipt
+                            </label>
+
+                            <div
+                                className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-xl cursor-pointer 
+                       hover:border-indigo-400 hover:bg-indigo-50 transition"
+                                onClick={() => document.getElementById("receiptInput").click()}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-10 w-10 text-gray-400 mb-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0h2a2 2 0 012 2v10a2 2 0 01-2 2h-6l-2 2-2-2H7a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                </svg>
+                                <p className="text-sm text-gray-600">
+                                    <span className="font-medium text-indigo-600">Click to upload</span> or drag & drop
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                            </div>
+
+                            <input
+                                id="receiptInput"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="hidden"
+                            />
+
+                            {errors.receipt && (
+                                <p className="text-sm text-red-600 mt-2">{errors.receipt}</p>
+                            )}
+
+                            {preview && (
+                                <div className="mt-4 flex justify-center">
+                                    <img
+                                        src={preview}
+                                        alt="Receipt Preview"
+                                        className="max-h-64 rounded-xl shadow-lg border"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Amount */}
+                        <div className="mb-4 text-left">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Amount
+                            </label>
+                            <input
+                                type="number"
+                                value={data.amount}
+                                onChange={(e) => setData("amount", e.target.value)}
+                                className="w-full rounded-lg border-gray-300 shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+                                placeholder="Enter the amount"
+                            />
+                            {errors.amount && (
+                                <p className="text-sm text-red-600 mt-1">{errors.amount}</p>
+                            )}
+                        </div>
+
+                        {/* Remarks */}
+                        <div className="mb-6 text-left">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Remarks (optional)
+                            </label>
+                            <textarea
+                                value={data.remarks}
+                                onChange={(e) => setData("remarks", e.target.value)}
+                                className="w-full rounded-lg border-gray-300 shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+                                rows="3"
+                                placeholder="Add remarks if necessary"
+                            ></textarea>
+                            {errors.remarks && (
+                                <p className="text-sm text-red-600 mt-1">{errors.remarks}</p>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end space-x-3">
+                            <SecondaryButton onClick={() => setShowCashPaymentModal(false)}>
+                                Cancel
+                            </SecondaryButton>
+                            <PrimaryButton type="submit" disabled={processing}>
+                                {processing ? "Submitting..." : "Submit Payment"}
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
 
 
             {/* Reject Modal */}

@@ -4,228 +4,168 @@ import Layout from './Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faBuilding, faDoorClosed, faMoneyBill, faClock, faStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
-
-export default function History({ beds, rooms }) {
-    const [feedbacks, setFeedbacks] = useState({});
-    const [ratings, setRatings] = useState({});
-    const [roomFeedbacks, setRoomFeedbacks] = useState({});
-    const [roomRatings, setRoomRatings] = useState({});
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month (0-based index, so add 1)
-        const day = String(date.getDate()).padStart(2, '0'); // Get day
-        return `${month}/${day}`; // Return in mm/dd format
-    };
+import { motion } from "framer-motion";
 
 
-    const handleRatingChange = (id, value) => {
-        setRatings(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleFeedbackChange = (id, value) => {
-        setFeedbacks(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleSubmit = async (id, type) => {
-        const data = {
-            rating: ratings[id],
-            feedback: feedbacks[id],
-        };
-
-        try {
-            const response = await axios.post(`/accommodation/${type}/${id}/feedback`, data);
-            console.log('Feedback submitted:', response.data);
-        } catch (error) {
-            console.error('Submit error', error.message);
-        }
-    };
-
-    const handleRoomRatingChange = (id, value) => {
-        setRoomRatings(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleRoomFeedbackChange = (id, value) => {
-        setRoomFeedbacks(prev => ({ ...prev, [id]: value }));
-    };
-
-    useEffect(() => {
-        // Preload feedback if already exists
-        beds.forEach(bed => {
-            if (bed.feedbacks?.[0]) {
-                setRatings(prev => ({ ...prev, [bed.id]: bed.feedbacks[0].rating }));
-                setFeedbacks(prev => ({ ...prev, [bed.id]: bed.feedbacks[0].comment }));
-            }
-        });
-    }, [beds]);
-
-    useEffect(() => {
-        rooms.forEach(room => {
-            if (room.feedbacks?.[0]) {
-                setRoomRatings(prev => ({ ...prev, [room.id]: room.feedbacks[0].rating }));
-                setRoomFeedbacks(prev => ({ ...prev, [room.id]: room.feedbacks[0].comment }));
-            }
-        });
-    }, [rooms]);
-
+export default function Histories({ bookings }) {
+    console.log(bookings);
     return (
         <Layout>
-            <Head title="Accommodation Dashboard" />
-            <div className="p-4 md:p-8 space-y-8 min-h-screen">
-                {/* Table for Beds */}
-                {beds.length > 0 && (
+            <Head title="History" />
 
-                    <div className="overflow-x-auto">
-                        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Beds</h2>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Bed Name</th>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Description</th>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Price</th>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Rating</th>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Stay Dates</th>
-                                    <th className="py-3 px-4 text-left font-medium text-gray-700">Feedback</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {beds.map((bed) => (
-                                    <tr key={bed.id} className="border-b hover:bg-gray-50 transition">
-                                        <td className="py-3 px-4">
-                                            <Link href={`/home/bed/${bed.id}`} className="text-blue-500 hover:text-blue-700 font-semibold">
-                                                {bed.name}
-                                            </Link>
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-600">
-                                            {bed.description.length > 100 ? `${bed.description.slice(0, 50)}...` : bed.description}
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-800">₱{bed.bookings[0]?.payment.amount ?? bed.price}</td>
-                                        <td className="py-3 px-4 text-gray-800">
-                                            {bed.feedbacks_avg_rating ? (
-                                                <>
-                                                    {Number(bed.feedbacks_avg_rating).toFixed(1)}{' '}
-                                                    <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
-                                                </>
-                                            ) : 'N/A'}
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-800">
-                                            {bed.bookings?.length > 0 ? (
-                                                <>
-                                                    {formatDate(bed.bookings[0].start_date)} → {formatDate(bed.bookings[0].end_date)}
-                                                </>
-                                            ) : 'N/A'}
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <textarea
-                                                className="w-full p-2 border border-gray-300 rounded-md mt-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Leave your feedback"
-                                                value={feedbacks[bed.id] || ''}
-                                                onChange={(e) => handleFeedbackChange(bed.id, e.target.value)}
-                                            />
-                                            <div className="mt-2 flex space-x-2">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <button
-                                                        key={star}
-                                                        type="button"
-                                                        onClick={() => handleRatingChange(bed.id, star)}
-                                                        className={`text-xl ${ratings[bed.id] >= star ? 'text-yellow-500' : 'text-gray-300'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faStar} />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={() => handleSubmit(bed.id, 'bed')}
-                                                className="mt-3 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-                                            >
-                                                Submit 
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            {/* Page Title */}
+            <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+                History
+            </h1>
 
-                )}
+            {/* Table Container */}
+            <div className="overflow-x-auto bg-white rounded-2xl shadow-lg border border-gray-100">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
+                            <th className="p-4">Bed</th>
+                            <th className="p-4">Room</th>
+                            <th className="p-4">Building</th>
+                            <th className="p-4">Owner</th>
+                            <th className="p-4">Month Count</th>
+                            <th className="p-4">Start Date</th>
+                            <th className="p-4">End Date</th>
+                            <th className="p-4">Price</th>
+                            <th className="p-4 text-center">Action</th>
+                        </tr>
+                    </thead>
 
-                {/* Table for Rooms */}
-                {rooms.length > 0 && (
-                    <div>
-                        <h2 className="text-2xl font-semibold mt-8 mb-4">Rooms</h2>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="py-2 px-4 text-left">Room Name</th>
-                                    <th className="py-2 px-4 text-left">Description</th>
-                                    <th className="py-2 px-4 text-left">Price</th>
-                                    <th className="py-2 px-4 text-left">Rating</th>
-                                    <th className="py-2 px-4 text-left">Stay Dates</th>
-                                    <th className="py-2 px-4 text-left">Feedback</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rooms.map((room) => (
-                                    <tr key={room.id} className="border-b">
-                                        <td className="py-2 px-4">{room.name}</td>
-                                        <td className="py-2 px-4">{room.description}</td>
-                                        <td className="py-2 px-4">₱{room.sale_price ?? room.price}</td>
-                                        <td className="py-2 px-4">
-                                            {room.feedbacks_avg_rating ? (
-                                                <>
-                                                    {Number(room.feedbacks_avg_rating).toFixed(1)}{' '}
-                                                    <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
-                                                </>
-                                            ) : 'N/A'}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {room.bookings?.length > 0 ? (
-                                                <>
-                                                    {room.bookings[0].start_date} → {room.bookings[0].end_date}
-                                                </>
-                                            ) : 'N/A'}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            <textarea
-                                                className="w-full p-2 border rounded-md mt-2"
-                                                placeholder="Leave your feedback"
-                                                value={roomFeedbacks[room.id] || ''}
-                                                onChange={(e) => handleRoomFeedbackChange(room.id, e.target.value)}
-                                            />
-                                            <div className="mt-2 flex space-x-2">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <button
-                                                        key={star}
-                                                        type="button"
-                                                        onClick={() => handleRoomRatingChange(room.id, star)}
-                                                        className={`text-xl ${roomRatings[room.id] >= star ? 'text-yellow-500' : 'text-gray-300'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faStar} />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={() => handleSubmit(room.id, 'room')}
-                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-                                            >
-                                                Submit 
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                    <tbody className="text-sm text-gray-700 divide-y divide-gray-100">
+                        {bookings.map((booking, index) => {
+                            const bed = booking.bookable;
+                            const room = bed?.room;
+                            const building = room?.building;
+                            const seller = building?.seller;
 
-                {beds.length <= 0 && rooms.length <= 0 && (
-                    <div className="flex justify-center">
-                        <Link href="/home" className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
-                            Browse to find your stay.
-                        </Link>
-                    </div>
-                )}
+                            return (
+                                <motion.tr
+                                    key={booking.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    whileHover={{
+                                        scale: 1.01,
+                                        backgroundColor: "#f9fafb",
+                                    }}
+                                    className="transition"
+                                >
+                                    {/* Bed */}
+                                    <td className="p-4">
+
+                                        <div>
+                                            <p className="font-semibold truncate text-gray-800">
+                                                {bed?.name ?? "N/A"}
+                                            </p>
+                                            {bed?.ratings ? (
+                                                <p className="text-xs text-gray-500">
+                                                    ⭐ {bed.ratings} (
+                                                    {bed.people_rated ?? 0} reviews)
+                                                </p>
+                                            ) : (
+                                                ''
+                                            )}
+                                        </div>
+                                    </td>
+
+                                    {/* Room */}
+                                    <td className="p-4">
+
+                                        <span className="font-medium truncate text-gray-700">
+                                            {room?.name ?? "N/A"}
+                                        </span>
+                                    </td>
+
+                                    {/* Building */}
+                                    <td className="p-4">
+
+                                        <span className="font-medium truncate text-gray-700">
+                                            {building?.name ?? "N/A"}
+                                        </span>
+                                    </td>
+
+                                    {/* Owner */}
+                                    <td className="p-4">
+
+                                        <div>
+                                            <p className="font-semibold text-gray-800">
+                                                {seller?.name ?? "N/A"}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {seller?.email}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {seller?.phone}
+                                            </p>
+                                        </div>
+                                    </td>
+
+                                    <td className="p-4 text-gray-600">
+                                        {booking.month_count}
+                                    </td>
+                                    <td className="p-4 truncate text-gray-600">
+                                        {new Date(booking.start_date).toLocaleString(
+                                            "en-US",
+                                            {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric",
+                                                hour: "numeric",
+                                                minute: "numeric",
+                                            }
+                                        )}
+                                    </td>
+                                    <td className="p-4 truncate text-gray-600">
+                                        {new Date(booking.updated_at).toLocaleString(
+                                            "en-US",
+                                            {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric",
+                                                hour: "numeric",
+                                                minute: "numeric",
+                                            }
+                                        )}
+                                    </td>
+
+                                    {/* Price */}
+                                    <td className="p-4 font-semibold text-indigo-600">
+                                        ₱
+                                        {booking.total_price?.toFixed(2) ?? "0.00"}
+                                    </td>
+
+                                    {/* Action */}
+                                    <td className="p-4 text-center">
+                                        <Link
+                                            href={`/home/bed/${booking.bookable.id}`}
+                                            className="px-5 py-2 bg-indigo-600 text-white text-sm rounded-full shadow hover:bg-indigo-700 transition"
+                                        >
+                                            Book
+                                        </Link>
+                                    </td>
+                                </motion.tr>
+                            );
+                        })}
+
+                    </tbody>
+                </table>
             </div>
+
+            {/* Empty State Action */}
+            {bookings.length <= 0 && (
+                <div className="flex justify-center">
+                    <Link
+                        href="/buildings/home"
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium shadow hover:bg-indigo-700 transition"
+                    >
+                        Browse to find your stay
+                    </Link>
+                </div>
+            )}
         </Layout>
     );
 }

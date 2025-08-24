@@ -7,20 +7,27 @@ import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 import NotificationPopup from '@/Components/NotificationPopup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faBell } from '@fortawesome/free-solid-svg-icons';
+import SellerNotifModal from '@/Components/SellerNotifModal';
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
     // console.log(user);
-    const [notification, setNotification] = useState(null);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [messagesCount, setMessagesCount] = useState(0);
+    
+    /* Notification States */
+    const [notificationsModal, setNotificationsModal] = useState(false);
+    const [notification, setNotification] = useState(null);
+    const [notificationsCount, setNotificationsCount] = useState(0);
     useEffect(() => {
-        const landlordId = user?.id; // however you get it
+        const ownerId = user?.id; // however you get it
 
-        if (!landlordId) return;
+        if (!ownerId) return;
 
-        const channel = window.Echo.private(`landlord.${landlordId}`)
-            .listen('.NewBookingCreated', (e) => {
+        const channel = window.Echo.private(`owner.${ownerId}`)
+            .listen('.NewBooking', (e) => {
+                console.log('🔔 New booking received!', e);
+                setNotificationsCount(prevCount => prevCount + 1);
                 setNotification({
                     message: `${e.tenant_name} has booked your ${e.room_name}`,
                     tenantName: e.tenant_name,
@@ -33,13 +40,13 @@ export default function SellerLayout({ header, children }) {
                     paymentMethod: e.payment_method,
                 });
 
-
                 // Hide notification after 5 seconds
                 setTimeout(() => setNotification(null), 15000);
             });
 
+
         return () => {
-            channel.stopListening('.NewBookingCreated');
+            channel.stopListening('.NewBooking');
         };
     }, [user?.id]);
 
@@ -100,7 +107,7 @@ export default function SellerLayout({ header, children }) {
                                         <Dropdown
                                             defaultOpen={
                                                 route().current('seller.guest.index') ||
-                                                route().current('seller.request.index') ||
+                                                route().current('seller.request.bed.index') ||
                                                 route().current('seller.history.index')
                                             }
                                         >
@@ -139,8 +146,8 @@ export default function SellerLayout({ header, children }) {
                                                     Guests
                                                 </Dropdown.Link>
                                                 <Dropdown.Link
-                                                    href={route('seller.request.index')}
-                                                    active={route().current('seller.request.index')}
+                                                    href={route('seller.request.bed.index')}
+                                                    active={route().current('seller.request.bed.index')}
                                                 >
                                                     Requests
                                                 </Dropdown.Link>
@@ -149,6 +156,12 @@ export default function SellerLayout({ header, children }) {
                                                     active={route().current('seller.history.index')}
                                                 >
                                                     History
+                                                </Dropdown.Link>
+                                                <Dropdown.Link
+                                                    href={route('seller.request.payments.index')}
+                                                    active={route().current('seller.request.payments.index')}
+                                                >
+                                                    Payments
                                                 </Dropdown.Link>
                                             </Dropdown.Content>
                                         </Dropdown>
@@ -169,6 +182,26 @@ export default function SellerLayout({ header, children }) {
                                         Messages
                                     </span>
                                 </div>
+
+                                {/* Favorites Icon with Badge */}
+                                <div className="relative group">
+                                    {notificationsCount > 0 && (
+                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                            {notificationsCount}
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => setNotificationsModal(!notificationsModal)}
+                                        className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
+                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
+                                    </button>
+                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
+                                        Notificatoins
+                                    </span>
+                                    {notificationsModal && <SellerNotifModal />}
+                                </div>
+
+
                             </div>
                         </div>
 

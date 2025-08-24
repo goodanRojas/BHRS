@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log, Hash, Storage};
 
 use App\Models\{OwnerPaymentInfo, Receipt};
-
+use App\Events\User\Booking\PaymentConfirmed;
 class PaymentInfo extends Controller
 {
     public function index(Request $request)
@@ -19,13 +19,15 @@ class PaymentInfo extends Controller
             ->with(['booking.user', 'booking.bookable'])
             ->get();
         return inertia('Seller/Guest/Request/Payments', [
-            'payments' => $receipts,
+            'Payments' => $receipts,
         ]);
     }
     public function show(Request $request, $id)
     {
 
-        $payment = Receipt::findOrFail($id)->with(['booking.user', 'booking.bookable'])->first();
+
+        $payment = Receipt::with(['booking.user', 'booking.bookable'])
+            ->findOrFail($id);
         return inertia('Seller/Guest/Request/Payment', [
             'payment' => $payment,
         ]);
@@ -54,6 +56,7 @@ class PaymentInfo extends Controller
         $booking = $receipt->booking;
         $booking->status = 'completed';
         $booking->save();
+        event( new PaymentConfirmed($booking));
         return redirect()->route('seller.request.payments.index')
             ->with('success', 'Payment has been confirmed successfully.');
     }

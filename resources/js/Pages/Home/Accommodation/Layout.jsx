@@ -28,14 +28,14 @@ export default function Layout({ title, children }) {
                             History
                         </Link>
                         <Link
-                            href="/accommodations/cancelled"
+                            href="/accommodations/canceled"
                             className={
                                 route().current('accommodations.canceled')
                                     ? 'bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-sm'
                                     : 'text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-sm font-medium'
                             }
                         >
-                            Cancelled
+                            Canceled
                         </Link>
                     </nav>
 

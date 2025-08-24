@@ -85,7 +85,7 @@ export default function Payment({ payment }) {
                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Tenant Information</h2>
                     <div className="flex items-center space-x-4">
                         <img
-                            src={`/storage/${payment.booking.user.avatar}`}
+                            src={`/storage/${payment.booking.user.avatar? payment.booking.user.avatar : 'profile/default_avatar.png'}`}
                             alt={payment.booking.user.name}
                             className="w-20 h-20 object-cover rounded-full shadow"
                         />

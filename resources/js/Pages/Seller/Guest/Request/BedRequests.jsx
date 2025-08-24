@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
+import SellerLayout from '@/Layouts/SellerLayout';
 
-export default function BedRequests({ requests }) {
+export default function BedRequests({ Requests }) {
 
 
     const calculateMonths = (startDate, endDate) => {
@@ -17,74 +18,77 @@ export default function BedRequests({ requests }) {
     };
 
     return (
-        <div className="overflow-x-auto">
-            {requests.length === 0 ? (
-                <p className="text-gray-500">No bed requests found.</p>
-            ) : (
-                <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-                    <table className="min-w-full text-sm text-gray-800">
-                        <thead className="bg-indigo-50 text-indigo-700 uppercase text-xs">
-                            <tr>
-                                <th className="px-6 py-3 text-left">User</th>
-                                <th className="px-6 py-3 text-left">Booking Details</th>
-                                <th className="px-6 py-3 text-left">Payment</th>
-                                <th className="px-6 py-3 text-left">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requests.map((request) => {
-                                const startDate = new Date(request.start_date);
-                                const endDate = new Date(request.end_date);
-                                const monthCount = calculateMonths(startDate, endDate);
+        <SellerLayout>
+            <Head title="Current Requests" />
+            <div className="overflow-x-auto">
+                {Requests.length === 0 ? (
+                    <p className="text-gray-500">No bed Requests found.</p>
+                ) : (
+                    <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+                        <table className="min-w-full text-sm text-gray-800">
+                            <thead className="bg-indigo-50 text-indigo-700 uppercase text-xs">
+                                <tr>
+                                    <th className="px-6 py-3 text-left">User</th>
+                                    <th className="px-6 py-3 text-left">Booking Details</th>
+                                    <th className="px-6 py-3 text-left">Payment</th>
+                                    <th className="px-6 py-3 text-left">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Requests.map((request) => {
+                                    const startDate = new Date(request.start_date);
+                                    const endDate = new Date(request.end_date);
+                                    const monthCount = calculateMonths(startDate, endDate);
 
-                                return (
-                                    <tr key={request.id} className="border-t border-gray-200 hover:bg-indigo-50 transition">
-                                        {/* User Information */}
-                                        <td className="px-6 py-4 flex items-center gap-4 whitespace-nowrap">
-                                            <img
-                                                src={`/storage/${request.user.avatar || 'profile/default_avatar.png'}`}
-                                                alt={request.user.name}
-                                                className="w-12 h-12 rounded-full border object-cover"
-                                            />
-                                            <div>
-                                                <p className="font-medium">{request.user.name}</p>
-                                                <p className="text-xs text-gray-500">{request.user.email}</p>
-                                                {request.user.address && (
-                                                    <p className="text-xs text-gray-400">{request.user.address}</p>
-                                                )}
-                                            </div>
-                                        </td>
+                                    return (
+                                        <tr key={request.id} className="border-t border-gray-200 hover:bg-indigo-50 transition">
+                                            {/* User Information */}
+                                            <td className="px-6 py-4 flex items-center gap-4 whitespace-nowrap">
+                                                <img
+                                                    src={`/storage/${request.user.avatar || 'profile/default_avatar.png'}`}
+                                                    alt={request.user.name}
+                                                    className="w-12 h-12 rounded-full border object-cover"
+                                                />
+                                                <div>
+                                                    <p className="font-medium">{request.user.name}</p>
+                                                    <p className="text-xs text-gray-500">{request.user.email}</p>
+                                                    {request.user.address && (
+                                                        <p className="text-xs text-gray-400">{request.user.address}</p>
+                                                    )}
+                                                </div>
+                                            </td>
 
-                                        {/* Booking Information */}
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <p className="font-semibold">{request.bookable.name}</p>
-                                            <p className="text-xs text-gray-500">Start: {startDate.toLocaleDateString()}</p>
-                                            <p className="text-xs text-gray-500">End: {endDate.toLocaleDateString()}</p>
-                                            <p className="text-xs text-gray-500">Duration: {monthCount} month{monthCount > 1 ? 's' : ''}</p>
-                                        </td>
+                                            {/* Booking Information */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <p className="font-semibold">{request.bookable.name}</p>
+                                                <p className="text-xs text-gray-500">Start: {startDate.toLocaleDateString()}</p>
+                                                <p className="text-xs text-gray-500">End: {endDate.toLocaleDateString()}</p>
+                                                <p className="text-xs text-gray-500">Duration: {monthCount} month{monthCount > 1 ? 's' : ''}</p>
+                                            </td>
 
-                                        {/* Payment Info */}
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm font-medium text-gray-600">{request.payment_method}</span>
-                                        </td>
+                                            {/* Payment Info */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm font-medium text-gray-600">{request.payment_method}</span>
+                                            </td>
 
-                                        {/* Action Button */}
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <Link
-                                                href={`/seller/request/bed/${request.id}`}
-                                                className="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow hover:bg-indigo-700 transition"
-                                            >
-                                                View Details
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                            {/* Action Button */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <Link
+                                                    href={`/seller/request/bed/${request.id}`}
+                                                    className="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow hover:bg-indigo-700 transition"
+                                                >
+                                                    View Details
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
 
-            )}
-        </div>
+                )}
+            </div>
+        </SellerLayout>
     );
 }
