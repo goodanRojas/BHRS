@@ -10,10 +10,7 @@ use App\Models\{AiResponseStatus, Message, Seller, User};
 
 class MessageController extends Controller
 {
-  
-
-
-
+    
     public function searchUsers(Request $request)
     {
         $query = $request->input('query');

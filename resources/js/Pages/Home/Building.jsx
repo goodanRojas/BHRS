@@ -41,12 +41,15 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                     </div>
 
                     {/* Address */}
-                    <p className="flex items-start text-gray-600 text-xs sm:text-sm leading-relaxed">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-gray-500 mt-0.5" />
-                        {building.address
-                            ? `${building.address.street}, ${building.address.barangay}, ${building.address.city}, ${building.address.province} ${building.address.postal_code}, ${building.address.country}`
-                            : "N/A"}
-                    </p>
+                    <Link 
+                        href={route('map.index', building.id)}>
+                        <p className="flex items-start text-gray-600 text-xs sm:text-sm leading-relaxed">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-gray-500 mt-0.5" />
+                            {building.address
+                                ? `${building.address.street}, ${building.address.barangay}, ${building.address.city}, ${building.address.province} ${building.address.postal_code}, ${building.address.country}`
+                                : "N/A"}
+                        </p>
+                    </Link>
 
                     {/* Stats */}
                     <div className="flex flex-wrap gap-4 sm:gap-6 text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4">

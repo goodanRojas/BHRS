@@ -39,11 +39,6 @@ class Bed extends Model
         return $this->morphMany(Booking::class, 'bookable');
     }
 
-    public function feedbacks()
-    {
-        return $this->morphMany(Feedback::class, 'feedbackable');
-    }
-
     public function favorites()
     {
         return $this->morphMany(Favorite::class, 'favoritable');
@@ -55,5 +50,9 @@ class Bed extends Model
     public function features()
     {
         return $this->morphMany(Feature::class, 'featureable');
+    }
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
     }
 }

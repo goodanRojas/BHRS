@@ -6,7 +6,7 @@ import { Head } from '@inertiajs/react';
 import ReactDOM from 'react-dom/client';
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-export default function MapBox({ buildings, destinations }) {
+export default function MapBox({ buildings, destinations, focusId }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const routeLayerIds = useRef([]);
@@ -236,30 +236,31 @@ export default function MapBox({ buildings, destinations }) {
 
       //Loop through destinations (unclustered ones only)
       destinations.forEach((d) => {
-        const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true });
-
         map.current.on('click', 'destinations-points', (e) => {
           const feature = e.features[0];
-          popup
+
+          // Create a fresh popup every click
+          const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
             .setLngLat(feature.geometry.coordinates)
             .setHTML(`
-      <div class="text-sm">
-        <strong>${feature.properties.name}</strong><br/>
-        <img src="/storage/${feature.properties.image}" class="rounded w-full h-20 object-cover my-1"/>
-        <span class="text-gray-500">${feature.properties.category}</span>
-      </div>
-    `)
+        <div class="text-sm">
+          <strong>${feature.properties.name}</strong><br/>
+          <img src="/storage/${feature.properties.image}" class="rounded w-full h-20 object-cover my-1"/>
+          <span class="text-gray-500">${feature.properties.category}</span>
+        </div>
+      `)
             .addTo(map.current);
         });
 
         map.current.on('mouseenter', 'destinations-points', () => {
           map.current.getCanvas().style.cursor = 'pointer';
         });
+
         map.current.on('mouseleave', 'destinations-points', () => {
           map.current.getCanvas().style.cursor = '';
         });
-
       });
+
 
       map.current.on('click', 'clusters',
         (e) => {
@@ -462,17 +463,22 @@ export default function MapBox({ buildings, destinations }) {
     });
   };
 
-  // Optional function to show all routes again
-  const showAllRoutes = () => {
-    routeLayerIds.current.forEach((id) => {
-      if (!id) return;
-      if (!map.current.getLayer(id)) return;
-      map.current.setLayoutProperty(id, 'visibility', 'visible');
-      map.current.setPaintProperty(id, 'line-color', '#3b82f6'); // blue
-      map.current.setPaintProperty(id, 'line-dasharray', [1, 0]); // solid
-    });
-  };
 
+  // Focus on a building
+  useEffect(() => {
+    if (!map.current) return;
+    if (!focusId) return;
+
+    const targetBuilding = buildings.find(b => b.id === parseInt(focusId));
+    if (targetBuilding) {
+      map.current.flyTo({
+        center: [parseFloat(targetBuilding.longitude), parseFloat(targetBuilding.latitude)],
+        zoom: 18,
+        essential: true
+      });
+
+    }
+  }, [focusId, buildings]);
 
   return (
     <AuthenticatedLayout>

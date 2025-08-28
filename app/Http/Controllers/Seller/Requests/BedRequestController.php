@@ -58,10 +58,10 @@ class BedRequestController extends Controller
     {
         $booking->status = 'approved';
         $booking->save();
-        $booking->user()->notify(new BookingApprovedNotif($booking));  // Notify the user
+        $booking->user->notify(new BookingApprovedNotif($booking));  // Notify the user
 
         event(new BookingApproved($booking));
-        return redirect()->route('seller.request.index')->with('success', 'Booking accepted and payment completed.');
+        return redirect()->route('seller.request.bed.index')->with('success', 'Booking accepted and payment completed.');
     }
 
     public function acceptCash(Request $request)

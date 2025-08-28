@@ -5,70 +5,48 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
-import NotificationPopup from '@/Components/NotificationPopup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faBell } from '@fortawesome/free-solid-svg-icons';
 import SellerNotifModal from '@/Components/SellerNotifModal';
+import BookingNotif from '@/Components/Notifications/Owner/BookingNotif';
+import axios from 'axios';
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
     // console.log(user);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [messagesCount, setMessagesCount] = useState(0);
-    
+
     /* Notification States */
     const [notificationsModal, setNotificationsModal] = useState(false);
-    const [notification, setNotification] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [notifVisiblt, setNotifVisible] = useState(null);
     const [notificationsCount, setNotificationsCount] = useState(0);
+
+    // Listen for new notifications
     useEffect(() => {
-        const ownerId = user?.id; // however you get it
-
-        if (!ownerId) return;
-
-        const channel = window.Echo.private(`owner.${ownerId}`)
-            .listen('.NewBooking', (e) => {
-                console.log('🔔 New booking received!', e);
+        window.Echo.private(`App.Models.Seller.${user.id}`)
+            .notification((notification) => {
+                console.log('🔔 New notification received!', notification);
+                setNotifications((prev) => [notification, ...prev]);
+                setNotifVisible(notification);
                 setNotificationsCount(prevCount => prevCount + 1);
-                setNotification({
-                    message: `${e.tenant_name} has booked your ${e.room_name}`,
-                    tenantName: e.tenant_name,
-                    tenantEmail: e.tenant_email,
-                    tenantAvatar: e.tenant_avatar,
-                    roomName: e.room_name,
-                    roomImage: e.room_image,
-                    startDate: e.start_date,
-                    monthCount: e.month_count,
-                    paymentMethod: e.payment_method,
-                });
 
-                // Hide notification after 5 seconds
-                setTimeout(() => setNotification(null), 15000);
+
             });
-
-
-        return () => {
-            channel.stopListening('.NewBooking');
-        };
     }, [user?.id]);
+    useEffect(() => {
+        axios.get("/seller/notifications/count").then((res) => {
+            // assuming your backend returns: { count: 5 }
+            setNotificationsCount(res.data.count);
+        });
+    }, [user?.id]); // 👈 add dependency array so it only runs once on mount
 
-    const handleCloseNotification = () => {
-        setNotification(null);  // Close the notification when the button is clicked
-    };
+
+
     return (
         <div className="min-h-screen ">
-            {notification && (
-                <NotificationPopup
-                    message={notification.message}
-                    tenantName={notification.tenantName}
-                    tenantEmail={notification.tenantEmail}
-                    tenantAvatar={notification.tenantAvatar}
-                    roomName={notification.roomName}
-                    roomImage={notification.roomImage}
-                    startDate={notification.startDate}
-                    monthCount={notification.monthCount}
-                    paymentMethod={notification.paymentMethod}
-                    onClose={handleCloseNotification}
-                />
-            )}
+            <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
+
 
 
             {/* Background Image */}
@@ -187,7 +165,7 @@ export default function SellerLayout({ header, children }) {
                                 <div className="relative group">
                                     {notificationsCount > 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {notificationsCount}
+                                            {notificationsCount > 9 ?"+9" : notificationsCount}
                                         </div>
                                     )}
                                     <button

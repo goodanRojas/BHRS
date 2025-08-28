@@ -21,3 +21,4 @@ require __DIR__ . '\notification.php';
 require __DIR__ . '\room.php';
 require __DIR__ . '\profile.php';
 require __DIR__ . '\onboarding.php';
+require __DIR__ . '\feedback.php';

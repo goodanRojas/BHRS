@@ -23,3 +23,4 @@ require __DIR__.'\profile.php';
 require __DIR__.'\building.php';
 require __DIR__.'\route.php';
 require __DIR__.'\map.php';
+require __DIR__.'\building_application.php';

@@ -1,61 +1,123 @@
 import SellerLayout from '@/Layouts/SellerLayout';
-import axios from 'axios';
-import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 import Toast from '@/Components/Toast';
 
-
-function MultiStepForm() {
-    const [toastMessage, setToastMessage] = useState(null); // State to manage the toast message
-    const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({
+export default function MultiStepForm() {
+    const { data, setData, post, processing, errors, reset } = useForm({
         buildingName: '',
         numberOfFloors: '',
-        address: '',
+        address: {
+            region: '',
+            province: '',
+            municipality: '',
+            barangay: '',
+        },
         bir: null,
         fireSafetyCertificate: null,
         numberOfRooms: '',
-        numberOfBeds: '',
+        aminities: [],
     });
 
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const [step, setStep] = useState(1);
+    const [amenityInput, setAmenityInput] = useState('');
+
+    // handle file inputs
+    const handleFileChange = (e, field) => {
+        setData(field, e.target.files[0]);
     };
 
-    const handleFileChange = (e, fieldName) => {
-        const file = e.target.files[0];
-        setFormData({ ...formData, [fieldName]: file });
+    // handle amenities add/remove
+    const handleAmenityKeyDown = (e) => {
+        if (e.key === 'Enter' && amenityInput.trim() !== '') {
+            e.preventDefault();
+            if (!data.aminities.includes(amenityInput.trim())) {
+                setData('aminities', [...data.aminities, amenityInput.trim()]);
+            }
+            setAmenityInput('');
+        }
+    };
+
+    const removeAmenity = (item) => {
+        setData('aminities', data.aminities.filter((a) => a !== item));
+    };
+
+    // handle cascading location changes
+    const regions = Object.entries(ph);
+    const provinces = data.address.region
+        ? Object.keys(ph[data.address.region].province_list)
+        : [];
+    const municipalities = data.address.province
+        ? Object.keys(
+            ph[data.address.region].province_list[data.address.province].municipality_list
+        )
+        : [];
+    const barangays = data.address.municipality
+        ? ph[data.address.region].province_list[data.address.province].municipality_list[
+            data.address.municipality
+        ].barangay_list
+        : [];
+
+    // step validation
+    const validateStep = () => {
+        switch (step) {
+            case 1:
+                return data.buildingName && data.numberOfFloors;
+            case 2:
+                return (
+                    data.address.region &&
+                    data.address.province &&
+                    data.address.municipality &&
+                    data.address.barangay
+                );
+            case 3:
+                return data.bir && data.fireSafetyCertificate;
+            case 4:
+                return data.numberOfRooms;
+            default:
+                return true;
+        }
     };
 
     const nextStep = () => {
-        setStep(step + 1);
+        if (validateStep()) {
+            setStep(step + 1);
+        }
     };
 
     const prevStep = () => {
         setStep(step - 1);
     };
 
-    const handleSubmit = async (e) => {
+    const [toast, setToast] = useState({
+        'show': false,
+        'message': '',
+        'type': 'success',
+    });
+
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        const dataToSubmit = new FormData();
-        // Append all the form data
-        Object.keys(formData).forEach((key) => {
-            if (formData[key]) {
-                dataToSubmit.append(key, formData[key]);
+        post('/seller/app/submit', {
+            forceFormData: true, // ensure file upload works
+            onSuccess: () => {
+                reset();
+
+                setToast({
+                   show: true,
+                    message: "Thanks for applying! Our staff will review your application.",
+                    type: "success",
+                });
+            },
+            onError: () => {
+                setToast({
+                    show: true,
+                    message: "Sorry, there was an error submitting your application. Please try again later.",
+                    type: "error",
+                });
             }
         });
-
-        try {
-            const response = await axios.post('/seller/app/submit', dataToSubmit, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            setToastMessage(response.data.message);
-        } catch (error) {
-            console.error("Error submitting form:", error);
-        }
     };
 
     const renderStep = () => {
@@ -63,94 +125,223 @@ function MultiStepForm() {
             case 1:
                 return (
                     <div className="space-y-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Building Name
+                        <label className="block">
+                            <span>Building Name</span>
                             <input
                                 type="text"
-                                name="buildingName"
-                                value={formData.buildingName || ''}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                value={data.buildingName}
+                                onChange={(e) => setData('buildingName', e.target.value)}
+                                className="mt-1 block w-full rounded border-gray-300"
                             />
+                            {errors.buildingName && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.buildingName}
+                                </span>
+                            )}
                         </label>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Number of floors
+                        <label className="block">
+                            <span>Number of Floors</span>
                             <input
                                 type="number"
-                                name="numberOfFloors"
-                                value={formData.numberOfFloors || ''}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                value={data.numberOfFloors}
+                                onChange={(e) => setData('numberOfFloors', e.target.value)}
+                                className="mt-1 block w-full rounded border-gray-300"
                             />
-                        </label>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Address
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address || ''}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
-                        </label>
-                        <label className="block text-sm font-medium text-gray-700">
-                            BIR
-                            <input
-                                type="file"
-                                name="bir"
-                                onChange={(e) => handleFileChange(e, 'bir')}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
-                        </label>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Fire Safety Certificate
-                            <input
-                                type="file"
-                                name="fireSafetyCertificate"
-                                onChange={(e) => handleFileChange(e, 'fireSafetyCertificate')}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
+                            {errors.numberOfFloors && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.numberOfFloors}
+                                </span>
+                            )}
                         </label>
                     </div>
                 );
             case 2:
                 return (
                     <div className="space-y-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                            Number of rooms
-                            <input
-                                type="number"
-                                name="numberOfRooms"
-                                value={formData.numberOfRooms || ''}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
+                        <label className="block">
+                            <span>Region</span>
+                            <select
+                                value={data.address.region}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        region: e.target.value,
+                                        province: '',
+                                        municipality: '',
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Region</option>
+                                {regions.map(([key, region]) => (
+                                    <option key={key} value={key}>
+                                        {region.region_name}
+                                    </option>
+                                ))}
+                            </select>
                         </label>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Number of beds
-                            <input
-                                type="number"
-                                name="numberOfBeds"
-                                value={formData.numberOfBeds || ''}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
+
+                        <label className="block">
+                            <span>Province</span>
+                            <select
+                                value={data.address.province}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        province: e.target.value,
+                                        municipality: '',
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Province</option>
+                                {provinces.map((prov) => (
+                                    <option key={prov} value={prov}>
+                                        {prov}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Municipality</span>
+                            <select
+                                value={data.address.municipality}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        municipality: e.target.value,
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Municipality</option>
+                                {municipalities.map((mun) => (
+                                    <option key={mun} value={mun}>
+                                        {mun}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Barangay</span>
+                            <select
+                                value={data.address.barangay}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        barangay: e.target.value,
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Barangay</option>
+                                {barangays.map((brgy, idx) => (
+                                    <option key={idx} value={brgy}>
+                                        {brgy}
+                                    </option>
+                                ))}
+                            </select>
                         </label>
                     </div>
                 );
             case 3:
                 return (
+                    <div className="space-y-4">
+                        <label className="block">
+                            <span>BIR</span>
+                            <input
+                                type="file"
+                                onChange={(e) => handleFileChange(e, 'bir')}
+                                className="mt-1 block w-full"
+                            />
+                            {errors.bir && (
+                                <span className="text-red-500 text-sm">{errors.bir}</span>
+                            )}
+                        </label>
+                        <label className="block">
+                            <span>Fire Safety Certificate</span>
+                            <input
+                                type="file"
+                                onChange={(e) => handleFileChange(e, 'fireSafetyCertificate')}
+                                className="mt-1 block w-full"
+                            />
+                            {errors.fireSafetyCertificate && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.fireSafetyCertificate}
+                                </span>
+                            )}
+                        </label>
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className="space-y-4">
+                        <label className="block">
+                            <span>Number of Rooms</span>
+                            <input
+                                type="number"
+                                value={data.numberOfRooms}
+                                onChange={(e) => setData('numberOfRooms', e.target.value)}
+                                className="mt-1 block w-full rounded border-gray-300"
+                            />
+                            {errors.numberOfRooms && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.numberOfRooms}
+                                </span>
+                            )}
+                        </label>
+                        <label className="block">
+                            <span>Amenities</span>
+                            <input
+                                type="text"
+                                value={amenityInput}
+                                onChange={(e) => setAmenityInput(e.target.value)}
+                                onKeyDown={handleAmenityKeyDown}
+                                placeholder="Type and press Enter"
+                                className="mt-1 block w-full rounded border-gray-300"
+                            />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {data.aminities.map((item, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                                    >
+                                        {item}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeAmenity(item)}
+                                            className="text-red-500"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </label>
+                    </div>
+                );
+            case 5:
+                return (
                     <div>
-                        <p>Confirm your information:</p>
-                        <p>Building Name: {formData.buildingName}</p>
-                        <p>Number of Floors: {formData.numberOfFloors}</p>
-                        <p>Number of Rooms: {formData.numberOfRooms}</p>
-                        <p>Number of Beds: {formData.numberOfBeds}</p>
+                        <h3 className="text-lg font-semibold mb-2">Confirm your info</h3>
                         <p>
-                            Building Permit: {formData.bir ? 'Uploaded' : 'Not Uploaded'}
+                            <strong>Building:</strong> {data.buildingName} (
+                            {data.numberOfFloors} floors)
                         </p>
                         <p>
-                            Fire Safety Certificate: {formData.fireSafetyCertificate ? 'Uploaded' : 'Not Uploaded'}
+                            <strong>Address:</strong> {data.address.barangay},{' '}
+                            {data.address.municipality}, {data.address.province} -{' '}
+                            {data.address.region}
+                        </p>
+                        <p>
+                            <strong>Rooms:</strong> {data.numberOfRooms}
+                        </p>
+                        <p>
+                            <strong>Amenities:</strong> {data.aminities.join(', ')}
                         </p>
                     </div>
                 );
@@ -162,44 +353,41 @@ function MultiStepForm() {
     return (
         <SellerLayout>
             <Head title="Application Form" />
-            <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
-                <h2 className="text-lg font-semibold mb-4">Application Form</h2>
-                <form onSubmit={handleSubmit}>
-                    {/* Render the current step */}
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} />
+            <div className="max-w-xl mx-auto p-6 bg-white rounded shadow">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {renderStep()}
 
-                    <div className="flex justify-between mt-6">
+                    <div className="flex justify-between">
                         {step > 1 && (
                             <button
                                 type="button"
                                 onClick={prevStep}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-200 rounded"
                             >
                                 Previous
                             </button>
                         )}
-                        {step < 3 ? (
+                        {step < 5 ? (
                             <button
                                 type="button"
                                 onClick={nextStep}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                className="px-4 py-2 bg-indigo-600 text-white rounded"
                             >
                                 Next
                             </button>
                         ) : (
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                                disabled={processing}
+                                className="px-4 py-2 bg-green-600 text-white rounded"
                             >
-                                Submit
+                                {processing ? 'Submitting...' : 'Submit'}
                             </button>
                         )}
                     </div>
                 </form>
-                  {toastMessage && <Toast message={toastMessage} />}
             </div>
         </SellerLayout>
     );
 }
-
-export default MultiStepForm;

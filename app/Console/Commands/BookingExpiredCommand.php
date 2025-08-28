@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 use App\Models\Booking;
 use App\Notifications\User\BookingExpiredNotify;
 use App\Events\User\Booking\BookingEndedEvent;
+use App\Events\Owner\BookingEndedEventOwner;
 use Illuminate\Support\Facades\Log;
 class BookingExpiredCommand extends Command
 {
@@ -39,9 +40,10 @@ class BookingExpiredCommand extends Command
                 Log::info('Booking expired: ' . $booking->id);
                 $booking->update(['status' => 'ended']);
                 $booking->user->notify(new BookingExpiredNotify($booking));
-                $booking->bookable->room->building->seller->notify(new BookingExpiredNotify($booking));
-                event(new BookingEndedEvent($booking)); // Notify Owner
-                // event(new BookingEndedEventSeller($booking)); // Broadcast to Owner
+                $booking->bookable->room->building->seller->notify(new BookingExpiredNotify($booking)); // Notify Seller
+                $booking->user->notify(new BookingExpiredNotify($booking));
+                event(new BookingEndedEvent($booking)); // Broadcast to User
+                event(new BookingEndedEventOwner($booking)); // Broadcast to Owner
                 
             }
         }

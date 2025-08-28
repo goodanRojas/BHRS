@@ -16,30 +16,19 @@ class SellerGuestController extends Controller
 {
     public function index()
     {
-        // Log::info(Auth::guard('seller')->user());
         $seller = Auth::guard('seller')->user();
-        $buildingIds = $seller->buildings->pluck('id');
-        $roomIds = Room::whereIn('building_id', $buildingIds)->pluck('id');
-        $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
-
         $bedBookings = Booking::with(['user' ,'bookable' => function ($morph) {
             $morph->with(['room.building']);
         }])
         ->where('bookable_type', Bed::class)
-        ->whereIn('bookable_id', $bedIds)
-        ->where('status', 'approved')
+        ->where('status', 'completed')
+        ->whereHas('bookable.room.building', function($q) use ($seller) {
+            $q->where('seller_id', $seller->id);
+        })
         ->get();
 
-        $roomBookings = Booking::with(relations: ['user' ,'bookable' => function ($morph){
-            $morph->with('building');
-        }])
-        ->where('bookable_type', Room::class)   
-        ->whereIn('bookable_id', $roomIds)
-        ->where('status', 'approved')
-        ->get();
         return Inertia::render('Seller/Guest/Guests',[
-            'bedBookings' => $bedBookings,
-            'roomBookings' => $roomBookings,
+            'bookings' => $bedBookings
         ]);
     }
 }

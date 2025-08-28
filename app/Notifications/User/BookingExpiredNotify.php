@@ -29,16 +29,17 @@ class BookingExpiredNotify extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast'];
+        return [ 'database', 'broadcast'];
+        // return ['mail', 'database', 'broadcast'];
     }
 
-    public function toMail($notifiable)
+/*     public function toMail($notifiable)
     {
         return (new MailMessage)
             ->subject('Booking expired')
             ->line('Your booking has expired.')
             ->action('View Booking', url('/seller/bookings'));
-    }
+    } */
 
     public function toDatabase($notifiable)
     {

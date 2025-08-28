@@ -18,10 +18,28 @@ class BuildingController  extends Controller
 
     public function showBuildings(Request $request, Building $building)
     {
+        $buildings = Building::with([
+            'rooms.beds.bookings' => function ($q) {
+                $q->where('status', 'completed')
+                    ->with('user'); // eager load the user who booked
+            },
+            'rooms.beds.bookings.ratings',
+            'address',
+            'seller'
+        ])
+            ->select('buildings.*')
+            ->selectSub(function ($query) {
+                $query->from('ratings')
+                    ->join('bookings', 'bookings.id', '=', 'ratings.booking_id')
+                    ->join('beds', 'beds.id', '=', 'bookings.bookable_id')
+                    ->join('rooms', 'rooms.id', '=', 'beds.room_id')
+                    ->where('bookings.bookable_type', Bed::class)
+                    ->whereColumn('rooms.building_id', 'buildings.id')
+                    ->selectRaw('AVG(ratings.stars)');
+            }, 'avg_stars')
+            ->get();
 
 
-        $buildings = Building::with('rooms', 'address',  'seller')->get();
-        // dd($buildings->toArray());
 
         return Inertia::render('Home/Buildings', [
             'initialBuildings' => $buildings->toArray(),

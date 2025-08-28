@@ -37,15 +37,24 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function receipt(){
+    public function receipt()
+    {
         return $this->hasOne(Receipt::class);
     }
     public function address()
     {
         return $this->morphOne(Address::class, 'addressable');
     }
-       public function rejections()
+    public function rejections()
     {
         return $this->morphMany(Rejection::class, 'rejectable');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    public function ratings(){
+        return $this->hasMany(Rating::class);
     }
 }

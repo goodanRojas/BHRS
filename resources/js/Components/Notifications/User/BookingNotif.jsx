@@ -2,7 +2,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-export default function NotificationPopup({ notification, onClose }) {
+export default function BookingNotif({ notification, onClose }) {
+    let type;
+    if (!notification) return null;
+
+    switch (notification.type) {
+        case "App\\Notifications\\User\\NewBookingNotification":
+            type = "New Booking";
+            break;
+        case "App\\Notifications\\User\\BookingApprovedNotif":
+            type = "Booking Approved";
+            break;
+        case "App\\Notifications\\User\\BookingSetupCompleted":
+            type = "Booking Setup Completed";
+            break;
+        case "App\\Notifications\\User\\BookingExpiredNotify":
+            type = "Booking Expired";
+            break;
+        default:
+            type = "Unknown";
+            break;
+    }
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    }).format(new Date(notification.start_date));
     return (
         <AnimatePresence>
             {notification && (
@@ -15,7 +40,7 @@ export default function NotificationPopup({ notification, onClose }) {
                 >
                     {/* Header with Close Button */}
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-gray-800 font-semibold">Booking Expired</h2>
+                        <h2 className="text-gray-800 font-semibold">{type}</h2>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600"
@@ -32,9 +57,9 @@ export default function NotificationPopup({ notification, onClose }) {
                                 {notification.room_name}, {notification.building_name}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
-                                Start: {notification.start_date} •{" "}
-                                {notification.month_count} months
+                                Start: {formattedDate} • {notification.month_count} month{notification.month_count > 1 ? "s" : ""}
                             </p>
+
                         </div>
                     </div>
                 </motion.div>

@@ -10,14 +10,25 @@ use App\Models\{BuildingApplication, Building, Address};
 
 class Application extends Controller
 {
-        
+
     public function index()
     {
-        $applications = Building::all();
-        return   Inertia::render('Admin/Owner/Building/Application', [
+        $applications = BuildingApplication::with('seller')->latest()->get();
+        return   Inertia::render('Admin/Owner/Building/BuildingApplications', [
             'applications' => $applications
         ]);
     }
+
+    public function show(BuildingApplication $application)
+    {
+        Log::info($application->toArray());
+        $application->load('seller'); // eager load seller details
+
+        return Inertia::render('Admin/Owner/Building/ShowBuildingApplication', [
+            'application' => $application,
+        ]);
+    }
+
 
     public function store(Request $request)
     {
@@ -25,7 +36,7 @@ class Application extends Controller
         Log::info($request->all());
 
         // Find the application using the provided id
-       
+
         // Log the found application
         $application = Building::find($request->id);
         // Handle the image upload if it exists in the request

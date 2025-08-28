@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Booking;
 class BookingEndedEvent implements ShouldBroadcast
@@ -21,6 +22,7 @@ class BookingEndedEvent implements ShouldBroadcast
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
+        Log::info("Expired event from User");
     }
 
     

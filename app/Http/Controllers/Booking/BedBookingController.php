@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Booking;
 use App\Events\Owner\UserGcashPaid;
 use App\Http\Controllers\Controller;
 use App\Events\Owner\NewBooking;
-use App\Models\{ Receipt, Address, Bed, Booking};
+use App\Models\{Receipt, Address, Bed, Booking};
 use App\Notifications\NewBookingNotification;
+use App\Notifications\User\UserBookingGcashPaid;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -21,9 +22,9 @@ class BedBookingController extends Controller
     {
         $userId = auth()->id();
         $userHasBooking = Booking::where('user_id', $userId)
-        ->where('status', 'completed')->first();
+            ->where('status', 'completed')->first();
 
-        if($userHasBooking) {
+        if ($userHasBooking) {
             return redirect()->back()->with('error', "You're not allowed to book if you have an ongoing booking.");
         }
         $bed->load("bookings.address", "room.building");
@@ -31,7 +32,7 @@ class BedBookingController extends Controller
             ->with('address')
             ->latest()
             ->first();
-        
+
 
         return Inertia::render('Home/Booking/BedBooking', [
             'bed' => $bed,
@@ -83,9 +84,7 @@ class BedBookingController extends Controller
         $seller->notify(new NewBookingNotification($booking));  // Notify the user
         event(new NewBooking($booking)); // Broadcast the event to update the ui
 
-       return redirect()->route('accommodations.index')->with('success', 'Booking request created successfully.');
-
-
+        return redirect()->route('accommodations.index')->with('success', 'Booking request created successfully.');
     }
 
 
@@ -116,19 +115,19 @@ class BedBookingController extends Controller
 
     public function confirmGcashPayment(Request $request)
     {
-         $request->validate([
-        'booking_id' => 'required|exists:bookings,id',
-        'remarks' => 'nullable|string|max:255',
-        'ref_number' => 'nullable|string|max:255',
-        'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-    ]);
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'remarks' => 'nullable|string|max:255',
+            'ref_number' => 'nullable|string|max:255',
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
         $booking = Booking::where('id', $request->booking_id)->first();
         $booking->status = "paid";
         $booking->save();
 
         $path = $request->file('payment_proof')->store('receipts', 'public');
 
-      $receipt =  Receipt::create([
+        $receipt =  Receipt::create([
             'booking_id' => $booking->id,
             'user_receipt' => $path,
             'payment_method' => 'gcash',
@@ -138,14 +137,15 @@ class BedBookingController extends Controller
             'amount' => $booking->total_price,
             'paid_at' => Carbon::now(),
         ]);
+        $booking->bookable->room->building->seller->notify(new UserBookingGcashPaid($booking));
 
-        event( new  UserGcashPaid($receipt));
+        event(new  UserGcashPaid($receipt));
 
         return redirect()->route('accommodations.index');
     }
 
     /* Cancel booking */
-    public function cancelBooking(Request $request,Booking $booking)
+    public function cancelBooking(Request $request, Booking $booking)
     {
         $booking->status = 'canceled';
         $booking->save();

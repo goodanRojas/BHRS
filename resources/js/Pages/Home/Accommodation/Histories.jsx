@@ -5,10 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faBuilding, faDoorClosed, faMoneyBill, faClock, faStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { motion } from "framer-motion";
-
+import Rate from "./Rate";
 
 export default function Histories({ bookings }) {
-    console.log(bookings);
+
+    const openHistory = (id) => {
+        window.location.href = `/feedback/bookings/${id}`;
+    };
     return (
         <Layout>
             <Head title="History" />
@@ -52,7 +55,11 @@ export default function Histories({ bookings }) {
                                         scale: 1.01,
                                         backgroundColor: "#f9fafb",
                                     }}
-                                    className="transition"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        openHistory(booking.id)
+                                    }}
+                                    className="transition hover:cursor-pointer"
                                 >
                                     {/* Bed */}
                                     <td className="p-4">
@@ -147,6 +154,7 @@ export default function Histories({ bookings }) {
                                             Book
                                         </Link>
                                     </td>
+
                                 </motion.tr>
                             );
                         })}
@@ -166,6 +174,9 @@ export default function Histories({ bookings }) {
                     </Link>
                 </div>
             )}
+
+
+
         </Layout>
     );
 }

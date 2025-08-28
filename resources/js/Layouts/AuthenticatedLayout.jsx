@@ -13,21 +13,20 @@ import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
-import NotificationPopup from '@/Components/Notifications/NotificationPopup';
+import BookingNotif from '@/Components/Notifications/User/BookingNotif';
 export const ChatContext = createContext();
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    const [notificationsModal, setNotificationsModal] = useState(false);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
 
     const [favoritesCount, setFavoritesCount] = useState(user?.favorites?.length || 0);
     const [messagesCount, setMessagesCount] = useState(0);
 
-    const [notifications, setNotifications] = useState([]);
+    const [notificationsModal, setNotificationsModal] = useState(false);
     const [notifVisiblt, setNotifVisible] = useState(null);
-
+    const [notificationsCount, setNotificationsCount] = useState(0);
     useEffect(() => {
         if (user) {
             const channel = Echo.private(`favorites.${user.id}`)
@@ -54,20 +53,26 @@ export default function AuthenticatedLayout({ header, children }) {
         window.Echo.private(`App.Models.User.${user.id}`)
             .notification((notification) => {
                 console.log('🔔 New notification received!', notification);
-                setNotifications((prev) => [notification, ...prev]);
                 setNotifVisible(notification);
+                setNotificationsCount(notificationsCount + 1);
             });
     }, [user?.id]);
+
+    useEffect(() => {
+        axios.get("/notifications/count").then((res) => {
+            setNotificationsCount(res.data.count);
+        });
+    }, [user?.id]); // 👈 add dependency array so it only runs once on mount
+
 
     const updateFavoritesCount = (newCount) => {
         setFavoritesCount(newCount);
     };
     return (
         <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
-            <NotificationPopup notification={notifVisiblt}  onClose={() => setNotifVisible(null)} />
+            <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
 
             {/* (Optional) keep history */}
-            {/* <NotificationList notifications={notifications} /> */}
             <div className="min-h-screen ">
                 {/* Background Image */}
                 <div
@@ -147,9 +152,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </div>
                                 {/* Favorites Icon with Badge */}
                                 <div className="relative group">
-                                    {favoritesCount > 0 && (
+                                      {notificationsCount > 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {favoritesCount}
+                                          {notificationsCount > 9 ? "+9" : notificationsCount}
                                         </div>
                                     )}
                                     <button
@@ -309,9 +314,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                         {/* Favorites Icon with Badge */}
                         <div className="relative group">
-                            {favoritesCount > 0 && (
+                            {notificationsCount > 0 && (
                                 <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                    {favoritesCount}
+                                    {notificationsCount > 9 ? "+9" : notificationsCount}
                                 </div>
                             )}
                             <Link href="/favorites" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">

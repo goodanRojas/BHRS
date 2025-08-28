@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\NewBookingNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
+use Inertia\Inertia;
 class SellerNotificationController extends Controller
 {
     public function latest()
@@ -46,5 +46,52 @@ class SellerNotificationController extends Controller
             'notifications' => $notifications,
             'unread_count' => $seller->unreadNotifications()->count(),
         ]);
+    }
+
+    public function count()
+    {
+        $owner = auth()->guard('seller')->user();
+        return response()->json([
+            'count' => $owner->unreadNotifications()->count(),
+        ]);
+    }
+
+    public function index()
+    {
+        return Inertia::render('Seller/Notification/Index', [
+            'notifications' => auth()->guard('seller')->user()->notifications()->latest()->get(),
+        ]);
+    }
+    public function markAllRead()
+    {
+        auth()->guard('seller')->user()->unreadNotifications->markAsRead();
+        return back();
+    }
+    public function markAsRead($id)
+    {
+        $notification = auth()->guard('seller')->user()->notifications()->findOrFail($id);
+        if ($notification->read_at === null) {
+            $notification->markAsRead();
+        }
+        return back();
+    }
+
+    public function destroy($id)
+    {
+        $notification = auth()->guard('seller')->user()->notifications()->findOrFail($id);
+        $notification->delete();
+        return back();
+    }
+    public function destroyAll($type)
+    {
+        $query = auth()->guard('seller')->user()->notifications();
+
+        if ($type === 'unread') {
+            $query->whereNull('read_at')->delete();
+        } elseif ($type === 'read') {
+            $query->whereNotNull('read_at')->delete();
+        }
+
+        return back();
     }
 }

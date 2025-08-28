@@ -10,7 +10,6 @@ import Modal from '@/Components/Modal';
 export default function Booking({ bed, userPreferences }) {
     // console.log(bed);
     // console.log(userPreferences);
-
     const { data, setData, post, processing, errors, reset } = useForm({
         name: userPreferences?.fullname || '',
         email: userPreferences?.email || '',

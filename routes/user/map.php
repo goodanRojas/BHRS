@@ -5,5 +5,5 @@ use App\Http\Controllers\MapController;
 use App\Models\BoardingHouse;
 
 Route::middleware('auth')->group(function () {
-    Route::get('/map', [MapController::class, 'index'])->name('map.index');
+    Route::get('/map/{building?}', [MapController::class, 'index'])->name('map.index');
 });

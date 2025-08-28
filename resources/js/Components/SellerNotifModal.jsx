@@ -5,13 +5,13 @@ import { Link } from '@inertiajs/inertia-react';
 const NavNotif = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const maxToShow = 5; // number of notifications to display initially
 
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
                 const response = await axios.get('/seller/notifications/latest');
                 setNotifications(response.data.notifications); // assuming `notifications` key
-                console.log(response.data.notifications);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             } finally {
@@ -21,6 +21,13 @@ const NavNotif = () => {
 
         fetchNotifications();
     }, []);
+
+    const displayed = notifications.slice(0, maxToShow);
+    let remainingCount = notifications.length - maxToShow;
+    if(remainingCount > 9)
+    {
+        remainingCount = 9;
+    }
 
     return (
         <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg z-50 p-4">
@@ -32,7 +39,7 @@ const NavNotif = () => {
                 <div className="text-sm text-gray-500">No new notifications.</div>
             ) : (
                 <ul className="max-h-60 overflow-y-auto">
-                    {notifications.map((notif) => (
+                    {displayed.map((notif) => (
                         <li
                             key={notif.id}
                             className="flex items-center gap-3 p-3 border-b last:border-none hover:bg-gray-50 transition"
@@ -55,13 +62,18 @@ const NavNotif = () => {
                             </div>
                         </li>
                     ))}
-                </ul>
 
+                    {remainingCount > 0 && (
+                        <li className="text-center text-xs text-gray-500 py-2">
+                            +{remainingCount} more
+                        </li>
+                    )}
+                </ul>
             )}
 
             <div className="mt-2 text-right">
                 <Link
-                    href={route('notifications.index')}
+                    href={route('seller.notifications.index')}
                     className="text-blue-500 hover:underline text-sm"
                 >
                     See all

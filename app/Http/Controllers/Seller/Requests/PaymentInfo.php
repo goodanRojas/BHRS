@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\{Auth, Log, Hash, Storage};
 
 use App\Models\{OwnerPaymentInfo, Receipt};
 use App\Events\User\Booking\PaymentConfirmed;
+use App\Notifications\User\BookingSetupCompleted;
 class PaymentInfo extends Controller
 {
     public function index(Request $request)
@@ -57,6 +58,7 @@ class PaymentInfo extends Controller
         $booking->status = 'completed';
         $booking->save();
         event( new PaymentConfirmed($booking));
+        $booking->user->notify(new BookingSetupCompleted($booking));
         return redirect()->route('seller.request.payments.index')
             ->with('success', 'Payment has been confirmed successfully.');
     }

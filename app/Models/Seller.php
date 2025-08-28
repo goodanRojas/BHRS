@@ -62,4 +62,9 @@ class Seller extends Authenticatable
     {
         return $this->hasMany(AiResponseStatus::class, 'seller_id');
     }
+
+    public function buildingApplications()
+    {
+        return $this->hasMany(BuildingApplication::class);
+    }
 }

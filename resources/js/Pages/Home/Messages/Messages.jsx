@@ -10,8 +10,6 @@ import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } f
 import Modal from '@/Components/Modal';
 
 export default function Messages({ sentMessages, receivedMessages }) {
-    // console.log("Sent Messages:", sentMessages);
-    // console.log("Received Messages:", receivedMessages);
 
     const [users, setUsers] = useState([]); // Store list of users (all conversations)
     const [onlineUsers, setOnlineUsers] = useState([]); // Store list of online users
@@ -25,6 +23,22 @@ export default function Messages({ sentMessages, receivedMessages }) {
     const menuRef = useRef(null); // Reference to the message options dropdown
 
     const user = usePage().props.auth.user; // Get the authenticated user
+    useEffect(() => {
+        const saved = sessionStorage.getItem('selectedUser');
+        if (saved) {
+            try {
+                const parsedUser = JSON.parse(saved);
+                setActiveUser(parsedUser);
+                fetchMessages(parsedUser.id);
+            } catch (e) {
+                console.error("Invalid JSON in sessionStorage:", e);
+                sessionStorage.removeItem('selectedUser');
+            }
+        }
+    }, []);
+    const selectedUserToSessionStorage = (user) => {
+        sessionStorage.setItem('selectedUser', JSON.stringify(user));
+    };
 
     // Extract users from both sent and received messages
     useEffect(() => {
@@ -154,8 +168,10 @@ export default function Messages({ sentMessages, receivedMessages }) {
             // Set up real-time Echo listener for messages
             Echo.private(`direct-messages.${user.id}`)
                 .listen('MessageSent', (message) => {
-                    setMessages((prevMessages) => [...prevMessages, message]);
-                    addUserIfNotExists(message.sender_id);
+                    if (message.sender_id !== user.id) {
+                        setMessages((prevMessages) => [...prevMessages, message]);
+                        addUserIfNotExists(message.sender_id);
+                    }
                 });
         }
 
@@ -235,6 +251,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                                     key={user.id}
                                     onClick={() => {
                                         setActiveUser(user);
+                                        selectedUserToSessionStorage(user);
                                         fetchMessages(user.id);
                                     }}
                                     className="group relative cursor-pointer bg-indigo-100 hover:bg-indigo-200 rounded-full transition duration-200 flex items-center p-1"
@@ -256,7 +273,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                                     )}
                                 </li>
                             ))}
-                        </ul>) : <div className="text-center ">No users found</div>}
+                        </ul>) : <div className="text-center ">Start Chatting..</div>}
 
                     {/* Search Results (overlayed or below) */}
                     {searchQuery.length >= 2 && searchResults.length > 0 && (
@@ -270,6 +287,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                                         key={user.id}
                                         onClick={() => {
                                             setActiveUser(user);
+                                            selectedUserToSessionStorage(user);
                                             fetchMessages(user.id);
                                             setSearchQuery(''); // optional: clear after select
                                         }}

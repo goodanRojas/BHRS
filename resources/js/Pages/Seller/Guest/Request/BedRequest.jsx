@@ -10,6 +10,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 export default function BedRequest({ booking }) {
+    const user = usePage().props.auth.seler;
     useEffect(() => {
         const ownerId = user?.id; // however you get it
 
@@ -18,7 +19,7 @@ export default function BedRequest({ booking }) {
         const channel = window.Echo.private(`owner.${ownerId}`)
             .listen('.NewBooking', (e) => {
                 console.log('🔔 New booking received!', e);
-             
+
             });
 
 
@@ -28,7 +29,6 @@ export default function BedRequest({ booking }) {
     }, [user?.id]);
 
 
-    const user = usePage().props.auth.seller;
 
     // State for form inputs\
     const [receiptImage, setReceiptImage] = useState(null);
@@ -221,7 +221,7 @@ export default function BedRequest({ booking }) {
 
                 {/* Action Buttons */}
                 <motion.div
-                    className="flex justify-end gap-4"
+                    className="flex justify-end gap-3"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
@@ -229,18 +229,23 @@ export default function BedRequest({ booking }) {
                     <button
                         onClick={() => setShowModalAccept(true)}
                         disabled={processing}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed transition"
+                        className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium 
+               hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 
+               disabled:bg-indigo-300 disabled:cursor-not-allowed transition"
                     >
                         Accept
                     </button>
                     <button
                         onClick={() => setShowModalReject(true)}
                         disabled={processing}
-                        className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed transition"
+                        className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium 
+               hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 
+               disabled:bg-red-300 disabled:cursor-not-allowed transition"
                     >
                         Reject
                     </button>
                 </motion.div>
+
             </div>
 
             {/* Accept Modal */}

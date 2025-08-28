@@ -52,7 +52,7 @@ class Building extends Model
 
     public function images()
     {
-         return $this->morphMany(Media::class, 'imageable');
+        return $this->morphMany(Media::class, 'imageable');
     }
     public function features()
     {
@@ -63,5 +63,4 @@ class Building extends Model
     {
         return $this->hasMany(Route::class);
     }
-
 }

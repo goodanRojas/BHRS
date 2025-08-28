@@ -21,6 +21,12 @@ const NavNotif = () => {
         fetchNotifications();
     }, []);
 
+    const displaydNotifs = notifications.slice(0, 5);
+    let remainingCount = notifications.length - 5;
+    if (remainingCount > 9) {
+        remainingCount = 9;
+    }
+
     return (
         <div className="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg z-50 p-4">
             <h3 className="text-gray-800 font-semibold mb-2">Notifications</h3>
@@ -31,12 +37,18 @@ const NavNotif = () => {
                 <div className="text-sm text-gray-500">No new notifications.</div>
             ) : (
                 <ul className="max-h-60 overflow-y-auto">
-                    {notifications.map((notif) => (
+                    {displaydNotifs.map((notif) => (
                         <li key={notif.id} className="p-2 border-b last:border-none">
                             <div className="text-sm text-gray-700">{notif.data.message}</div>
                             <div className="text-xs text-gray-400">{notif.created_at}</div>
                         </li>
+
                     ))}
+                    {remainingCount > 0 && (
+                        <li className="text-center text-xs text-gray-500 py-2">
+                            +{remainingCount} more
+                        </li>
+                    )}
                 </ul>
             )}
 
