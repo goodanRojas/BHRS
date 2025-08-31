@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { usePage, Head } from '@inertiajs/react';
 import axios, { all } from 'axios';
 import dayjs from 'dayjs';
@@ -10,7 +10,6 @@ import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning, fa
 import Modal from '@/Components/Modal';
 
 export default function Index({ sentMessages, receivedMessages }) {
-
     const [users, setUsers] = useState([]); // Store list of users (all conversations)
     const [onlineUsers, setOnlineUsers] = useState([]); // Store list of online users
     const [searchResults, setSearchResults] = useState([]); // Store filtered list of users based on search
@@ -187,6 +186,38 @@ export default function Index({ sentMessages, receivedMessages }) {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [searchQuery, searchResults, focusedIndex]);
+
+    useEffect(() => {
+        if (owner) {
+            // Set up real-time Echo listener for messages
+            Echo.private(`user-to-owner-messages.${owner.id}`)
+                .listen('.UserMessageSentToOwner', (message) => {
+                    console.log('🔔 New message received!', message);
+
+                    // 1. If I am chatting with this user right now
+                    if (activeUser && message.sender_id === activeUser.id) {
+                        setMessages((prev) => [...prev, message]);
+                    }
+
+                    // 2. Optionally: update "last message" in user list
+                    setUsers((prevUsers) =>
+                        prevUsers.map((u) =>
+                            u.id === message.sender_id
+                                ? { ...u, last_message: message }
+                                : u
+                        )
+                    );
+                });
+
+
+            // Cleanup Echo listener when component unmounts
+            return () => {
+                if (window.Echo) {
+                    window.Echo.leave(`user-to-owner-messages.${owner.id}`);
+                }
+            };
+        }
+    }, [owner?.id, activeUser]);
 
     return (
         <SellerLayout>

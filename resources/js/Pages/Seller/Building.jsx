@@ -1,21 +1,56 @@
 import SellerLayout from '@/Layouts/SellerLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
+import { faUserTie, faTimes, faGear, faCheckSquare, faRoute, faPen, faTrash, faPlus, faEllipsisV, faClose } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import Toast from '@/Components/Toast';
 export default function Building({ building }) {
+    console.log(building);
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');
     const [featureDescription, setFeatureDescription] = useState('');
     const [addRoomModalOpen, setAddRoomModalOpen] = useState(false);
-    const [features, setFeatures] = useState(building.features);
-    const [rooms, setRooms] = useState(building.rooms);
-    console.log(building.rooms);
+    const [features, setFeatures] = useState(building?.features || []);
+    const [rooms, setRooms] = useState(building?.rooms || []);
 
+    const [toastMessage, setToastMessage] = useState({
+        'message': '',
+        'isTrue': false,
+        'isType': '',
+    });
+
+    const [openSettings, setOpensettings] = useState(false);
+    const optionButtonRef = useRef(null);
+    const optionPopupRef = useRef(null);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const { data: buildingData, setData: setBuildingData, post: postBuilding, processing: buildingProcessing, errors: buildingErrors, reset: resetBuilding } = useForm({
+        name: building?.name || '',
+        images: building?.images || [],
+        address: building?.address || {
+            region: '',
+            province: '',
+            municipality: '',
+            barangay: '',
+        },
+        latitude: building?.latitude || '',
+        longitude: building?.longitude || '',
+    });
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setImages((prevImages) => [...prevImages, e.target.result]);
+        };
+        reader.readAsDataURL(file);
+    }
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -111,11 +146,105 @@ export default function Building({ building }) {
             console.error('Error creating room:', error);
         }
     };
+
+    const handleUpdateBuilding = async (e) => {
+        e.preventDefault();
+        console.log(buildingData);
+        try {
+            const response = await axios.put(`/seller/building/update/${building.id}`, {
+                id: building.id,
+                name: buildingData.name,
+                image: buildingData.image,
+                address: {
+                    region: buildingData.address.region,
+                    province: buildingData.address.province,
+                    municipality: buildingData.address.municipality,
+                    barangay: buildingData.address.barangay,
+                },
+                latitude: buildingData.latitude,
+                longitude: buildingData.longitude,
+            });
+
+            setToastMessage({
+                'message': 'Building updated successfully',
+                'isTrue': true,
+                'isType': 'success',
+            });
+        } catch (error) {
+            console.error('Error updating building:', error);
+        }
+    };
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                optionPopupRef.current &&
+                !optionPopupRef.current.contains(event.target) &&
+                !optionButtonRef.current.contains(event.target)
+            ) {
+                setOpensettings(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
+    // handle cascading location changes
+    const regions = Object.entries(ph);
+
+    const provinces = buildingData.address.region
+        ? Object.keys(ph[buildingData.address.region].province_list)
+        : [];
+
+    const municipalities = buildingData.address.province
+        ? Object.keys(
+            ph[buildingData.address.region].province_list[buildingData.address.province].municipality_list
+        )
+        : [];
+
+    const barangays = buildingData.address.municipality
+        ? ph[buildingData.address.region].province_list[buildingData.address.province].municipality_list[
+            buildingData.address.municipality
+        ].barangay_list
+        : [];
+
     return (
         <SellerLayout>
             <Head title={building.name} />
-
+            {toastMessage && <Toast message={toastMessage.message} isTrue={toastMessage.isTrue} isType={toastMessage.isType} />}
             <div className="p-4">
+                <div className='relative flex justify-end p-2'>
+                    <button
+                        ref={optionButtonRef}
+                        className="p-2 hover:font-bold hover:text-[17px] overflow-hidden transition-all duration-300"
+                        onClick={() => setOpensettings(true)}
+                    > <FontAwesomeIcon icon={faEllipsisV} /></button>
+
+                    {openSettings && (
+                        <div
+                            ref={optionPopupRef}
+                            className={`absolute right-0 top-7 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50   `}
+                        >
+                            <div className='p-2'>
+                                <h2 className='text-sm font-semibold text-gray-800 m-2'><FontAwesomeIcon icon={faGear} /> Options</h2>
+                                <hr className='border-gray-200 mt-2' />
+                                {/* Option content */}
+                                <div className="pt-2">
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className=" group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <FontAwesomeIcon className='group-hover:text-gray-900 transition-all duration-200' icon={faPen} /> Edit
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteBHModalOpen(true)}
+                                        className="group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <FontAwesomeIcon className='group-hover:text-red-500 transition-all duration-200' icon={faTrash} /> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
 
                 {/* Image Section */}
@@ -126,96 +255,298 @@ export default function Building({ building }) {
                         className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
                     />
                 </div>
+                {/* Image Carousel */}
+                {buildingData.images.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto py-2">
+                        {buildingData.images.map((img, i) => (
+                            <img
+                                key={i}
+                                src={img}
+                                alt="Building"
+                                className="w-28 h-20 rounded-lg object-cover flex-shrink-0"
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {/* Content Section */}
                 <div className="p-4 flex flex-col justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
-                    <p>
-                        <FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />
-                        {building.seller.name}
-                    </p>
-                    <div className="flex items-center text-gray-600 text-sm mb-2">
-                        <i className="fas fa-location-arrow text-blue-500 mr-2"></i>
-                        <span>{building.address.street}, {building.address.barangay}, {building.address.city}, {building.address.province}, {building.address.postal_code}, {building.address.country}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center text-gray-600 text-sm mb-4">
-                        <span className="mr-4">{building.number_of_floors} Floor{building.number_of_floors > 1 ? 's' : ''}</span>
-
-                        <div className="flex items-center mb-2 sm:mb-0 mr-4">
-                            {building.bir ? (
-                                <FontAwesomeIcon icon={faCheckSquare} className="mr-1 text-green-500" />
-                            ) : (
-                                <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
-                            )}
-                            BIR
-                        </div>
-
-                        <div className="flex items-center">
-                            {building.business_permit ? (
-                                <FontAwesomeIcon icon={faCheckSquare} className="mr-1 text-green-500" />
-                            ) : (
-                                <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
-                            )}
-                            Business Permit
-                        </div>
-                    </div>
-                    {/* Features */}
-                    <div >
-                        <div className='flex items-center gap-2'>
-                            <p className='text-sm text-gray-500'>Features</p>
-
-                            {/* Button with hover effect */}
-                            <button
-                                onClick={() => setShowFeatureInput(!showFeatureInput)}
-                                className="hover:bg-gray-300 rounded-md p-2 "
-                            >
-                                <FontAwesomeIcon icon={faPlus} className="text-gray-500 text-sm" />
-                            </button>
-
-                            {/* Conditionally show the input field when button is clicked */}
-                            {showFeatureInput && (
-                                <input
-                                    type="text"
-                                    value={featureName}
-                                    onChange={handleInputSubmit}
-                                    onKeyDown={handleKeyPress}
-                                    className="p-2 text-sm border border-gray-300 rounded-md"
-                                    placeholder="Enter feature"
-                                    autoFocus
-                                />
-                            )}
-                        </div>
-                        {features.length > 0 ? (
-                            <div className="relative p-4">
-                                {features.map((feature) => (
-                                    <div
-                                        key={feature.id}
-                                        className="relative inline-block p-2 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
-                                    >
-                                        {/* Feature name container with hover effect */}
-                                        <div className="bg-gray-100 rounded-lg p-2 relative group-hover:bg-gray-200 transition-all">
-                                            <span className="text-xs text-gray-600">{feature.name}</span>
-                                        </div>
-
-                                        {/* Delete button (X) appears only on hover */}
-                                        <button
-                                            onClick={() => handleDeleteFeature(feature.id)}
-                                            className="absolute top-1 right-1 p-1 text-gray-500 group-hover:text-red-500 focus:outline-none hidden group-hover:block"
-                                        >
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
-                                    </div>
-                                ))}
+                    {!isEditing ? (
+                        <>
+                            <div className='flex items-center justify-between'>
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
+                                <Link
+                                    href={`/seller/building/map/${building.id}`}
+                                >
+                                    <FontAwesomeIcon icon={faRoute} className="text-blue-500 mr-2" />
+                                </Link>
                             </div>
-                        ) : (
-                            <p className=" text-gray-500 py-4">
-                                No features
+                            <p>
+                                <FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />
+                                {building.seller.name}
                             </p>
-                        )}
-                    </div>
+
+                            <div className="flex items-center text-gray-600 text-sm mb-2">
+                                <i className="fas fa-location-arrow text-blue-500 mr-2"></i>
+                                {building.address.address ? (
+                                    <span>
+                                        {building.address.address.barangay},{" "}
+                                        {building.address.address.municipality}, {building.address.address.province},
+                                    </span>
+                                ) : (
+                                    <span>No Address Provided</span>
+                                )}
+
+                            </div>
 
 
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center text-gray-600 text-sm mb-4">
+                                <span className="mr-4">
+                                    {building.number_of_floors} Floor
+                                    {building.number_of_floors > 1 ? "s" : ""}
+                                </span>
+
+                                <div className="flex items-center mb-2 sm:mb-0 mr-4">
+                                    {building.bir ? (
+                                        <FontAwesomeIcon
+                                            icon={faCheckSquare}
+                                            className="mr-1 text-green-500"
+                                        />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
+                                    )}
+                                    BIR
+                                </div>
+
+                                <div className="flex items-center">
+                                    {building.business_permit ? (
+                                        <FontAwesomeIcon
+                                            icon={faCheckSquare}
+                                            className="mr-1 text-green-500"
+                                        />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
+                                    )}
+                                    Business Permit
+                                </div>
+                            </div>
+
+                            {/* Features */}
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-gray-500">Features</p>
+
+                                    <button
+                                        onClick={() => setShowFeatureInput(!showFeatureInput)}
+                                        className="hover:bg-gray-300 rounded-md p-2 "
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faPlus}
+                                            className="text-gray-500 text-sm"
+                                        />
+                                    </button>
+
+                                    {showFeatureInput && (
+                                        <input
+                                            type="text"
+                                            value={featureName}
+                                            onChange={handleInputSubmit}
+                                            onKeyDown={handleKeyPress}
+                                            className="p-2 text-sm border border-gray-300 rounded-md"
+                                            placeholder="Enter feature"
+                                            autoFocus
+                                        />
+                                    )}
+                                </div>
+
+                                {features.length > 0 ? (
+                                    <div className="relative p-4">
+                                        {features.map((feature) => (
+                                            <div
+                                                key={feature.id}
+                                                className="relative inline-block p-2 mb-2 mr-4 group"
+                                            >
+                                                <div className="bg-gray-100 rounded-lg p-2 relative group-hover:bg-gray-200 transition-all">
+                                                    <span className="text-xs text-gray-600">
+                                                        {feature.name}
+                                                    </span>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => handleDeleteFeature(feature.id)}
+                                                    className="absolute top-1 right-1 p-1 text-gray-500 group-hover:text-red-500 focus:outline-none hidden group-hover:block"
+                                                >
+                                                    <FontAwesomeIcon icon={faTimes} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className=" text-gray-500 py-4">No features</p>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        // Edit Form
+                        <div className="space-y-3">
+                            <form onSubmit={handleUpdateBuilding} method="POST">
+
+                                {/* Name */}
+                                <div className='flex justify-end' >
+                                    <button className='text-gray-500 hover:text-gray-600 focus:outline-none' onClick={() => setIsEditing(false)}>
+                                        <FontAwesomeIcon icon={faClose} />
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Name</label>
+                                    <input
+                                        type="text"
+                                        value={buildingData.name}
+                                        onChange={(e) => setBuildingData("name", e.target.value)}
+                                        className="w-full border rounded-lg p-2 mt-1"
+                                    />
+                                </div>
+
+                                {/* Address fields */}
+                                <div className="space-y-4">
+                                    {/* Region */}
+                                    <label className="block">
+                                        <span>Region</span>
+                                        <select
+                                            value={buildingData.address.region}
+                                            onChange={(e) =>
+                                                setBuildingData("address", {
+                                                    region: e.target.value,
+                                                    province: "",
+                                                    municipality: "",
+                                                    barangay: "",
+                                                })
+                                            }
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                        >
+                                            <option value="">Select Region</option>
+                                            {regions.map(([key, region]) => (
+                                                <option key={key} value={key}>
+                                                    {region.region_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    {/* Province */}
+                                    <label className="block">
+                                        <span>Province</span>
+                                        <select
+                                            value={buildingData.address.province}
+                                            onChange={(e) =>
+                                                setBuildingData("address", {
+                                                    ...buildingData.address,
+                                                    province: e.target.value,
+                                                    municipality: "",
+                                                    barangay: "",
+                                                })
+                                            }
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                        >
+                                            <option value="">Select Province</option>
+                                            {provinces.map((prov) => (
+                                                <option key={prov} value={prov}>
+                                                    {prov}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    {/* Municipality */}
+                                    <label className="block">
+                                        <span>Municipality</span>
+                                        <select
+                                            value={buildingData.address.municipality}
+                                            onChange={(e) =>
+                                                setBuildingData("address", {
+                                                    ...buildingData.address,
+                                                    municipality: e.target.value,
+                                                    barangay: "",
+                                                })
+                                            }
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                        >
+                                            <option value="">Select Municipality</option>
+                                            {municipalities.map((mun) => (
+                                                <option key={mun} value={mun}>
+                                                    {mun}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    {/* Barangay */}
+                                    <label className="block">
+                                        <span>Barangay</span>
+                                        <select
+                                            value={buildingData.address.barangay}
+                                            onChange={(e) =>
+                                                setBuildingData("address", {
+                                                    ...buildingData.address,
+                                                    barangay: e.target.value,
+                                                })
+                                            }
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                        >
+                                            <option value="">Select Barangay</option>
+                                            {barangays.map((brgy, idx) => (
+                                                <option key={idx} value={brgy}>
+                                                    {brgy}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    {/* Latitude */}
+                                    <label className="block">
+                                        <span>Latitude</span>
+                                        <input
+                                            type="text"
+                                            value={buildingData.latitude}
+                                            onChange={(e) => setBuildingData("latitude", e.target.value)}
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                            placeholder="e.g. 14.5995"
+                                        />
+                                        {buildingErrors.latitude && (
+                                            <span className="text-red-500 text-sm">{buildingErrors.latitude}</span>
+                                        )}
+                                    </label>
+
+                                    {/* Longitude */}
+                                    <label className="block">
+                                        <span>Longitude</span>
+                                        <input
+                                            type="text"
+                                            value={buildingData.longitude}
+                                            onChange={(e) => setBuildingData("longitude", e.target.value)}
+                                            className="mt-1 block w-full rounded border-gray-300"
+                                            placeholder="e.g. 120.9842"
+                                        />
+                                        {buildingErrors.longitude && (
+                                            <span className="text-red-500 text-sm">{buildingErrors.longitude}</span>
+                                        )}
+                                    </label>
+                                </div>
+
+                                {/* Save button */}
+                                <button
+                                    type="submit"
+                                    disabled={buildingProcessing}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
+                                >
+                                    {buildingProcessing ? "Saving..." : "Save Changes"}
+                                </button>
+
+                            </form>
+                        </div>
+                    )}
                 </div>
+
 
                 {/* Display Rooms */}
                 <div className='min-h-80'>

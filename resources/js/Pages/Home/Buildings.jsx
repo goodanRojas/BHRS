@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import Recommendations from '@/Pages/Home/Recommendations/Recommendations';
+import Keywords from '@/Pages/Home/Keyword/Keywords';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faFilter, faSearch, faStar } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 export default function Buildings({ initialBuildings }) {
+    console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -49,6 +51,18 @@ export default function Buildings({ initialBuildings }) {
                     <p className="text-gray-500 text-sm">
                         Find the perfect place that suits your needs
                     </p>
+                </div>
+                {/* Keywords */}
+                <div className="mb-6">
+                    <h3 className="py-2 font-bold tracking-tight text-gray-800">
+                        Keywords
+                    </h3>
+                    <Keywords
+                        keywords={["Aircon", "Wi-Fi", "Parking", "Laundry", "CCTV"]}
+                        size="sm"
+                        variant="soft"
+                        max={5}
+                    />
                 </div>
                 {/* Recommendations */}
                 <section>
@@ -108,11 +122,24 @@ export default function Buildings({ initialBuildings }) {
                                     {/* Address */}
                                     <div className="flex items-start text-gray-500 text-[10px] space-x-1">
                                         <i className="fas fa-location-arrow text-indigo-500 mt-0.5"></i>
-                                        <span className="leading-snug line-clamp-2">
-                                            {[building.address?.street, building.address?.barangay, building.address?.city, building.address?.province]
-                                                .filter(Boolean)
-                                                .join(', ')}
-                                        </span>
+                                        {building.address ? (
+                                            building.address.address ? (
+                                                <span>
+                                                    {[
+                                                        building.address.barangay ?? building.address?.address?.barangay,
+                                                        building.address.municipality ?? building.address?.address?.municipality,
+                                                        building.address.province ?? building.address?.address?.province
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')}
+                                                </span>
+                                            ) : (
+                                                <p>No Address Provided</p>
+                                            )
+                                        ) : (
+                                            <p>No Address Provided</p>
+                                        )}
+
                                     </div>
 
                                     {/* Ratings & Tenants */}

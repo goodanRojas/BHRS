@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{Building, Feature, Room};
+use App\Models\{Building, Feature, Room, Address};
 
 class BuildingController extends Controller
 {
@@ -102,6 +102,47 @@ class BuildingController extends Controller
         ]);
         return response()->json([
             'room' => $rooms
+        ]);
+    }
+
+    public function update(Request $request, Building $building)
+    {
+        Log::info($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|string', // adjust if it's an upload
+            'address' => 'required|array',
+            'address.region' => 'nullable|string',
+            'address.province' => 'nullable|string',
+            'address.municipality' => 'nullable|string',
+            'address.barangay' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $building->update([
+            'name' => $validated['name'],
+            'image' => $validated['image'] ?? $building->image,
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+        ]);
+        $address = Address::where('addressable_id', $building->id)
+            ->where('addressable_type', Building::class)
+            ->first();
+        $address->update([
+            'address' => [
+                'region' => $request->input('address.region'),
+                'province' => $request->input('address.province'),
+                'municipality' => $request->input('address.municipality'),
+                'barangay' => $request->input('address.barangay'),
+            ],
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
+        ]);
+
+        return response()->json([
+            'message' => 'Building updated successfully',
+            'building' => $building,
         ]);
     }
 }

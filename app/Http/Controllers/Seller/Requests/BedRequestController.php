@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\{Log, Auth};
 use Inertia\Inertia;
 use App\Models\{Booking, Rejection, Receipt, Bed,};
 use App\Events\User\Booking\BookingApproved;
-use App\Notifications\User\BookingApprovedNotif;
+use App\Notifications\User\{BookingApprovedNotif, UserBookingRejected};
+use App\Events\User\Booking\BookingRejected;
 class BedRequestController extends Controller
 {
     public function index()
@@ -101,24 +102,28 @@ class BedRequestController extends Controller
 
     public function reject(Request $request)
     {
+        Log::info('Reject request data: ', $request->all());
         // dd($request);
         $request->validate([
-            'rejectReason' => 'required|string|max:255', // Adjust the max length as needed
+            'reason' => 'required|string|max:255', // Adjust the max length as needed
         ]);
         // Mark the booking as rejected
 
-        $booking =  Booking::where('id', $request->bookingId)->update(['status' => 'rejected']);
+        $booking =  Booking::find($request->booking_id);
+        $booking->status = 'rejected';
+        $booking->save();
 
         Rejection::create([
-            'rejectable_id' => $request->bookingId,
+            'rejectable_id' => $request->booking_id,
             'rejectable_type' => Booking::class,
-            'reason' => $request->rejectReason,
+            'reason' => $request->reason,
             'status' => 'rejected',
             'rejected_by' => auth('seller')->id(),
         ]);
-
+        event(new BookingRejected($booking, $request->reason));
+        $booking->user->notify(new UserBookingRejected($booking, $request->reason));  // Notify the user
         // broadcast(new BookingCancelled($booking, $request->reason))->toOthers();
 
-        return redirect()->route('seller.request.index')->with('success', 'Booking rejected.');
+        return redirect()->route('seller.request.bed.index')->with('success', 'Booking rejected.');
     }
 }

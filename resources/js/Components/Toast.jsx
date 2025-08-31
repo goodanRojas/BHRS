@@ -13,7 +13,9 @@ export default function Toast({ message, isTrue, isType = "success" }) {
 
     const type = typeColors[isType] || "green";
     const [show, setShow] = useState(isTrue || false);
-
+    useEffect(() => {
+        setShow(isTrue);
+    }, [isTrue]);
     useEffect(() => {
         if (!show) return;
         const timer = setTimeout(() => setShow(false), 3000);

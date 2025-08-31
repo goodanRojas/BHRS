@@ -24,3 +24,5 @@ require __DIR__.'\building.php';
 require __DIR__.'\route.php';
 require __DIR__.'\map.php';
 require __DIR__.'\building_application.php';
+require __DIR__.'\room.php';
+require __DIR__.'\bed.php';

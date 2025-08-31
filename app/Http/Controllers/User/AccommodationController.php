@@ -28,19 +28,8 @@ class AccommodationController extends Controller
                                         $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
                                     }]);
                             },
-                            'feedbacks' => function ($query) {
-                                $query->select('rating'); // adjust if necessary
-                            },
+                        
                         ],
-                        Room::class => [
-                            'building' => function ($query) {
-                                $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
-                            },
-                            'feedbacks' => function ($query) {
-                                $query->select('rating'); // adjust if necessary
-                            },
-                        ],
-                        // add other morph types if any
                     ]);
                 }
             ])
@@ -99,12 +88,6 @@ class AccommodationController extends Controller
         $feedback->rating = $validated['rating'];
         $feedback->comment = $validated['feedback'];
 
-        // Relate feedback to the accommodation
-        if ($type == 'bed') {
-            $accommodation->feedbacks()->save($feedback);
-        } elseif ($type == 'room') {
-            $accommodation->feedbacks()->save($feedback);
-        }
 
         // Return a success response
         return response()->json(['message' => 'Feedback submitted successfully!'], 200);

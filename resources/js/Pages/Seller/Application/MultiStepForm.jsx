@@ -7,6 +7,7 @@ import Toast from '@/Components/Toast';
 export default function MultiStepForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
         buildingName: '',
+        image: null,
         numberOfFloors: '',
         address: {
             region: '',
@@ -14,6 +15,8 @@ export default function MultiStepForm() {
             municipality: '',
             barangay: '',
         },
+        latitude: '',
+        longitude: '',
         bir: null,
         fireSafetyCertificate: null,
         numberOfRooms: '',
@@ -105,7 +108,7 @@ export default function MultiStepForm() {
                 reset();
 
                 setToast({
-                   show: true,
+                    show: true,
                     message: "Thanks for applying! Our staff will review your application.",
                     type: "success",
                 });
@@ -139,6 +142,7 @@ export default function MultiStepForm() {
                                 </span>
                             )}
                         </label>
+
                         <label className="block">
                             <span>Number of Floors</span>
                             <input
@@ -151,6 +155,20 @@ export default function MultiStepForm() {
                                 <span className="text-red-500 text-sm">
                                     {errors.numberOfFloors}
                                 </span>
+                            )}
+                        </label>
+
+                        {/* 👇 New field for image */}
+                        <label className="block">
+                            <span>Building Image</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleFileChange(e, 'image')}
+                                className="mt-1 block w-full"
+                            />
+                            {errors.image && (
+                                <span className="text-red-500 text-sm">{errors.image}</span>
                             )}
                         </label>
                     </div>
@@ -245,6 +263,34 @@ export default function MultiStepForm() {
                                     </option>
                                 ))}
                             </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Latitude</span>
+                            <input
+                                type="text"
+                                value={data.latitude}
+                                onChange={(e) => setData("latitude", e.target.value)}
+                                className="mt-1 block w-full rounded border-gray-300"
+                                placeholder="e.g. 14.5995"
+                            />
+                            {errors.latitude && (
+                                <span className="text-red-500 text-sm">{errors.latitude}</span>
+                            )}
+                        </label>
+
+                        <label className="block">
+                            <span>Longitude</span>
+                            <input
+                                type="text"
+                                value={data.longitude}
+                                onChange={(e) => setData("longitude", e.target.value)}
+                                className="mt-1 block w-full rounded border-gray-300"
+                                placeholder="e.g. 120.9842"
+                            />
+                            {errors.longitude && (
+                                <span className="text-red-500 text-sm">{errors.longitude}</span>
+                            )}
                         </label>
                     </div>
                 );

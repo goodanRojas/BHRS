@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events\Owner;
+namespace App\Events\User\Booking;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -9,23 +9,20 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
-
-class NewBooking implements ShouldBroadcast
+class BookingRejected implements ShouldBroadcast
 {
-
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
     public $booking;
-
-    public function __construct(Booking $booking)
+    public $reason;
+    public function __construct(Booking $booking, $reason)
     {
         $this->booking = $booking;
-        Log::info("Booking created");
+        $this->reason = $reason;
     }
 
     /**
@@ -36,19 +33,20 @@ class NewBooking implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('owner.' . $this->booking->bookable->room->building->seller_id),
+            new PrivateChannel('user_booking_rejected.' . $this->booking->user_id),
         ];
     }
+
     public function broadcastAs()
     {
-        return "NewBooking";
+        return 'UserBookingRejected';
     }
+
     public function broadcastWith()
     {
-        $seller = $this->booking->bookable->room->building->seller;
-
         return [
-            "booking" => $this->booking,
+            'booking' => $this->booking,
+            'reason' => $this->reason,
         ];
     }
 }

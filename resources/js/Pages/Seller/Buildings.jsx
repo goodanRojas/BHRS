@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faFilter, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faFilter, faSearch, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 
 export default function Buildings({ initialBuildings }) {
@@ -38,13 +38,17 @@ export default function Buildings({ initialBuildings }) {
             <Head title="Buildings" />
             <div className="p-4">
                 <div className="flex sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                    <Link
-                        href="/seller/app"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 text-white font-semibold shadow-md hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-                    >
-                        <FontAwesomeIcon icon={faUserTie} className="text-white" />
-                        Apply a Building
-                    </Link>
+                    <div>
+                        <Link
+                            href="/seller/app"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                        >
+                            <FontAwesomeIcon icon={faUserTie} className="w-4 h-4 text-white" />
+                            Apply a Building
+                        </Link>
+
+                      
+                    </div>
 
                     {/* Search Bar */}
                     <div className="flex w-full sm:w-80 relative">

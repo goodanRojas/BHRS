@@ -8,6 +8,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 export default function Building({ building }) {
+    console.log(building);
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');
     const [featureDescription, setFeatureDescription] = useState('');
@@ -139,7 +140,7 @@ export default function Building({ building }) {
             formData.append('image', data.image);
             formData.append('building_id', building.id);
 
-            const response = await axios.post('/admin/owner/buildings/add-room', formData, {
+            const response = await axios.post('/admin/owner/building/room/add-room', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -231,8 +232,12 @@ export default function Building({ building }) {
                     </p>
                     <div className="flex items-center text-gray-600 text-sm mb-2">
                         <i className="fas fa-location-arrow text-blue-500 mr-2"></i>
-                        <span>{building.address.street}, {building.address.barangay}, {building.address.city}, {building.address.province}, {building.address.postal_code}, {building.address.country}</span>
-                    </div>
+                     {building.address ?(
+                           <span>{building.address.address.barangay}, {building.address.address.municipality}, {building.address.address.province} </span>
+                     ):(
+                        <p>No Address Provided</p>
+                     )}
+                     </div>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center text-gray-600 text-sm mb-4">
                         <span className="mr-4">{building.number_of_floors} Floor{building.number_of_floors > 1 ? 's' : ''}</span>
 
@@ -339,7 +344,7 @@ export default function Building({ building }) {
                                     {rooms.map((room) => (
                                         <tr
                                             key={room.id}
-                                            onClick={() => window.location.href = `/admin/owner/buildings/show-room/${room.id}`}
+                                            onClick={() => window.location.href = `/admin/owner/building/room/show-room/${room.id}`}
                                             className="border-t hover:bg-gray-50 cursor-pointer group"
                                         >
                                             <td className="px-4 py-2">{room.id}</td>
@@ -380,7 +385,7 @@ export default function Building({ building }) {
                         <div>
                             <InputLabel htmlFor="image" value="Image" className="block text-lg font-medium text-gray-700" />
                             <TextInput
-                                id="imagea"
+                                id="image"
                                 type="file"
                                 name="image"
                                 accept="image/*"

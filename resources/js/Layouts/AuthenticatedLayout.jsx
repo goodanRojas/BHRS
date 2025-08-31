@@ -48,6 +48,8 @@ export default function AuthenticatedLayout({ header, children }) {
         }
     }, [user?.id]);
 
+
+
     // Listen for new notifications
     useEffect(() => {
         window.Echo.private(`App.Models.User.${user.id}`)
@@ -56,12 +58,11 @@ export default function AuthenticatedLayout({ header, children }) {
                 setNotifVisible(notification);
                 setNotificationsCount(notificationsCount + 1);
             });
-    }, [user?.id]);
-
-    useEffect(() => {
+ 
         axios.get("/notifications/count").then((res) => {
             setNotificationsCount(res.data.count);
         });
+
     }, [user?.id]); // 👈 add dependency array so it only runs once on mount
 
 

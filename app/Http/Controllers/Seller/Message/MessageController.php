@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Seller\Message;
 
+use App\Events\Message\OwnerMessageSentToUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log};
@@ -70,9 +71,7 @@ class MessageController extends Controller
         ]);
 
         $message->load(['sender', 'receiver']);
-        // Log::info($message);
-        // Broadcast the message
-        // broadcast(new MessageSent($message));    
+        broadcast(new OwnerMessageSentToUser($message));    
 
         return response()->json(['message' => $message]);
     }

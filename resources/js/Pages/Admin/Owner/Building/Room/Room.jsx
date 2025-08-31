@@ -2,7 +2,7 @@ import AuthenticatedLayout from '../../../AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus, faEllipsisH, faGear, faPen, faTrash , faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus, faEllipsisH, faGear, faPen, faTrash, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -53,7 +53,7 @@ export default function Room({ room }) {
         if (e.key === 'Enter' && featureName.trim()) {
             console.log('Feature saved:', featureName);
             try {
-                const response = await axios.post('/admin/owner/buildings/room/add-feature', {
+                const response = await axios.post('/admin/owner/building/room/add-feature', {
                     name: featureName,
                     description: featureDescription,
                     featureable_id: room.id,
@@ -103,7 +103,7 @@ export default function Room({ room }) {
             formData.append('image', data.image);
             formData.append('room_id', room.id);
 
-            const response = await axios.post('/admin/owner/buildings/add-bed', formData, {
+            const response = await axios.post('/admin/owner/building/bed/add-bed', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -293,12 +293,16 @@ export default function Room({ room }) {
                                     <th className="px-4 py-2 text-left">Bed Name</th>
                                     <th className="px-4 py-2 text-left">Image</th>
                                     <th className="px-4 py-2 text-left">Price</th>
-                                    <th className="px-4 py-2 text-left">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {beds.map((bed) => (
-                                    <tr key={bed.id} className="border-t hover:bg-gray-50">
+                                    <tr
+                                        key={bed.id}
+                                        className="border-t hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => window.location.href = `/admin/owner/building/bed/show-bed/${bed.id}`}
+                                    >
+
                                         <td className="px-4 py-2">
                                             {bed.name}
                                         </td>
@@ -313,11 +317,7 @@ export default function Room({ room }) {
                                         <td className="px-4 py-2">
                                             <p className="text-gray-500 font-semibold">₱{bed.price}</p>
                                         </td>
-                                        <td className="px-4 py-2">
-                                            <Link href={`/admin/owner/buildings/show-bed/${bed.id}`} className="text-blue-500 hover:underline">
-                                                Details
-                                            </Link>
-                                        </td>
+
                                     </tr>
                                 ))}
                             </tbody>

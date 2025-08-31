@@ -22,3 +22,9 @@ return Auth::guard('seller')->check() && (int) $owner->id === (int) $ownerId;
 Broadcast::channel('App.Models.Seller.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 }, ['guards' => ['web', 'seller']]);
+
+
+/* Chat: Owner to User */
+Broadcast::channel('owner-to-user-messages.{id}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});

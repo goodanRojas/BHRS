@@ -135,5 +135,5 @@ class Buildings extends Controller
         ], 200);
     }
 
-  
+   
 }

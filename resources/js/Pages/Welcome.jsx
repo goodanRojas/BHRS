@@ -49,7 +49,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to the Boarding House Reservation System</h1>
                         <p className="text-lg mb-6">Easily book your stay and find the best accommodations tailored for your needs.</p>
                         <Link
-                            href="/book-now"
+                            href="/home/buildings"
                             className="bg-indigo-600 text-white py-2 px-6 rounded-full hover:bg-indigo-700 transition"
                         >
                             Book Now

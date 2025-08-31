@@ -36,10 +36,17 @@ class BuildingApplicationController extends Controller
             'aminities.*' => 'string|max:255',
             'bir' => 'required|file|mimes:pdf|max:2048',
             'fireSafetyCertificate' => 'required|file|mimes:pdf|max:2048',
+            'image' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
         $birPath = $request->file('bir')->store('documents', 'public');
         $fireSafetyCertificatePath = $request->file('fireSafetyCertificate')->store('documents', 'public');
-
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('building_images', 'public');
+        }
+        Log::info($imagePath);
         // Save to DB
         $application = BuildingApplication::create([
             'seller_id' => $id,
@@ -49,12 +56,15 @@ class BuildingApplicationController extends Controller
             'number_of_rooms' => $validated['numberOfRooms'],
             'amenities' => $validated['aminities'] ?? [],
             'bir' => $birPath,
+            'image' => $imagePath,
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
             'fire_safety_certificate' => $fireSafetyCertificatePath,
         ]);
 
         $admin = Admin::find(1);
-        $admin->notify(new NewBuildingNotification($application)); //TODO: The event and notification is to be setup
-        event(new NewBuildingApplicationEvent($application)); 
+        // $admin->notify(new NewBuildingNotification($application)); //TODO: The event and notification is to be setup
+        // event(new NewBuildingApplicationEvent($application));
 
 
         return redirect()->back()->with('success', 'Thanks for applying! Please wait for our staff to review your application.');

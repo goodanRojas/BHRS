@@ -1,9 +1,26 @@
-import { useState } from 'react';
-import { Link, Head } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Link, Head, usePage } from '@inertiajs/react';
 import SellerLayout from '@/Layouts/SellerLayout';
 
-export default function BedRequests({ Requests }) {
+export default function Bedrequests({ Requests: Intialrequests }) {
+ const user = usePage().props.auth.seller;
 
+ const [requests, setrequests] = useState(Intialrequests || []);
+    useEffect(() => {
+        const ownerId = user?.id; // however you get it
+
+        if (!ownerId) return;
+        const channel = window.Echo.private(`owner.${ownerId}`)
+            .listen('.NewBooking', (e) => {
+                console.log('🔔 New booking received!', e);
+                setrequests((prev) => [...prev, e.booking]);
+
+            });
+
+        return () => {
+            channel.stopListening('.NewBooking');
+        };
+    }, [user?.id]);
 
     const calculateMonths = (startDate, endDate) => {
         const start = new Date(startDate);
@@ -19,10 +36,10 @@ export default function BedRequests({ Requests }) {
 
     return (
         <SellerLayout>
-            <Head title="Current Requests" />
+            <Head title="Current requests" />
             <div className="overflow-x-auto">
-                {Requests.length === 0 ? (
-                    <p className="text-gray-500">No bed Requests found.</p>
+                {requests.length === 0 ? (
+                    <p className="text-gray-500">No bed requests found.</p>
                 ) : (
                     <div className="overflow-x-auto bg-white rounded-lg shadow-md">
                         <table className="min-w-full text-sm text-gray-800">
@@ -35,7 +52,7 @@ export default function BedRequests({ Requests }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Requests.map((request) => {
+                                {requests.map((request) => {
                                     const startDate = new Date(request.start_date);
                                     const endDate = new Date(request.end_date);
                                     const monthCount = calculateMonths(startDate, endDate);

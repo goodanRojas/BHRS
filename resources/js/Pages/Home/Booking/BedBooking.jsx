@@ -7,6 +7,8 @@ import InputField from '@/Components/InputField';
 import TermsAndConditionsModal from '@/Components/TermsAndConditionsModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
+
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 export default function Booking({ bed, userPreferences }) {
     // console.log(bed);
     // console.log(userPreferences);
@@ -15,12 +17,10 @@ export default function Booking({ bed, userPreferences }) {
         email: userPreferences?.email || '',
         phone: userPreferences?.phone || '',
         address: {
-            street: userPreferences?.address?.street || '',
-            barangay: userPreferences?.address?.barangay || '',
-            city: userPreferences?.address?.city || '',
-            province: userPreferences?.address?.province || '',
-            postal_code: userPreferences?.address?.postal_code || '',
-            country: userPreferences?.address?.country || '',
+            region: '',
+            province: '',
+            municipality: '',
+            barangay: '',
         },
         start_date: userPreferences?.start_date || '',
         month_count: 1,
@@ -60,6 +60,20 @@ export default function Booking({ bed, userPreferences }) {
         });
     };
 
+    const regions = Object.entries(ph);
+    const provinces = data.address.region
+        ? Object.keys(ph[data.address.region].province_list)
+        : [];
+    const municipalities = data.address.province
+        ? Object.keys(
+            ph[data.address.region].province_list[data.address.province].municipality_list
+        )
+        : [];
+    const barangays = data.address.municipality
+        ? ph[data.address.region].province_list[data.address.province].municipality_list[
+            data.address.municipality
+        ].barangay_list
+        : [];
 
     return (
         <AuthenticatedLayout>
@@ -136,7 +150,7 @@ export default function Booking({ bed, userPreferences }) {
                             value={data.name}
                             onChange={handleChange}
                             error={errors.name}
-                            
+
                         />
                         <InputField
                             label="Email"
@@ -145,7 +159,7 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.email}
                             value={data.email}
                             onChange={handleChange}
-                            
+
                         />
                         <InputField
                             label="Phone"
@@ -154,7 +168,7 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.phone}
                             value={data.phone}
                             onChange={handleChange}
-                            
+
                         />
                         <InputField
                             label="Booking Date"
@@ -163,7 +177,7 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.start_date}
                             value={data.start_date}
                             onChange={handleChange}
-                            
+
                         />
                         <InputField
                             label="Duration (Months)"
@@ -173,7 +187,7 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.month_count}
                             value={data.month_count}
                             onChange={handleChange}
-                            
+
                         />
                         <div className="relative w-full">
                             <label htmlFor="payment_method" className="absolute -top-2 left-3 text-xs bg-white px-1 text-gray-500 z-10">
@@ -185,7 +199,7 @@ export default function Booking({ bed, userPreferences }) {
                                 onChange={handleChange}
                                 error={errors.payment_method}
                                 className="mt-2 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
-                                
+
                             >
                                 <option value="">Select</option>
                                 <option value="cash">Cash</option>
@@ -196,21 +210,99 @@ export default function Booking({ bed, userPreferences }) {
 
                     {/* Address */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {["street", "barangay", "city", "province", "postal_code", "country"].map((field) => (
-                            <InputField
-                                key={field}
-                                label={field.replace('_', ' ')}
-                                name={`address.${field}`}
-                                value={data.address[field]}
-                                onChange={handleChange}
-                                error={errors.address?.[field]}
-                            />
-                        ))}
+                        <label className="block">
+                            <span>Region</span>
+                            <select
+                                value={data.address.region}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        region: e.target.value,
+                                        province: '',
+                                        municipality: '',
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Region</option>
+                                {regions.map(([key, region]) => (
+                                    <option key={key} value={key}>
+                                        {region.region_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Province</span>
+                            <select
+                                value={data.address.province}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        province: e.target.value,
+                                        municipality: '',
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Province</option>
+                                {provinces.map((prov) => (
+                                    <option key={prov} value={prov}>
+                                        {prov}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Municipality</span>
+                            <select
+                                value={data.address.municipality}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        municipality: e.target.value,
+                                        barangay: '',
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Municipality</option>
+                                {municipalities.map((mun) => (
+                                    <option key={mun} value={mun}>
+                                        {mun}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span>Barangay</span>
+                            <select
+                                value={data.address.barangay}
+                                onChange={(e) =>
+                                    setData('address', {
+                                        ...data.address,
+                                        barangay: e.target.value,
+                                    })
+                                }
+                                className="mt-1 block w-full rounded border-gray-300"
+                            >
+                                <option value="">Select Barangay</option>
+                                {barangays.map((brgy, idx) => (
+                                    <option key={idx} value={brgy}>
+                                        {brgy}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                     </div>
 
                     {/* Special Requests */}
                     <div>
-                        <InputField label="Special Requests"  name="message" value={data.message} onChange={handleChange} type={'textarea'} />
+                        <InputField label="Special Requests" name="message" value={data.message} onChange={handleChange} type={'textarea'} />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -221,7 +313,7 @@ export default function Booking({ bed, userPreferences }) {
                                 name="agreedToTerms"
                                 onChange={handleChange}
                                 checked={data.agreedToTerms}
-                                
+
                             />
                             <span>
                                 I agree to the{" "}
@@ -238,10 +330,10 @@ export default function Booking({ bed, userPreferences }) {
                             className={`inline-flex items-center justify-center w-[100px] gap-2 px-6 py-2 text-sm sm:text-base font-semibold rounded-full 
                                     transition-colors duration-200 
                                     ${processing
-                                                                    ? 'bg-indigo-400 text-white cursor-not-allowed'
-                                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}
+                                    ? 'bg-indigo-400 text-white cursor-not-allowed'
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}
                                 `}
-                                >
+                        >
                             {processing && (
                                 <svg
                                     className="animate-spin h-5 w-5 text-white"
@@ -264,7 +356,7 @@ export default function Booking({ bed, userPreferences }) {
                                     />
                                 </svg>
                             )}
-                            {processing ? 'Submitting...' : 'Book'}
+                            {processing ? 'Submitting' : 'Book'}
                         </button>
 
                     </div>

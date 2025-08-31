@@ -41,13 +41,27 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                     </div>
 
                     {/* Address */}
-                    <Link 
+                    <Link
                         href={route('map.index', building.id)}>
                         <p className="flex items-start text-gray-600 text-xs sm:text-sm leading-relaxed">
                             <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-gray-500 mt-0.5" />
-                            {building.address
-                                ? `${building.address.street}, ${building.address.barangay}, ${building.address.city}, ${building.address.province} ${building.address.postal_code}, ${building.address.country}`
-                                : "N/A"}
+                            {building.address ? (
+                                building.address.address ? (
+                                    <span>
+                                        {[
+                                            building.address.barangay ?? building.address?.address?.barangay,
+                                            building.address.municipality ?? building.address?.address?.municipality,
+                                            building.address.province ?? building.address?.address?.province
+                                        ]
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                    </span>
+                                ) : (
+                                    <p>No Address Provided</p>
+                                )
+                            ) : (
+                                <p>No Address Provided</p>
+                            )}A
                         </p>
                     </Link>
 
@@ -55,15 +69,15 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                     <div className="flex flex-wrap gap-4 sm:gap-6 text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4">
                         <div className="flex items-center">
                             <span className="font-semibold text-yellow-500 flex items-center">
-                                <FontAwesomeIcon icon={faStar} className="mr-1" /> {ratingStats.average || 0}
+                                <FontAwesomeIcon icon={faStar} className="mr-1" /> {0}
                             </span>
                             <span className="ml-1">
-                                ({ratingStats.average > 0 ? <>from {ratingStats.total} </> : null}reviews)
+                                12 (reviews)
                             </span>
                         </div>
 
                         <div className="flex items-center">
-                            <span className="font-semibold text-green-600">{totalCompletedBookings}</span>
+                            <span className="font-semibold text-green-600">{totalCompletedBookings || 0}</span>
                             <span className="ml-1">completed bookings</span>
                         </div>
                     </div>

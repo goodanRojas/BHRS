@@ -10,29 +10,12 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 export default function BedRequest({ booking }) {
-    const user = usePage().props.auth.seler;
-    useEffect(() => {
-        const ownerId = user?.id; // however you get it
+   
 
-        if (!ownerId) return;
-
-        const channel = window.Echo.private(`owner.${ownerId}`)
-            .listen('.NewBooking', (e) => {
-                console.log('🔔 New booking received!', e);
-
-            });
-
-
-        return () => {
-            channel.stopListening('.NewBooking');
-        };
-    }, [user?.id]);
-
-
+    const user = usePage().props.auth.seller;
 
     // State for form inputs\
     const [receiptImage, setReceiptImage] = useState(null);
-    const [rejectReason, setRejectReason] = useState('');
 
     // Modal visibility states
     const [showModalAccept, setShowModalAccept] = useState(false);
@@ -45,6 +28,11 @@ export default function BedRequest({ booking }) {
         'remarks': "",
         'amount': "",
         'receipt': null,
+    });
+
+    const { post: rejectPost, errors: rejectErrors, data: rejectData, setData: setRejectData, reset: resetReject, processing: rejectProcessing } = useForm({
+        'booking_id': booking.id,
+        'reason': "",
     });
 
     // Handle Accept submission
@@ -64,24 +52,14 @@ export default function BedRequest({ booking }) {
         post(route('seller.request.bed.accept.cash', data),);
     };
     // Handle Reject submission
-    const handleReject = async () => {
-
-        setErrors({});
-
-        try {
-            await axios.post(route('seller.request.bed.reject'), {
-                paymentStatus: 'rejected',
-                rejectReason,
-                bookingId: booking.id,
-            });
-            setShowModalReject(false);
-        } catch (error) {
-            if (error.response && error.response.data.errors) {
-                setErrors(error.response.data.errors);
-            } else {
-                console.error(error);
-            }
-        }
+    const handleReject = () => {
+       
+        rejectPost(route('seller.request.bed.reject'), {
+            data: rejectData,
+            onSuccess: () => {
+                setShowModalReject(false);
+            },
+        });
     };
 
 
@@ -407,30 +385,32 @@ export default function BedRequest({ booking }) {
                         <textarea
                             className="p-3 border border-gray-300 rounded-lg w-full h-24"
                             placeholder="Reason for rejection"
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
+                            value={rejectData.reason}
+                            onChange={(e) => setRejectData('reason', e.target.value)}
                             disabled={processing}
                         />
+                        {rejectErrors.reason && (
+                            <p className="text-sm text-red-600 mt-1">{rejectErrors.reason}</p>
+                        )}
                         <div className="flex justify-between mt-4">
-                            <button
-                                className="bg-gray-500 text-white px-6 py-3 rounded-md"
+                            <PrimaryButton
                                 onClick={() => setShowModalReject(false)}
                                 disabled={processing}
                             >
                                 Close
-                            </button>
-                            <button
-                                className="bg-red-600 text-white px-6 py-3 rounded-md"
+                            </PrimaryButton>
+                            <SecondaryButton
                                 onClick={handleReject}
-                                disabled={processing}
+                                disabled={rejectProcessing}
                             >
                                 Reject
-                            </button>
+                            </SecondaryButton>
                         </div>
                     </div>
-                </Modal>
-            )}
-        </SellerLayout>
+                </Modal >
+            )
+            }
+        </SellerLayout >
 
     );
 }

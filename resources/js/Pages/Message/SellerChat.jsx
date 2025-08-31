@@ -47,6 +47,9 @@ const SellerChat = ({ seller, bed, messages }) => {
         }
     };
 
+    useEffect(() => {
+    }, []);
+
     return (
         <AuthenticatedLayout>
             <div className="chat-container p-6 bg-white shadow-md rounded-md max-w-4xl mx-auto">

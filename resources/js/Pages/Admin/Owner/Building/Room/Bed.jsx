@@ -21,7 +21,7 @@ export default function Bed({ bed }) {
         if (e.key === 'Enter' && featureName.trim()) {
             console.log('Feature saved:', featureName);
             try {
-                const response = await axios.post('/admin/owner/buildings/bed/add-feature', {
+                const response = await axios.post('/admin/owner/building/bed/add-feature', {
                     name: featureName,
                     description: featureDescription,
                     featureable_id: bed.id,

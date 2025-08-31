@@ -50,11 +50,10 @@ class BedBookingController extends Controller
             'phone' => 'required|string|max:20',
             'payment_method' => 'required|in:cash,gcash',
             'agreedToTerms' => 'required|accepted',
-            'address.street' => 'required|string|max:255',
-            'address.city' => 'required|string|max:255',
+            'address.barangay' => 'required|string|max:255',
+            'address.municipality' => 'required|string|max:255',
             'address.province' => 'required|string|max:255',
-            'address.postal_code' => 'nullable|string|max:20',
-            'address.country' => 'required|string|max:100',
+            'address.region' => 'required|string|max:100',
         ]);
         $booking = Booking::create([
             'user_id' => auth()->id(),
@@ -71,17 +70,12 @@ class BedBookingController extends Controller
         Address::create([
             'addressable_id'   => $booking->id,
             'addressable_type' => Booking::class,
-            'street'           => $request->address['street'],
-            'barangay'         => $request->address['barangay'],
-            'city'             => $request->address['city'],
-            'province'         => $request->address['province'],
-            'postal_code'      => $request->address['postal_code'],
-            'country'          => $request->address['country'],
+            'address' => $request->address,
         ]);
 
         $seller = $booking->bookable->room->building->seller;
 
-        $seller->notify(new NewBookingNotification($booking));  // Notify the user
+        $seller->notify(new NewBookingNotification($booking));  // Notify the owner
         event(new NewBooking($booking)); // Broadcast the event to update the ui
 
         return redirect()->route('accommodations.index')->with('success', 'Booking request created successfully.');

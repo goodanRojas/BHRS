@@ -10,11 +10,11 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, roomA
     console.log(room);
     const [currentIndex, setCurrentIndex] = useState(0);
     const handleNext = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1 === bed.images.length ? 0 : prevIndex + 1));
+        setCurrentIndex((prevIndex) => (prevIndex + 1 === room.images.length ? 0 : prevIndex + 1));
     };
 
     const handlePrev = () => {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 < 0 ? bed.images.length - 1 : prevIndex - 1));
+        setCurrentIndex((prevIndex) => (prevIndex - 1 < 0 ? room.images.length - 1 : prevIndex - 1));
     };
 
     const handleImageClick = (index) => {
@@ -92,23 +92,14 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, roomA
                 {/* Rating and Booking Stats */}
                 <div className="flex gap-6 text-sm text-gray-700 mt-2">
                     <div>
-                        <span className="font-semibold text-yellow-600"><FontAwesomeIcon icon={faStar} /> {ratingStats.average || 0}</span><span className="ml-1">
-                            (
-                            {ratingStats.average > 0 ? <span>from {ratingStats.total} </span> : null}
-                            reviews)
+                        <span className="font-semibold text-yellow-600"><FontAwesomeIcon icon={faStar} /> {4.2 }</span><span className="ml-1">
+                            ( 10 reviews)
                         </span>
                     </div>
                     <div>
                         <span className="font-semibold text-green-600">{totalCompletedBookings}</span>
                         <span className="ml-1">completed bookings</span>
                     </div>
-                </div>
-                <div className="text-sm text-gray-600">
-                    {roomAvailablity === 0 ? (
-                        <span className="text-green-600 font-medium">Room Available</span>
-                    ) : (
-                        <span className="text-red-600 font-medium">Room Occupied</span>
-                    )}
                 </div>
 
                 {/* Display Beds */}

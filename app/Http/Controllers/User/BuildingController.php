@@ -53,52 +53,16 @@ class BuildingController  extends Controller
                 $query->withCount('beds');
             }, 'seller', 'address']);
 
-            // Get all Room IDs in the building
-            $roomIds = Room::where('building_id', $building->id)->pluck('id');
+            $totalCompletedBookings = Booking::where('status', 'ended')
+                ->whereHas('bookable.room.building', function ($query) use ($building) {
+                    $query->where('id', $building->id);
+                })
+                ->count();
 
-            // Get all Bed IDs in those rooms
-            $bedIds = Bed::whereIn('room_id', $roomIds)->pluck('id');
-
-            // Total Ratings (Average & Count)
-            $averageRating = Feedback::where(function ($query) use ($roomIds, $bedIds) {
-                $query->where(function ($q) use ($roomIds) {
-                    $q->where('feedbackable_type', Room::class)
-                        ->whereIn('feedbackable_id', $roomIds);
-                })->orWhere(function ($q) use ($bedIds) {
-                    $q->where('feedbackable_type', Bed::class)
-                        ->whereIn('feedbackable_id', $bedIds);
-                });
-            })->avg('rating');
-
-            $totalFeedbacks = Feedback::where(function ($query) use ($roomIds, $bedIds) {
-                $query->where(function ($q) use ($roomIds) {
-                    $q->where('feedbackable_type', Room::class)
-                        ->whereIn('feedbackable_id', $roomIds);
-                })->orWhere(function ($q) use ($bedIds) {
-                    $q->where('feedbackable_type', Bed::class)
-                        ->whereIn('feedbackable_id', $bedIds);
-                });
-            })->count();
-
-            // Total Completed Bookings
-            $totalCompletedBookings = Booking::where('status', 'completed')
-                ->where(function ($query) use ($roomIds, $bedIds) {
-                    $query->where(function ($q) use ($roomIds) {
-                        $q->where('bookable_type', Room::class)
-                            ->whereIn('bookable_id', $roomIds);
-                    })->orWhere(function ($q) use ($bedIds) {
-                        $q->where('bookable_type', Bed::class)
-                            ->whereIn('bookable_id', $bedIds);
-                    });
-                })->count();
 
             return Inertia::render('Home/Building', [
                 'building' => $building,
-                'ratingStats' => [
-                    'average' => round($averageRating, 2),
-                    'total' => $totalFeedbacks,
-                ],
-                'totalCompletedBookings' => $totalCompletedBookings,
+                'totalCompletedBooking' => $totalCompletedBookings,
             ]);
         }
     }

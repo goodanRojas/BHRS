@@ -19,10 +19,12 @@ export default function BookingNotif({ notification, onClose }) {
         case "App\\Notifications\\User\\BookingExpiredNotify":
             type = "Booking Expired";
             break;
+        case "App\\Notifications\\User\\UserBookingRejected":
         default:
             type = "Unknown";
             break;
     }
+    
     const formattedDate = new Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "short",
@@ -53,11 +55,14 @@ export default function BookingNotif({ notification, onClose }) {
                         <FontAwesomeIcon icon={faBell} className="text-gray-500 h-6 w-6" />
                         <div>
                             <p className="text-sm text-gray-600">
-                                booked {notification.bed_name} in{" "}
+                                 {notification.bed_name} in{" "}
                                 {notification.room_name}, {notification.building_name}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
                                 Start: {formattedDate} • {notification.month_count} month{notification.month_count > 1 ? "s" : ""}
+                            </p>
+                            <p className={`text-sm mt-1`}>
+                                {notification.status}
                             </p>
 
                         </div>

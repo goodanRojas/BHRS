@@ -8,22 +8,26 @@ import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
+
 export default function CreateAccount() {
     const [toastMessage, setToastMessage] = useState(null); // State to manage the toast message
     const [step, setStep] = useState(1);
-    const [ showPassword, setShowPassword ] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
         email: "",
         phone: "",
         password: "",
-        street: "",
-        barangay: "",
-        city: "",
-        postalCode: "",
-        province: "",
-        country: "",
+        address: {
+            region: "",
+            province: "",
+            city: "",
+            barangay: "",
+        },
     });
+
+
 
     const nextStep = () => {
         setStep(step + 1);
@@ -103,152 +107,195 @@ export default function CreateAccount() {
 
                     </div>
                 )
-            case 2: return (
-                <div className="space-y-4">
-                    <div>
-                        <InputLabel htmlFor="street" value="Street" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="street"
-                            type="text"
-                            name="street"
-                            value={data.street}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="street"
-                            isFocused={true}
-                            onChange={(e) => setData('street', e.target.value)}
-                        />
-                        <InputError message={errors.street} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="barangay" value="Barangay" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="barangay"
-                            type="text"
-                            name="barangay"
-                            value={data.barangay}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="barangay"
-                            isFocused={true}
-                            onChange={(e) => setData('barangay', e.target.value)}
-                        />
-                        <InputError message={errors.barangay} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="city" value="City" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="city"
-                            type="text"
-                            name="city"
-                            value={data.city}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="city"
-                            isFocused={true}
-                            onChange={(e) => setData('city', e.target.value)}
-                        />
-                        <InputError message={errors.city} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="postalCode" value="Postal Code" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="postalCode"
-                            type="number"
-                            name="postalCode"
-                            value={data.postalCode}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="postralCode"
-                            isFocused={true}
-                            onChange={(e) => setData('postalCode', e.target.value)}
-                        />
-                        <InputError message={errors.postalCode} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="province" value="Province" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="province"
-                            type="text"
-                            name="province"
-                            value={data.province}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="province"
-                            isFocused={true}
-                            onChange={(e) => setData('province', e.target.value)}
-                        />
-                        <InputError message={errors.province} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="country" value="Country" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="country"
-                            type="text"
-                            name="country"
-                            value={data.country}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="country"
-                            isFocused={true}
-                            onChange={(e) => setData('country', e.target.value)}
-                        />
-                        <InputError message={errors.country} className="mt-2 text-sm text-red-600" />
-                    </div>
+            case 2:
+                // cascading location lists
+                const regions = Object.entries(ph);
+                const provinces = data.address?.region
+                    ? Object.keys(ph[data.address.region].province_list)
+                    : [];
+                const municipalities = data.address?.province
+                    ? Object.keys(
+                        ph[data.address.region].province_list[data.address.province].municipality_list
+                    )
+                    : [];
+                const barangays = data.address?.city
+                    ? ph[data.address.region].province_list[data.address.province].municipality_list[data.address.city].barangay_list
+                    : [];
 
-                </div>
-            )
-            case 3: return (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Review Your Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                return (
+                    <div className="space-y-4">
+                        {/* Region */}
                         <div>
-                            <p className="font-medium text-gray-700">Name:</p>
-                            <p className="text-gray-900">{data.name || '-'}</p>
+                            <InputLabel htmlFor="region" value="Region" />
+                            <select
+                                id="region"
+                                value={data.address?.region || ""}
+                                onChange={(e) =>
+                                    setData({
+                                        ...data,
+                                        address: {
+                                            ...data.address,
+                                            region: e.target.value,
+                                            province: "",
+                                            city: "",
+                                            barangay: "",
+                                        },
+                                    })
+                                }
+                                className="mt-1 block w-full border rounded-md"
+                            >
+                                <option value="">Select Region</option>
+                                {regions.map(([code, region]) => (
+                                    <option key={code} value={code}>
+                                        {region.region_name}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors["address.region"]} />
                         </div>
+
+                        {/* Province */}
                         <div>
-                            <p className="font-medium text-gray-700">Email:</p>
-                            <p className="text-gray-900">{data.email || '-'}</p>
+                            <InputLabel htmlFor="province" value="Province" />
+                            <select
+                                id="province"
+                                value={data.address?.province || ""}
+                                onChange={(e) =>
+                                    setData({
+                                        ...data,
+                                        address: {
+                                            ...data.address,
+                                            province: e.target.value,
+                                            city: "",
+                                            barangay: "",
+                                        },
+                                    })
+                                }
+                                className="mt-1 block w-full border rounded-md"
+                            >
+                                <option value="">Select Province</option>
+                                {provinces.map((prov) => (
+                                    <option key={prov} value={prov}>
+                                        {prov}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors["address.province"]} />
                         </div>
+
+                        {/* City / Municipality */}
                         <div>
-                            <p className="font-medium text-gray-700">Phone:</p>
-                            <p className="text-gray-900">{data.phone || '-'}</p>
+                            <InputLabel htmlFor="city" value="City / Municipality" />
+                            <select
+                                id="city"
+                                value={data.address?.city || ""}
+                                onChange={(e) =>
+                                    setData({
+                                        ...data,
+                                        address: {
+                                            ...data.address,
+                                            city: e.target.value,
+                                            barangay: "",
+                                        },
+                                    })
+                                }
+                                className="mt-1 block w-full border rounded-md"
+                            >
+                                <option value="">Select City / Municipality</option>
+                                {municipalities.map((mun) => (
+                                    <option key={mun} value={mun}>
+                                        {mun}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors["address.city"]} />
                         </div>
+
+                        {/* Barangay */}
                         <div>
-                            <p className="font-medium text-gray-700">Password:</p>
-                            <p className="text-gray-900">{data.password || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">Street:</p>
-                            <p className="text-gray-900">{data.street || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">Barangay:</p>
-                            <p className="text-gray-900">{data.barangay || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">City:</p>
-                            <p className="text-gray-900">{data.city || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">Postal Code:</p>
-                            <p className="text-gray-900">{data.postalCode || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">Province:</p>
-                            <p className="text-gray-900">{data.province || '-'}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700">Country:</p>
-                            <p className="text-gray-900">{data.country || '-'}</p>
+                            <InputLabel htmlFor="barangay" value="Barangay" />
+                            <select
+                                id="barangay"
+                                value={data.address?.barangay || ""}
+                                onChange={(e) =>
+                                    setData({
+                                        ...data,
+                                        address: {
+                                            ...data.address,
+                                            barangay: e.target.value,
+                                        },
+                                    })
+                                }
+                                className="mt-1 block w-full border rounded-md"
+                            >
+                                <option value="">Select Barangay</option>
+                                {barangays.map((brgy) => (
+                                    <option key={brgy} value={brgy}>
+                                        {brgy}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors["address.barangay"]} />
                         </div>
                     </div>
-                </div>
-            );
+                );
+            case 3:
+                return (
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Review Your Information</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="font-medium text-gray-700">Name:</p>
+                                <p className="text-gray-900">{data.name || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Email:</p>
+                                <p className="text-gray-900">{data.email || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Phone:</p>
+                                <p className="text-gray-900">{data.phone || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Password:</p>
+                                <p className="text-gray-900">{data.password || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Region:</p>
+                                <p className="text-gray-900">{data.address?.region || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Province:</p>
+                                <p className="text-gray-900">{data.address?.province || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">City / Municipality:</p>
+                                <p className="text-gray-900">{data.address?.city || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-700">Barangay:</p>
+                                <p className="text-gray-900">{data.address?.barangay || '-'}</p>
+                            </div>
+
+                        </div>
+                    </div>
+                );
 
 
         }
     }
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log("Trying to submit");
         post(route('admin.owner.create'), {
-            onFinish: () => reset(['password', 'name', 'email', 'phone', 'street', 'barangay', 'city', 'postalCode', 'province', 'country']),
+            onFinish: () => {
+
+                reset('password', 'name', 'email', 'phone', 'address');
+                window.location.href = route('admin.owners');
+            }
         });
     };
+
     return (
         <AdminLayout>
             <Head title="Application Form" />
@@ -268,7 +315,7 @@ export default function CreateAccount() {
                                 Previous
                             </button>
                         )}
-                        {step < 3 ? (
+                        {step  <= 2 ? (
                             <button
                                 type="button"
                                 onClick={nextStep}

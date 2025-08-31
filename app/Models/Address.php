@@ -12,18 +12,16 @@ class Address extends Model
     protected $fillable = [
         'addressable_id',
         'addressable_type',
-        'street',
-        'barangay',
-        'city',
-        'province',
-        'postal_code',
-        'country',
+        'address',
         'latitude',
         'longitude',
+    ];
+
+    protected $casts = [
+        'address' => 'array',
     ];
     public function addressable()
     {
         return $this->morphTo();
     }
-
 }

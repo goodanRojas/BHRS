@@ -111,4 +111,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(AiResponseStatus::class, 'user_id');
     }
+    public function conversationAiSettings()
+    {
+        return $this->hasMany(ConversationAiSetting::class);
+    }
 }

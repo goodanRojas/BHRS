@@ -51,8 +51,5 @@ class Bed extends Model
     {
         return $this->morphMany(Feature::class, 'featureable');
     }
-    public function ratings()
-    {
-        return $this->hasMany(Rating::class);
-    }
+
 }

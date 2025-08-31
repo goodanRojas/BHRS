@@ -30,3 +30,4 @@ require __DIR__ . '\building_application.php';
 require __DIR__ . '\message.php';
 require __DIR__ . '\payment_details.php';
 require __DIR__ . '\notification.php';
+require __DIR__ . '\map.php';

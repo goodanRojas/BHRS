@@ -15,13 +15,12 @@ class BedController extends Controller
 
     public function index()
     {
-        $beds = Bed::with(['room.building', 'feedbacks', 'bookings', 'features'])
+        $beds = Bed::with(['room.building', 'bookings', 'features'])
             ->whereDoesntHave('bookings')
             ->orWhereHas('bookings', function ($query) {
                 $query->where('status', '!=', 'approved');
             })
             ->paginate(10);
-        Log::info($beds->getCollection());
         // Calculate min and max prices
         $minPrice = Bed::min('price');
         $maxPrice = Bed::max('price');
@@ -44,7 +43,6 @@ class BedController extends Controller
                     ->isNotEmpty(),
                 'building_address' => $bed->room->building->address ?? null,
                 'is_occupied' => $bed->bookings->whereIn('status', ['approved', 'completed'])->isNotEmpty(),
-                'avg_rating' => round($bed->feedbacks->avg('rating'), 1),
                 ''
             ];
         });
@@ -82,7 +80,7 @@ class BedController extends Controller
         $location = $request->input('location');
         $page = $request->input('page', 1);
 
-        $bedsQuery = Bed::with(['room.building', 'feedbacks', 'bookings'])
+        $bedsQuery = Bed::with(['room.building', 'bookings'])
             ->whereDoesntHave('bookings', function ($query) {
                 $query->whereIn('status', ['approved', 'completed']);
             });
@@ -95,11 +93,6 @@ class BedController extends Controller
             $bedsQuery->whereBetween('price', [$minPrice ?? 0, $maxPrice ?? PHP_INT_MAX]);
         }
 
-        if (!empty($minRating)) {
-            $bedsQuery->whereHas('feedbacks', function ($query) use ($minRating) {
-                $query->havingRaw('AVG(rating) >= ?', [$minRating]);
-            });
-        }
 
         if (!empty($room)) {
             $bedsQuery->whereHas('room', function ($query) use ($room) {
@@ -130,7 +123,6 @@ class BedController extends Controller
                 'sale_price' => $bed->sale_price,
                 'room_name' => $bed->room->name ?? null,
                 'building_address' => $bed->room->building->address ?? null,
-                'avg_rating' => round($bed->feedbacks->avg('rating') ?? 0, 1),
                 'is_occupied' => $bed->bookings->where('status', 'active')->isNotEmpty(),
             ];
         });
@@ -163,10 +155,6 @@ class BedController extends Controller
             'features',
             'room.building.address',
             'favorites',
-            'feedbacks' => function ($query) {
-                $query->orderBy('created_at', 'desc');
-            },
-            'feedbacks.user',
             'images' => function ($query) {
                 $query->select('id', 'file_path', 'order', 'imageable_id', 'imageable_type');
             },
@@ -181,8 +169,6 @@ class BedController extends Controller
             ->exists();
 
         // Calculate average rating
-        $bed->average_rating = round($bed->feedbacks->avg('rating'), 1);
-
         // Count completed bookings
         $completedBookings = $bed->bookings()->where('status', 'completed')->count();
 
@@ -201,17 +187,18 @@ class BedController extends Controller
         $siblingBeds = Bed::withCount(['bookings' => function ($q) {
             $q->where('status', 'completed');
         }])
-            ->with('feedbacks') // Optional: include ratings
             ->where('room_id', $bed->room_id)
             ->where('id', '!=', $bed->id)
-            ->get()
-            ->map(function ($sibling) {
-                $sibling->average_rating = round($sibling->feedbacks->avg('rating'), 1);
-                return $sibling;
-            });
-        $ableToBook = Booking::where('status', '=', 'approved')
+            ->get();
+        $ableToBook = Booking::where(function ($query) {
+            $query->where('status', 'approved')
+                ->orWhere('status', 'pending')
+                ->orWhere('status', 'paid')
+                ->orWhere('status', 'completed');
+        })
             ->where('user_id', Auth::id())
             ->count();
+
         $isBooked = Booking::where('bookable_id', $bed->id)
             ->where('bookable_type', Bed::class)
             ->where('status', 'completed')

@@ -12,4 +12,5 @@ Route::prefix('admin/owner/buildings')->name('admin.owner.buildings.')->middlewa
     Route::post('/add-feature', [Buildings::class, 'addFeature'])->name('add.building.feature');
     Route::delete('/delete-feature/{id}', [Buildings::class, 'deleteFeature'])->name('delete.feature');
 
+
 });

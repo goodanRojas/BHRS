@@ -18,27 +18,15 @@ class RoomController extends Controller
     {
         $room->load(['building', 'images', 'beds.bookings' => function ($query) {
             $query->where('status', 'completed');
-        }, 'feedbacks.user', 'bookings', 'favorites']);
+        }, 'bookings', 'favorites']);
     
         $roomId = $room->id;
      
-            // Total Ratings (Average & Count)
-            $averageRating = Feedback::where(function ($query) use ( $roomId) {
-                $query->where(function ($q) use ($roomId) {
-                    $q->where('feedbackable_type', Room::class)
-                        ->where('feedbackable_id', $roomId);
-                });
-            })->avg('rating');
+     
 
-            $totalFeedbacks = Feedback::where(function ($query) use ($roomId) {
-                $query->where(function ($q) use ($roomId) {
-                    $q->where('feedbackable_type', Room::class)
-                        ->where('feedbackable_id', $roomId);
-                });
-            })->count();
 
             // Total Completed Bookings
-            $totalCompletedBookings = Booking::where('status', 'completed')
+            $totalCompletedBookings = Booking::where('status', 'ended')
                 ->where(function ($query) use ($roomId) {
                     $query->where(function ($q) use ($roomId) {
                         $q->where('bookable_type', Room::class)
@@ -55,10 +43,7 @@ class RoomController extends Controller
                 
         return Inertia::render('Home/Room', [
             'room' => $room,
-            'ratingStats' => [
-                'average' => round($averageRating, 2),
-                'total' => $totalFeedbacks,
-            ],
+        
             'totalCompletedBookings' => $totalCompletedBookings,
             'roomAvailablity' => $roomAvailablity,
         ]);
@@ -67,7 +52,7 @@ class RoomController extends Controller
     
     public function showRooms(Request $request)
     {
-        $rooms = Room::with(['building', 'feedbacks', 'bookings'])
+        $rooms = Room::with(['building', 'bookings'])
             ->paginate(10);
 
         // Calculate min and max prices
@@ -85,7 +70,6 @@ class RoomController extends Controller
                 'room_name' => $room->name ?? null,
                 'building_name' => $room->building->name ?? null,
                 'building_address' => $room->building->address ?? null,
-                'average_rating' => $room->feedbacks->avg('rating') ?? 0,
                 'is_occupied' => $room->bookings->where('status', 'active')->isNotEmpty(),
             ];
         });
@@ -123,7 +107,7 @@ class RoomController extends Controller
         $location = $request->input('location');
         $page = $request->input('page', 1);
 
-        $roomsQuery = Room::with(['room.building', 'feedbacks', 'bookings'])->whereNull('user_id');
+        $roomsQuery = Room::with(['room.building', 'bookings'])->whereNull('user_id');
 
         if (!empty($search)) {
             $roomsQuery->where('name', 'like', '%' . $search . '%');
@@ -133,11 +117,6 @@ class RoomController extends Controller
             $roomsQuery->whereBetween('price', [$minPrice ?? 0, $maxPrice ?? PHP_INT_MAX]);
         }
 
-        if (!empty($minRating)) {
-            $roomsQuery->whereHas('feedbacks', function ($query) use ($minRating) {
-                $query->havingRaw('AVG(rating) >= ?', [$minRating]);
-            });
-        }
 
 
         if (!empty($building)) {
@@ -159,7 +138,6 @@ class RoomController extends Controller
                 'sale_price' => $room->sale_price,
                 'room_name' => $room->room->name ?? null,
                 'building_address' => $room->room->building->address ?? null,
-                'average_rating' => $room->feedbacks->avg('rating') ?? 0,
                 'is_occupied' => $room->bookings->where('status', 'active')->isNotEmpty(),
             ];
         });

@@ -10,20 +10,26 @@ class BuildingApplication extends Model
     protected $fillable = [
         'seller_id',
         'name',
-        'address',
         'number_of_floors',
         'bir',
         'fire_safety_certificate',
         'number_of_rooms',
         'amenities',
+        'image',
+        'latitude',
+        'longitude',
     ];
     protected $casts = [
-        'address' => 'array',
         'amenities' => 'array',
     ];
 
     public function seller()
     {
         return $this->belongsTo(Seller::class);
+    }
+
+    public function address()
+    {
+        return $this->morphOne(Address::class, 'addressable');
     }
 }

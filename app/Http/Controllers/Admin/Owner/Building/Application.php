@@ -13,7 +13,7 @@ class Application extends Controller
 
     public function index()
     {
-        $applications = BuildingApplication::with('seller')->latest()->get();
+        $applications = BuildingApplication::with('seller')->where('status', 'pending')->latest()->get();
         return   Inertia::render('Admin/Owner/Building/BuildingApplications', [
             'applications' => $applications
         ]);
@@ -30,49 +30,29 @@ class Application extends Controller
     }
 
 
+
     public function store(Request $request)
     {
-        // Log the incoming request data for debugging
-        Log::info($request->all());
+        $application = BuildingApplication::findOrFail($request->id);
+        $application->status = "approved";
+        $application->save();
+        // Handle image upload
+       
+    
 
-        // Find the application using the provided id
-
-        // Log the found application
-        $application = Building::find($request->id);
-        // Handle the image upload if it exists in the request
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('public/building_images');
-        }
-
-        // Create the building using the application data and the image (if provided)
+        // Create the building using application data
         $building = Building::create([
+            'number_of_floors' => $application->number_of_floors,
             'seller_id' => $application->seller_id,
-            'name' => $application->building_name,
-            'image' => $imagePath,  // Store image path
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'name' => $application->name, // you used $application->building_name but model has "name"
+            'image' => $application->image,
+            'status' => 1,
+            'bir' => $application->bir,
+            'business_permit' => $application->fire_safety_certificate,
+            'latitude' => $application->latitude,
+            'longitude' => $application->longitude,
         ]);
 
-        // Create the address for the building
-        $address = Address::create([
-            'addressable_id' => $building->id,
-            'addressable_type' => Building::class,
-            'street' => $request->street,  // Assuming street is passed in the request
-            'barangay' => $request->barangay,  // Assuming barangay is passed in the request
-            'city' => $request->city,  // Assuming city is passed in the request
-            'province' => $request->province,  // Assuming province is passed in the request
-            'postal_code' => $request->postal_code,  // Assuming postal_code is passed in the request
-            'country' => $request->country,  // Assuming country is passed in the request
-            'latitude' => $request->latitude,  // Latitude passed in the request
-            'longitude' => $request->longitude,  // Longitude passed in the request
-        ]);
-
-        // Return a response (could be success message, etc.)
-        return response()->json([
-            'message' => 'Building application stored successfully!',
-            'building' => $building,
-            'address' => $address,
-        ]);
+        return redirect()->route('admin.owner.building.application.index');
     }
 }

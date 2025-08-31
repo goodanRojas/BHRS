@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Events\MessageSent;
 use App\Http\Controllers\Admin\Owner\Building\Buildings;
 use App\Models\{Message, User, Bed, Seller};
+use App\Events\Message\UserMessageSentToOwner;
 use Illuminate\Support\Facades\{Http, Log};
 use Inertia\Inertia;
 
@@ -45,9 +46,6 @@ class LandOwnerController extends Controller
             'messages' => $messages,
         ]);
     }
-
-
-
     public function searchOwners(Request $request)
     {
         $query = $request->input('query');
@@ -117,10 +115,8 @@ class LandOwnerController extends Controller
         ]);
 
         $message->load(['sender', 'receiver']);
-        // Log::info($message);
-        // Broadcast the message
-        // broadcast(new MessageSent($message));    
-
+        broadcast(new UserMessageSentToOwner($message));
+        
         return response()->json(['message' => $message]);
     }
 

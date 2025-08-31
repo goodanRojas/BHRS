@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import Layout from './Layout';
-import { CheckCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
+import { CheckCircle,XCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
 import Modal from '@/Components/Modal';
 import { useForm } from '@inertiajs/inertia-react';
 import { useState, useEffect } from 'react';
@@ -16,9 +16,14 @@ export default function Dashboard({ booking }) {
                 console.log('🔔 New booking approved received!', e);
                 setBookingStatus(e.booking.status);
             });
-
+        const rejectChannel = window.Echo.private(`user_booking_rejected.${user?.id}`)
+            .listen('.UserBookingRejected', (e) => {
+                console.log('🔔 New booking rejected.', e);
+                setBookingStatus(e.booking.status);
+            });
         return () => {
             channel.stopListening('.UserBookingApproved');
+            rejectChannel.stopListening('.UserBookingRejected');
         };
     }, [user?.id]);
     useEffect(() => {
@@ -167,6 +172,15 @@ export default function Dashboard({ booking }) {
                                     Completed
                                 </span>
                                 <p className="text-gray-600">Congrats! Your booking has been booked successfully.</p>
+                            </div>
+                        )}
+                        {bookingStatus === 'rejected' && (
+                            <div className="text-center space-y-3">
+                                <XCircle className="text-red-500 w-14 h-14 mx-auto" />
+                                <span className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full font-medium">
+                                    Rejected
+                                </span>
+                                <p className="text-gray-600">Your booking has been rejected.</p>
                             </div>
                         )}
                     </div>

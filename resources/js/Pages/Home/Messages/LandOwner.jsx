@@ -20,9 +20,9 @@ export default function landowner({ sentMessages, receivedMessages }) {
     const [messages, setMessages] = useState([]); // Store messages for the active user
     const [message, setMessage] = useState(''); // Message to send
     const [searchQuery, setSearchQuery] = useState(''); // User search input
-    const [messageOptionOpen, setMessageOptionOpen] = useState(false); 
-    const [deletePromptOpen, setDeletePromptOpen] = useState(false); 
-    const menuRef = useRef(null); 
+    const [messageOptionOpen, setMessageOptionOpen] = useState(false);
+    const [deletePromptOpen, setDeletePromptOpen] = useState(false);
+    const menuRef = useRef(null);
 
     const user = usePage().props.auth.user; // Get the authenticated user
 
@@ -64,7 +64,6 @@ export default function landowner({ sentMessages, receivedMessages }) {
         axios.get(`/owner-message/selected-owner/${ownerId}`)
             .then(({ data }) => {
                 setMessages(data.messages); // Store messages of the active user
-
                 console.log(data.messages);
             }).catch((err) => console.error('Error loading messages:', err));
     };
@@ -137,22 +136,34 @@ export default function landowner({ sentMessages, receivedMessages }) {
     useEffect(() => {
         if (user) {
             // Set up real-time Echo listener for messages
-            Echo.private(`direct-messages.${user.id}`)
-                .listen('MessageSent', (message) => {
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        message,
-                    ]);
+            Echo.private(`owner-to-user-messages.${user.id}`)
+                .listen('.OwnerMessageSentToUser', (message) => {
+                    console.log("Message received:", message);
+                    // 1. if I am chatting with this owner right now
+                    if (activeOwner && message.sender_id === activeOwner.id) {
+                        setMessages((prevMessages) => [
+                            ...prevMessages,
+                            message,
+                        ]);
+                    }
+
+                    // 2. Optionally: update "last message" in owner list
+                    setOwners((prevOwners) =>
+                        prevOwners.map((o) =>
+                            o.id === message.sender_id
+                                ? { ...o, last_message: message }
+                                : o
+                        )
+                    );
                 });
         }
-
         // Cleanup Echo listener when component unmounts
         return () => {
             if (window.Echo) {
-                window.Echo.leave(`direct-messages.${user.id}`);
+                window.Echo.leave(`owner-to-user-messages.${user.id}`);
             }
         };
-    }, [user]);
+    }, [user, activeOwner]);
     useEffect(() => {
         if (user) {
             console.log("Subscribing to user-status channel");

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use App\Models\Seller;
 use App\Models\Address;
+
 class OwnerController extends Controller
 {
     /* Display the initial owners */
@@ -24,47 +25,44 @@ class OwnerController extends Controller
 
     /* Create owner */
     public function create(Request $request)
-    {   
+    {
+        Log::info($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:sellers,email',
             'phone' => 'required|string|max:255',
             'password' => 'required|min:8',
-            'street' => 'required|string|max:255',
-            'barangay' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'postalCode' => 'required|string|max:255',
-            'province' => 'required|string|max:255',
-            'country' => 'required|string|max:255',
+            'address.barangay' => 'required|string|max:255',
+            'address.city' => 'required|string|max:255',
+            'address.province' => 'required|string|max:255',
+            'address.region' => 'required|string|max:255',
         ]);
 
-       $seller = Seller::create([
+
+        $seller = Seller::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'status' => 1,
             'phone' => $validated['phone'],
         ]);
-        if($seller)
-        {
-            $address = Address::create([
-                'addressable_id' => $seller->id,
-                'addressable_type' => Seller::class,
-                'street' => $validated['street'],
-                'barangay' => $validated['barangay'],
-                'city' => $validated['city'],
-                'province' => $validated['province'],
-                'postal_code' => $validated['postalCode'],
-                'country' => $validated['country']
-            ]); 
-            if($address)
-            {
-                return redirect(route('admin.owners'))->with('success', 'Owner successfully created');
-            }
-        }
 
-        return redirect()->back()->with('error', 'An error occured while creating the owner account.');
+        Log::info($seller->toArray());
+        if ($seller) {
+            $address = Address::create([
+                'addressable_id'   => $seller->id,
+                'addressable_type' => Seller::class,
+                'address' => [
+                    'barangay' => $validated['address']['barangay'],
+                    'city'     => $validated['address']['city'],
+                    'province' => $validated['address']['province'],
+                    'region'   => $validated['address']['region'],
+                ],
+            ]);
+        }
+        return redirect()->route('admin.owners');
     }
+
 
     public function createShow(Request $request)
     {
@@ -114,7 +112,7 @@ class OwnerController extends Controller
         $password = $request->input('password');
 
         $owner->name = $name;
-        $owner->password = Hash::make( $password);
+        $owner->password = Hash::make($password);
 
         $owner->save();
 
@@ -132,7 +130,4 @@ class OwnerController extends Controller
             'owner' => $owner,
         ]);
     }
-
-
-  
 }
