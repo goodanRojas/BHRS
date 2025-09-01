@@ -19,8 +19,10 @@ class GroupMessageSent implements ShouldBroadcast
      * Create a new event instance.
      */
     public $message;
-    public function __construct(ChatGroupMessage $message)
+    public $tempId;
+    public function __construct(ChatGroupMessage $message, $tempId)
     {
+        $this->tempId = $tempId;
         $this->message = $message;
     }
 
@@ -42,6 +44,12 @@ class GroupMessageSent implements ShouldBroadcast
             'sender_id' => $this->message->sender_id,
             'content' => $this->message->content,
             'sent_at' => $this->message->sent_at,
+            'sender' => $this->message->sender->only(['id', 'name', 'email']) ,
+            'tempId' => $this->tempId,
         ];
+    }
+    public function broadcastAs()
+    {
+        return 'GroupMessageSent';
     }
 }

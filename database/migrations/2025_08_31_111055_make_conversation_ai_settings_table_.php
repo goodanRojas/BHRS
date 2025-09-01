@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('seller_id');
             $table->unsignedBigInteger('user_id');
-            $table->boolean('ai_enabled')->default(false);
+            $table->boolean('ai_enabled')->default(true);
             $table->timestamps();
 
             $table->unique(['seller_id', 'user_id']); // one record per conversation

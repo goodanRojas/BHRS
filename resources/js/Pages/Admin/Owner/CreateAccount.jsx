@@ -286,6 +286,11 @@ export default function CreateAccount() {
     }
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (step < 3) {
+            // 🚫 block submission until the review step
+            return;
+        }
         console.log("Trying to submit");
         post(route('admin.owner.create'), {
             onFinish: () => {
@@ -295,27 +300,26 @@ export default function CreateAccount() {
             }
         });
     };
-
     return (
         <AdminLayout>
             <Head title="Application Form" />
             <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
                 <h2 className="text-lg font-semibold mb-4">Create Owner Account</h2>
-                <form onSubmit={handleSubmit}>
-                    {/* Render the current step */}
-                    {renderStep()}
 
-                    <div className="flex justify-between mt-6">
-                        {step > 1 && (
-                            <button
-                                type="button"
-                                onClick={prevStep}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                            >
-                                Previous
-                            </button>
-                        )}
-                        {step  <= 2 ? (
+                {step < 3 ? (
+                    // Steps 1 & 2 (no <form>)
+                    <div>
+                        {renderStep()}
+                        <div className="flex justify-between mt-6">
+                            {step > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={prevStep}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                >
+                                    Previous
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 onClick={nextStep}
@@ -323,18 +327,33 @@ export default function CreateAccount() {
                             >
                                 Next
                             </button>
-                        ) : (
+                        </div>
+                    </div>
+                ) : (
+                    // Step 3 (final review inside <form>)
+                    <form onSubmit={handleSubmit}>
+                        {renderStep()}
+                        <div className="flex justify-between mt-6">
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                            >
+                                Previous
+                            </button>
                             <button
                                 type="submit"
                                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                             >
                                 Submit
                             </button>
-                        )}
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                )}
+
                 {toastMessage && <Toast message={toastMessage} />}
             </div>
         </AdminLayout>
     );
+
 }

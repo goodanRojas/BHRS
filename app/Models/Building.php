@@ -63,4 +63,14 @@ class Building extends Model
     {
         return $this->hasMany(Route::class);
     }
+
+    public function rulesAndRegulations()
+    {
+        return $this->hasMany(RulesAndRegulation::class);
+    }
+
+    public function chatGroups()
+    {
+        return $this->hasMany(ChatGroup::class, 'building_id');
+    }
 }

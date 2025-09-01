@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
     /* Group Chat */
 
     Route::controller(GroupChat::class)->prefix('/group')->group( function (){
-        Route::get('/', 'Index');
+        Route::get('/', 'index');
         Route::post('/send-message', 'SendMessage')->name('group.send');
     });
 

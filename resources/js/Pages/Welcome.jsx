@@ -39,7 +39,6 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 {/* Hero Section */}
                 <motion.section
                     className="relative bg-cover bg-center h-screen flex items-center justify-center"
-                    style={{ backgroundImage: "url('/storage/boarding-house-hero.jpg')" }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}

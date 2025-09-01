@@ -43,7 +43,6 @@ export default function Index({ sentMessages, receivedMessages }) {
                 usersSets.add(msg.receiver_id);
             }
         });
-        console.log("Unique Owners Set:", usersSets);
         // Fetch user details for all unique IDs
         if (usersSets.size > 0) {
             axios.get('/seller/owner-messages/owners', { params: { userIds: Array.from(usersSets) } })

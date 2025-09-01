@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Seller\Message;
 use App\Events\Message\OwnerMessageSentToUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, Log};
+use Illuminate\Support\Facades\{Auth, Log, Http};
 use Inertia\Inertia;
-use App\Models\{AiResponseStatus, Message, Seller, User};
+use App\Models\{AiResponseStatus, Message, Seller, User, Bed, ConversationAiSetting};
 
 class MessageController extends Controller
 {
-    
+
     public function searchUsers(Request $request)
     {
         $query = $request->input('query');
@@ -53,6 +53,7 @@ class MessageController extends Controller
 
     public function sendMessage(Request $request)
     {
+        $owner = auth()->guard('seller')->user();
         // Validate the request
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
@@ -71,7 +72,13 @@ class MessageController extends Controller
         ]);
 
         $message->load(['sender', 'receiver']);
-        broadcast(new OwnerMessageSentToUser($message));    
+        broadcast(new OwnerMessageSentToUser($message));
+
+        ConversationAiSetting::firstOrCreate([
+            'seller_id' => $owner->id, // seller is receiver in this case
+            'user_id'   => $validated['receiver_id']
+        ]);
+
 
         return response()->json(['message' => $message]);
     }
@@ -117,7 +124,7 @@ class MessageController extends Controller
             ->unique()
             ->values();
 
-        $users = User::with('aiResponseStatus')->whereIn('id', $visibleUserIds)->get();
+        $users = User::with('conversationAiSettings')->whereIn('id', $visibleUserIds)->get();
 
         return response()->json([
             'users' => $users
@@ -127,7 +134,7 @@ class MessageController extends Controller
 
     public function deleteConversation($selectedUserId)
     {
-           $ownerId = Auth::guard('seller')->id();
+        $ownerId = Auth::guard('seller')->id();
 
 
         // Fetch messages where current user is sender or receiver
@@ -159,21 +166,14 @@ class MessageController extends Controller
         $ownerId = Auth::guard('seller')->id();
         $userId = $request->input('userId');
 
-        $aiStatus = AiResponseStatus::where('seller_id', $ownerId)
-            ->where('user_id', $userId)
-            ->first();
-        if ($aiStatus) {
-            $aiStatus->status = !$aiStatus->status; // Toggle the status
-            $aiStatus->save();
-            return response()->json(['status' => $aiStatus->status]);
-        }
-        // If no record exists, create a new one with status true
-        AiResponseStatus::create([
+        $setting = ConversationAiSetting::firstOrCreate([
             'seller_id' => $ownerId,
-            'user_id' => $userId,
-            'status' => true, // Default to true when creating a new record
+            'user_id'   => $userId,
         ]);
-        return response()->json(['status' => true]);
+
+        $setting->ai_enabled = !$setting->ai_enabled;
+        $setting->save();
+        return response()->json(['ai_enabled' => $setting->ai_enabled]);
     }
     public function ownerMessages(Request $request)
     {
@@ -218,28 +218,5 @@ class MessageController extends Controller
             'seller' => $seller->only(['name', 'email', 'phone', 'address']),
             'bed' => $bed ? $bed->toArray() : null,
         ];
-    }
-    private function askGPT($userMessage, $context)
-    {
-        $apiKey = env('OPENAI_API_KEY'); // Get your API key from .env
-
-        $prompt = "You are a helpful assistant for a boarding house owner. Answer the user based on the following seller and item data:\n\n"
-            . "Seller Info:\n" . json_encode($context['seller'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Item Info:\n" . json_encode($context['bed'], JSON_PRETTY_PRINT) . "\n\n"
-            . "User's Question: {$userMessage}";
-
-        $response = Http::withHeaders([
-            'Authorization' => "Bearer {$apiKey}",
-        ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-3.5-turbo',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are a boarding house assistant for a landlord.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'temperature' => 0.7,
-            'max_tokens' => 300,
-        ]);
-
-        return $response->json('choices.0.message.content') ?? 'Sorry, I could not generate a response.';
     }
 }

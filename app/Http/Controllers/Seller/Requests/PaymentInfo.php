@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log, Hash, Storage};
 
-use App\Models\{OwnerPaymentInfo, Receipt};
+use App\Models\{ChatGroup, OwnerPaymentInfo, Receipt};
 use App\Events\User\Booking\PaymentConfirmed;
 use App\Notifications\User\BookingSetupCompleted;
+
 class PaymentInfo extends Controller
 {
     public function index(Request $request)
@@ -57,8 +58,19 @@ class PaymentInfo extends Controller
         $booking = $receipt->booking;
         $booking->status = 'completed';
         $booking->save();
-        event( new PaymentConfirmed($booking));
+        event(new PaymentConfirmed($booking));
         $booking->user->notify(new BookingSetupCompleted($booking));
+        // Afther the user has booked he/she is then added to the gc of this building
+
+        $group = ChatGroup::firstOrCreate([
+            'building_id' => $booking->bookable->room->building_id,
+        ], [
+            'name' => 'Building ' . $booking->bookable->room->building->name . ' Group',
+            'avatar' => null,
+        ]);
+        $group->members()->syncWithoutDetaching([$booking->user_id]);
+        //Notify the user after he/she is added to the group and broadcast an event
+
         return redirect()->route('seller.request.payments.index')
             ->with('success', 'Payment has been confirmed successfully.');
     }

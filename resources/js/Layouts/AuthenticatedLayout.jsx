@@ -1,7 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import ChatWidget from '@/Pages/Message/ChatWidget';
 import NavNotif from '@/Pages/Home/Notification/NavNotif';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Footer from '@/Components/Footer';

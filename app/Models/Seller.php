@@ -73,4 +73,9 @@ class Seller extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(ConversationAiSetting::class);
     }
+
+    public function rulesAndRegulations()
+    {
+        return $this->hasMany(RulesAndRegulation::class);
+    }
 }

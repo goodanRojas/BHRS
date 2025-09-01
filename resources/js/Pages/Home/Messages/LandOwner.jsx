@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function landowner({ sentMessages, receivedMessages }) {
+export default function landowner({ group}) {
     // console.log("Sent Messages:", sentMessages);
     // console.log("Received Messages:", receivedMessages);
 
