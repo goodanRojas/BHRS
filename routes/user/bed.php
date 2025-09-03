@@ -11,14 +11,14 @@ Route::middleware('auth')->group(function () {
 });
 
 
-require __DIR__ . '\accommodation.php';
-require __DIR__ . '\booking.php';
-require __DIR__ . '\building.php';
-require __DIR__ . '\favorite.php';
-require __DIR__ . '\map.php';
-require __DIR__ . '\message.php';
-require __DIR__ . '\notification.php';
-require __DIR__ . '\room.php';
-require __DIR__ . '\profile.php';
-require __DIR__ . '\onboarding.php';
-require __DIR__ . '\feedback.php';
+require __DIR__ . '/accommodation.php';
+require __DIR__ . '/booking.php';
+require __DIR__ . '/building.php';
+require __DIR__ . '/favorite.php';
+require __DIR__ . '/map.php';
+require __DIR__ . '/message.php';
+require __DIR__ . '/notification.php';
+require __DIR__ . '/room.php';
+require __DIR__ . '/profile.php';
+require __DIR__ . '/onboarding.php';
+require __DIR__ . '/feedback.php';
