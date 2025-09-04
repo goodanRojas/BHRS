@@ -135,11 +135,12 @@ export default function Index({ sentMessages, receivedMessages }) {
         axios.post('/seller/owner-message/toggle-ai', {
             userId: userId,
         }).then(({ data }) => {
+            console.log(data.ai_enabled);
             setActiveUser((prevUser) => ({
                 ...prevUser,
                 ai_response_status: {
                     ...prevUser.ai_response_status,
-                    status: data.status, // assuming backend returns new status
+                    status: data.ai_enabled, // assuming backend returns new status
                 }
             }));
             setUsers(prevUsers =>

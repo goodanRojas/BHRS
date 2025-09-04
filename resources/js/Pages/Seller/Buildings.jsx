@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faFilter, faSearch, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faFilter, faSearch, faInfo } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 
 export default function Buildings({ initialBuildings }) {
@@ -38,7 +38,7 @@ export default function Buildings({ initialBuildings }) {
             <Head title="Buildings" />
             <div className="p-4">
                 <div className="flex sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                    <div>
+                    <div className='flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto'>
                         <Link
                             href="/seller/app"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
@@ -47,7 +47,13 @@ export default function Buildings({ initialBuildings }) {
                             Apply a Building
                         </Link>
 
-                      
+                        <Link
+                          href="/seller/building/requests"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                        >
+                            <FontAwesomeIcon icon={faInfo} className="w-4 h-4 text-white" />
+                            Requests
+                        </Link>
                     </div>
 
                     {/* Search Bar */}

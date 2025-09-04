@@ -29,3 +29,4 @@ Broadcast::channel('user-status', function ($user) {
 
 require __DIR__ . '/channels/owner/owner.php';
 require __DIR__ . '/channels/user/user.php';
+require __DIR__ . '/channels/admin/admin.php';

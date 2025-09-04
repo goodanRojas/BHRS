@@ -2,12 +2,10 @@ import AuthenticatedLayout from "../../AuthenticatedLayout";
 import { Link, Head } from "@inertiajs/react";
 import { useState } from "react";
 import Modal from "@/Components/Modal";
-
+import PrimaryButton from "@/Components/PrimaryButton";
+import SecondaryButton from "@/Components/SecondaryButton";
 export default function ShowApplication({ application }) {
     console.log(application);
-    const address = typeof application.address === "string"
-        ? JSON.parse(application.address)
-        : application.address;
 
     const amenities = Array.isArray(application.amenities)
         ? application.amenities
@@ -67,14 +65,12 @@ export default function ShowApplication({ application }) {
                 {/* Address */}
                 <div className="mb-4">
                     <h2 className="text-lg font-semibold">Address</h2>
-                    {address ? (
-                        <p>
-                            {address.barangay}, {address.municipality},{" "}
-                            {address.province}, {address.region}
-                        </p>
-                    ) : (
-                        <p className="text-gray-500">No address provided</p>
-                    )}
+
+                    <p>
+                        {application.address.address.barangay}, {application.address.address.municipality},{" "}
+                        {application.address.address.province}, {application.address.address.region}
+                    </p>
+
                 </div>
 
                 {/* Amenities */}
@@ -118,16 +114,16 @@ export default function ShowApplication({ application }) {
 
                 {/* Actions */}
                 <div className="flex gap-4 mt-6">
-                    <button
+                    <PrimaryButton
                         onClick={() => setShowAcceptModal(true)}
                         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                         Approve
-                    </button>
-                    <button
+                    </PrimaryButton>
+                    <SecondaryButton
                         onClick={() => setShowRejectModal(true)}
                         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
                         Reject
-                    </button>
+                    </SecondaryButton>
                 </div>
             </div>
 
@@ -139,20 +135,20 @@ export default function ShowApplication({ application }) {
                         Are you sure you want to <span className="font-semibold text-green-600">accept</span> this application?
                     </p>
                     <div className="flex justify-end gap-3">
-                        <button
+                        <PrimaryButton
                             className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition w-full sm:w-auto"
                             onClick={() => setShowAcceptModal(false)}
                             disabled={processing}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </PrimaryButton>
+                        <PrimaryButton
                             className="px-5 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-indigo-300 disabled:cursor-not-allowed transition w-full sm:w-auto"
                             onClick={handleAcceptApplication}
                             disabled={processing}
                         >
                             {processing ? "Processing..." : "Confirm"}
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </div>
             </Modal>

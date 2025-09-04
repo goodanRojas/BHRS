@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{BuildingApplication, Admin};
+use App\Models\{Address, BuildingApplication, Admin};
 use App\Notifications\Admin\NewBuildingNotification;
 
 class BuildingApplicationController extends Controller
@@ -18,7 +18,6 @@ class BuildingApplicationController extends Controller
     }
     public function store(Request $request)
     {
-        Log::info($request->all());
         // Log the incoming data
         $id = auth('seller')->id();
 
@@ -46,7 +45,6 @@ class BuildingApplicationController extends Controller
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('building_images', 'public');
         }
-        Log::info($imagePath);
         // Save to DB
         $application = BuildingApplication::create([
             'seller_id' => $id,
@@ -62,9 +60,21 @@ class BuildingApplicationController extends Controller
             'fire_safety_certificate' => $fireSafetyCertificatePath,
         ]);
 
-        $admin = Admin::find(1);
-        // $admin->notify(new NewBuildingNotification($application)); //TODO: The event and notification is to be setup
-        // event(new NewBuildingApplicationEvent($application));
+        $address = Address::create([
+            'addressable_id' => $application->id,
+            'addressable_type' => BuildingApplication::class,
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'address' => $validated['address']
+        ]);
+
+        $admins = Admin::all();
+        foreach ($admins as $admin) {
+            event(new NewBuildingApplicationEvent($admin->id, $application));
+            // $admin->notify(new NewBuildingNotification($application));
+        }
+
+
 
 
         return redirect()->back()->with('success', 'Thanks for applying! Please wait for our staff to review your application.');

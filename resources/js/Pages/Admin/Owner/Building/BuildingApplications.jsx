@@ -1,9 +1,28 @@
+import { useEffect, useState } from "react";
 import AuthenticatedLayout from "../../AuthenticatedLayout";
-import { Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
+export default function BuildingApplication({ applications: initialApplications }) {
 
-export default function BuildingApplication({ applications }) {
+    const admin = usePage().props.auth.user;
+    const [applications, setApplications] = useState(initialApplications);
+
+    useEffect(() => {
+        const channel = window.Echo.private(`admin-new-building-app.${admin?.id}`)
+
+            .listen('.ToAdminNewBuildingAppEvent', (e) => {
+                console.log('🔔 New booking approved received!', e);
+                setApplications((prev) => [ e.application, ...prev]);
+            });
+
+        return () => {
+            channel.stopListening('.ToAdminNewBuildingAppEvent');
+            window.Echo.leave(`private-admin-new-building-app.${admin.id}`);
+        };
+    }, [admin?.id]);
+
     return (
         <AuthenticatedLayout>
+            <Head title="Building Applications" />
             <div className="p-6">
                 <h1 className="text-xl font-semibold mb-4">Building Applications</h1>
 

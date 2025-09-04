@@ -10,6 +10,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class NewBuildingApplicationEvent implements ShouldBroadcast
 {
@@ -19,9 +20,12 @@ class NewBuildingApplicationEvent implements ShouldBroadcast
      * Create a new event instance.
      */
     public $application;
-    public function __construct(BuildingApplication $application)
+    public $adminId;
+    public function __construct($adminId, BuildingApplication $application)
     {
+        $this->adminId = $adminId;
         $this->application = $application;
+        Log::info("New Building Application event is fired");
     }
 
     /**
@@ -32,7 +36,19 @@ class NewBuildingApplicationEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('channel-name'),
+            new PrivateChannel('admin-new-building-app.' . $this->adminId),
+        ];
+    }
+
+    public function broadcastAs()
+    {
+        return 'ToAdminNewBuildingAppEvent';
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'application' => $this->application->load(['seller'])
         ];
     }
 }

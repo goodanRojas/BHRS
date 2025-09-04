@@ -10,6 +10,10 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Toast from '@/Components/Toast';
 export default function Building({ building }) {
+    
+    if (!building) {
+        return <div>Loading...</div>; // or null
+    }
     console.log(building);
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');

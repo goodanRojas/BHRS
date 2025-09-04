@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function landowner({ group}) {
+export default function landowner({ sentMessages, receivedMessages}) {
     // console.log("Sent Messages:", sentMessages);
     // console.log("Received Messages:", receivedMessages);
 
@@ -56,7 +56,7 @@ export default function landowner({ group}) {
         } else {
             setOwners([]); // If no users found, reset users state
         }
-    }, [sentMessages, receivedMessages, user.id]);
+    }, [ receivedMessages, user.id]);
 
     // Fetch messages for the active user
     const fetchMessages = (ownerId) => {

@@ -3,6 +3,8 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 import Toast from '@/Components/Toast';
+import SecondaryButton from '@/Components/SecondaryButton';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function MultiStepForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -101,6 +103,10 @@ export default function MultiStepForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (step < 5) {
+            return;
+        }
 
         post('/seller/app/submit', {
             forceFormData: true, // ensure file upload works
@@ -400,39 +406,59 @@ export default function MultiStepForm() {
         <SellerLayout>
             <Head title="Application Form" />
             <Toast message={toast.message} isTrue={toast.show} isType={toast.type} />
-            <div className="max-w-xl mx-auto p-6 bg-white rounded shadow">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {renderStep()}
+            <div className="max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
+                <h2 className="text-lg font-semibold mb-4">Apply Building</h2>
 
-                    <div className="flex justify-between">
-                        {step > 1 && (
-                            <button
-                                type="button"
-                                onClick={prevStep}
-                                className="px-4 py-2 bg-gray-200 rounded"
-                            >
-                                Previous
-                            </button>
-                        )}
-                        {step < 5 ? (
-                            <button
+                {step < 5 ? (
+                    // Steps 1 & 2 (no <form>)
+                    <div>
+                        {renderStep()}
+                        <div className="flex justify-between mt-6">
+                            {step > 1 && (
+                                <SecondaryButton
+                                    type="button"
+                                    onClick={prevStep}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                >
+                                    Previous
+                                </SecondaryButton>
+                            )}
+                            <SecondaryButton
                                 type="button"
                                 onClick={nextStep}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded"
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                             >
                                 Next
-                            </button>
-                        ) : (
-                            <button
+                            </SecondaryButton>
+                        </div>
+                    </div>
+                ) : (
+                    // Step 3 (final review inside <form>)
+                    <form onSubmit={handleSubmit}>
+                        {renderStep()}
+                        <div className="flex justify-between mt-6">
+                            <SecondaryButton
+                                type="button"
+                                onClick={prevStep}
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                            >
+                                Previous
+                            </SecondaryButton>
+                            <PrimaryButton
                                 type="submit"
                                 disabled={processing}
-                                className="px-4 py-2 bg-green-600 text-white rounded"
+                                className={`px-4 py-2 rounded-md text-white transition 
+                               ${processing
+                                        ? "bg-gray-400 cursor-not-allowed opacity-70"
+                                        : "bg-green-600 hover:bg-green-700"}`}
                             >
-                                {processing ? 'Submitting...' : 'Submit'}
-                            </button>
-                        )}
-                    </div>
-                </form>
+                                {processing ? "Processing..." : "Submit"}
+                            </PrimaryButton>
+
+                        </div>
+                    </form>
+                )}
+
             </div>
         </SellerLayout>
     );

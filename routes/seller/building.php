@@ -2,8 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Seller\BuildingController;
+use App\Http\Controllers\Seller\{BuildingController, BuildingRequestController};
 
+
+
+Route::prefix('seller/building/requests')->name('seller.building.requests.')->middleware('seller')->group(function () {
+    Route::get('', [BuildingRequestController::class, 'index'])->name('index');
+    Route::post('/{id}/cancel', [BuildingRequestController::class, 'cancel'])->name('cancel');
+});
+    
 Route::prefix('seller/building')->name('seller.building.')->middleware('seller')->group(function () {
     Route::get('/', [BuildingController::class, 'index'])->name('index');
     Route::get('/search', [BuildingController::class, 'searchBuildings'])->name('search.buildings');
