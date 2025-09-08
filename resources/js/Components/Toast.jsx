@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-export default function Toast({ message, isTrue, isType = "success" }) {
+export default function Toast({ message, isTrue, isType = "success", id }) {
     const typeColors = {
         error: "red",
         warning: "yellow",
@@ -15,7 +15,7 @@ export default function Toast({ message, isTrue, isType = "success" }) {
     const [show, setShow] = useState(isTrue || false);
     useEffect(() => {
         setShow(isTrue);
-    }, [isTrue]);
+    }, [isTrue, id]);
     useEffect(() => {
         if (!show) return;
         const timer = setTimeout(() => setShow(false), 3000);
@@ -28,6 +28,7 @@ export default function Toast({ message, isTrue, isType = "success" }) {
         <AnimatePresence>
             {show && (
                 <motion.div
+                    key={id}
                     className="fixed top-4 right-4 z-50"
                     initial={{ opacity: 0, y: -20, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}

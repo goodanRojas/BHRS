@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class OwnerPaymentInfo extends Model
 {
-   protected $fillable = [
+    protected $fillable = [
         'owner_id',
-        'qr_code',
+        'gcash_name',
         'gcash_number',
+        'qr_code',
     ];
     protected $table = 'owner_payment_infos';
     public function owner()
