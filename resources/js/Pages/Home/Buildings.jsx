@@ -9,11 +9,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faFilter, faSearch, faStar } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 export default function Buildings({ initialBuildings }) {
-    console.log(initialBuildings);
+    // console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
-    console.log(buildings);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -29,6 +28,7 @@ export default function Buildings({ initialBuildings }) {
                     params: { search: debouncedSearch },
 
                 });
+                console.log(response.data);
                 setBuildings(response.data);
             } catch (error) {
                 console.error("Error fetching buildings:", error);
@@ -147,34 +147,34 @@ export default function Buildings({ initialBuildings }) {
                                         {/* Ratings */}
                                         <div className="flex items-center space-x-1 text-yellow-500">
                                             <FontAwesomeIcon icon={faStar} className="w-3 h-3" />
-                                            <span className="text-xs font-semibold text-gray-700">4.2</span>
+                                            <span className="text-xs font-semibold text-gray-700">
+                                                {building.avg_rating ? Number(building.avg_rating).toFixed(1) : "0.0"}
+                                            </span>
                                             <span className="text-[10px] text-gray-500">
-                                                (<span className="font-medium">192</span>)
+                                                (<span className="font-medium">{building.rating_count || 0}</span>)
                                             </span>
                                         </div>
 
                                         {/* Overlapping Tenant Avatars */}
                                         <div className="flex -space-x-1">
-                                            <img
-                                                src="/storage/profile/rojas.png"
-                                                alt="Tenant 1"
-                                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                                            />
-                                            <img
-                                                src="/storage/profile/rojas.png"
-                                                alt="Tenant 2"
-                                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                                            />
-                                            <img
-                                                src="/storage/profile/rojas.png"
-                                                alt="Tenant 3"
-                                                className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                                            />
-                                            <div className="w-6 h-6 flex items-center justify-center bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-full border-2 border-white shadow-sm">
-                                                +9
-                                            </div>
+                                            {building.user_images?.slice(0, 3).map((user, idx) => (
+                                                <img
+                                                    key={idx}
+                                                    src={`/storage/${user.avatar}`}
+                                                    alt={user.name}
+                                                    title={user.name}
+                                                    className="w-6 h-6 rounded-full border-2 border-white shadow-sm object-cover"
+                                                />
+                                            ))}
+
+                                            {building.rating_count > 3 && (
+                                                <div className="w-6 h-6 flex items-center justify-center bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-full border-2 border-white shadow-sm">
+                                                    +{building.rating_count - 3}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
+
                                 </div>
                             </Link>
                         ))}

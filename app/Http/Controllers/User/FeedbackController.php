@@ -26,6 +26,7 @@ class FeedbackController extends Controller
     public function rate(Request $request, Booking $booking)
     {
         Log::info("Trying to rate");
+        Log::info($request->all());
         $validated = $request->validate([
             'stars' => 'required|integer|min:1|max:5',
         ]);
@@ -36,10 +37,7 @@ class FeedbackController extends Controller
             ['user_id' => auth()->id()],
             ['stars' => $request->stars]
         );
-
-        Log::info($booking);
-
-        return back()->with('success', 'Rating submitted.');
+        return response()->json(['message' => 'Rating submitted.']);
     }
 
     public function comment(Request $request, Booking $booking)

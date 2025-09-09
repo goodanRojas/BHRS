@@ -1,13 +1,16 @@
-import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import AdminLayout from './AdminLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
-export default function Login({ status, canResetPassword, error }) {
+export default function Login({ status, error }) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -24,61 +27,90 @@ export default function Login({ status, canResetPassword, error }) {
     };
 
     return (
-        <AdminLayout>
-            <Head title="Log in" />
-            {/* Background Image */}
-            <div
-                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
-                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
-            ></div>
+        <GuestLayout>
+            <Head title="Admin Login" />
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {/* Centered Card */}
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-full max-w-lg rounded-2xl shadow-2xl bg-white/80 backdrop-blur-lg border border-white/30 p-8"
+                >
+                    {/* Title */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-800">Admin Portal</h2>
+                        <p className="text-gray-500">Secure login for administrators</p>
+                    </div>
 
-            <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6  backdrop-blur rounded-lg shadow-md space-y-6">
-                <div>
-                    <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
+                    {/* Status */}
+                    {status && (
+                        <div className="mb-4 text-sm font-medium text-green-600 bg-green-100 px-4 py-2 rounded-lg">
+                            {status}
+                        </div>
+                    )}
 
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
+                    {error && (
+                        <div className="mb-4 text-sm font-medium text-red-600 bg-red-100 px-4 py-2 rounded-lg">
+                            {error}
+                        </div>
+                    )}
 
-                    <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
-                </div>
+                    {/* Form */}
+                    <form onSubmit={submit} className="space-y-6">
+                        {/* Email */}
+                        <div>
+                            <InputLabel htmlFor="email" value="Email" className="block text-sm font-semibold text-gray-700" />
+                            <TextInput
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                className="mt-2 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                autoComplete="username"
+                                isFocused={true}
+                                onChange={(e) => setData('email', e.target.value)}
+                            />
+                            <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
+                        </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
+                        {/* Password */}
+                        <div>
+                            <InputLabel htmlFor="password" value="Password" className="block text-sm font-semibold text-gray-700" />
+                            <div className="relative mt-2">
+                                <TextInput
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={data.password}
+                                    className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                    autoComplete="current-password"
+                                    onChange={(e) => setData('password', e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                </button>
+                            </div>
+                            <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
+                        </div>
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-
-                    <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
-        </AdminLayout>
+                        {/* Submit */}
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex justify-end">
+                            <PrimaryButton
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
+                                disabled={processing}
+                            >
+                                Log in
+                            </PrimaryButton>
+                        </motion.div>
+                    </form>
+                </motion.div>
+            </div>
+        </GuestLayout>
     );
 }

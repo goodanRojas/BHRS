@@ -5,7 +5,8 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faStar, faBed, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
-export default function Building({ building, ratingStats, totalCompletedBookings }) {
+export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
+    console.log(totalCompletedBookings);
     return (
         <AuthenticatedLayout>
             <Head title={building.name} />
@@ -64,23 +65,30 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                             )}A
                         </p>
                     </Link>
-
                     {/* Stats */}
                     <div className="flex flex-wrap gap-4 sm:gap-6 text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4">
-                        <div className="flex items-center">
-                            <span className="font-semibold text-yellow-500 flex items-center">
-                                <FontAwesomeIcon icon={faStar} className="mr-1" /> {0}
+                        {/* ⭐ Rating */}
+                        <div className="flex items-center gap-1">
+                            <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
+                            <span className="font-semibold text-gray-800">
+                                {avgRating ? Number(avgRating).toFixed(1) : "0.0"}
                             </span>
-                            <span className="ml-1">
-                                12 (reviews)
+                            <span className="text-gray-500">
+                                ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
                             </span>
                         </div>
 
-                        <div className="flex items-center">
-                            <span className="font-semibold text-green-600">{totalCompletedBookings || 0}</span>
-                            <span className="ml-1">completed bookings</span>
+                        {/* 📊 Completed Bookings */}
+                        <div className="flex items-center gap-1">
+                            <span className="font-semibold text-green-600">
+                                {totalCompletedBookings || 0}
+                            </span>
+                            <span className="text-gray-500">
+                                {totalCompletedBookings === 1 ? "completed booking" : "completed bookings"}
+                            </span>
                         </div>
                     </div>
+
                 </div>
                 {/* Rooms Section */}
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-gray-800">
@@ -101,9 +109,7 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                                     alt={room.name}
                                     className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
-                                <span className="absolute top-3 left-3 bg-indigo-600 text-white text-[11px] sm:text-xs font-medium px-2.5 py-1 rounded-full shadow-md">
-                                    ₱{room.price}
-                                </span>
+
                             </div>
 
                             {/* Room Content */}
@@ -125,28 +131,6 @@ export default function Building({ building, ratingStats, totalCompletedBookings
                                     <div className="flex items-center space-x-1 mb-3">
                                         <FontAwesomeIcon icon={faStar} className="text-yellow-400" />
                                         <span className="text-[11px] sm:text-xs text-gray-600">4.5 (12 reviews)</span>
-                                    </div>
-
-                                    {/* Overlapping Tenant Avatars */}
-                                    <div className="flex -space-x-3">
-                                        <img
-                                            src="/storage/profile/rojas.png"
-                                            alt="Tenant 1"
-                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
-                                        />
-                                        <img
-                                            src="/storage/profile/rojas.png"
-                                            alt="Tenant 2"
-                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
-                                        />
-                                        <img
-                                            src="/storage/profile/rojas.png"
-                                            alt="Tenant 3"
-                                            className="w-7 h-7 rounded-full border-2 border-white shadow-sm"
-                                        />
-                                        <div className="w-7 h-7 flex items-center justify-center bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border-2 border-white shadow-sm">
-                                            +9
-                                        </div>
                                     </div>
 
                                 </div>

@@ -14,28 +14,42 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             >
                 <Head title="Welcome" />
 
-                <nav className='flex justify-between items-center px-5'>
-                    <div className="mb-6">
+                <nav className="flex justify-between items-center px-5 py-4">
+                    {/* Logo */}
+                    <div>
                         <Link href="/">
                             <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
                         </Link>
                     </div>
-                    <div className="mt-6 flex space-x-4 justify-center">
+
+                    {/* Buttons */}
+                    <div className="flex items-center space-x-4">
+                        {/* Owner Login */}
+                        <Link
+                            href="/seller/login"
+                            className="border border-indigo-600 text-indigo-600 px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                        >
+                            Owner Login
+                        </Link>
+
+                        {/* Tenant Log in */}
                         <Link
                             href={route('login')}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                         >
                             Log in
                         </Link>
+
+                        {/* Register */}
                         <Link
                             href={route('register')}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-white dark:hover:bg-indigo-800 dark:focus-visible:ring-white"
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                         >
                             Register
                         </Link>
                     </div>
-
                 </nav>
+
                 {/* Hero Section */}
                 <motion.section
                     className="relative bg-cover bg-center h-screen flex items-center justify-center"

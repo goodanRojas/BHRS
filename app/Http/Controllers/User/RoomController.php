@@ -4,52 +4,56 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Room;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\Bed;
-use App\Models\Feedback;
-use App\Models\Booking;
+use App\Models\{Room, Rating, Bed, Booking};
 
 class RoomController extends Controller
 {
     public function showToUserRoom(Room $room)
     {
-        $room->load(['building', 'images', 'beds.bookings' => function ($query) {
-            $query->where('status', 'completed');
-        }, 'bookings', 'favorites']);
-    
+        $room->load([
+            'building',
+            'images',
+            'beds.bookings' => function ($query) {
+                $query->where('status', 'completed');
+            },
+            'bookings',
+            'favorites'
+        ]);
+
         $roomId = $room->id;
-     
-     
 
+        // Get all bed IDs in this room
+        $bedIds = Bed::where('room_id', $roomId)->pluck('id');
 
-            // Total Completed Bookings
-            $totalCompletedBookings = Booking::where('status', 'ended')
-                ->where(function ($query) use ($roomId) {
-                    $query->where(function ($q) use ($roomId) {
-                        $q->where('bookable_type', Room::class)
-                            ->where('bookable_id', $roomId);
-                    });
-                })->count();
-            $roomAvailablity = Booking::where('status', 'active')
-                ->where(function ($query) use ($roomId) {
-                    $query->where(function ($q) use ($roomId) {
-                        $q->where('bookable_type', Room::class)
-                            ->where('bookable_id', $roomId);
-                    });
-                })->count();
-                
+        // Get ratings for bookings of those beds
+        $ratingStats = Rating::whereHas('booking', function ($q) use ($bedIds) {
+            $q->where('bookable_type', Bed::class)
+                ->whereIn('bookable_id', $bedIds)
+                ->where('status', 'ended'); // only completed bookings
+        })
+            ->selectRaw('AVG(stars) as avg_rating, COUNT(*) as rating_count')
+            ->first();
+
+        // Access values
+        $avgRating = $ratingStats->avg_rating ?? 0;
+        $ratingCount = $ratingStats->rating_count ?? 0;
+        // Total Completed Bookings for beds in this room
+        $totalCompletedBookings = Booking::where('status', 'ended')
+            ->where('bookable_type', Bed::class)
+            ->whereIn('bookable_id', $bedIds)
+            ->count();
         return Inertia::render('Home/Room', [
             'room' => $room,
-        
             'totalCompletedBookings' => $totalCompletedBookings,
-            'roomAvailablity' => $roomAvailablity,
+            'avgRating' => $avgRating,
+            'ratingCount' => $ratingCount,
         ]);
     }
 
-    
+
     public function showRooms(Request $request)
     {
         $rooms = Room::with(['building', 'bookings'])
@@ -95,7 +99,7 @@ class RoomController extends Controller
         ]);
     }
 
- 
+
     public function showMoreRooms(Request $request)
     {
         $search = $request->input('search');
@@ -125,7 +129,7 @@ class RoomController extends Controller
             });
         }
 
-       
+
 
         $rooms = $roomsQuery->paginate(10, ['*'], 'page', $page);
 

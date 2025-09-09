@@ -5,9 +5,11 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
-export default function Rooms({ room, ratingStats, totalCompletedBookings, roomAvailablity }) {
+export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRating }) {
     const images = room.images;
-    console.log(room);
+    // Normalize avgRating at the top of your component
+    const ratingValue = avgRating ? Number(parseFloat(avgRating).toFixed(1)) : 0;
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const handleNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1 === room.images.length ? 0 : prevIndex + 1));
@@ -85,22 +87,31 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, roomA
                 <div className="p-4 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-800 mb-2">{room.name}</h2>
 
-                    <div className="flex items-center gap-2 mt-2">
-                        <p className="text-sm text-gray-700">&#8369;{room.price}</p>
-                    </div>
                 </div>
-                {/* Rating and Booking Stats */}
-                <div className="flex gap-6 text-sm text-gray-700 mt-2">
-                    <div>
-                        <span className="font-semibold text-yellow-600"><FontAwesomeIcon icon={faStar} /> {4.2 }</span><span className="ml-1">
-                            ( 10 reviews)
+                {/* ⭐ Rating and 📊 Booking Stats */}
+                <div className="flex flex-wrap gap-4 text-sm mt-3 text-gray-700">
+                    {/* Rating */}
+                    <div className="flex items-center gap-1">
+                        <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
+                        <span className="font-semibold text-gray-800">
+                            {ratingValue}
+                        </span>
+                        <span className="text-gray-500">
+                            ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
                         </span>
                     </div>
-                    <div>
-                        <span className="font-semibold text-green-600">{totalCompletedBookings}</span>
-                        <span className="ml-1">completed bookings</span>
+
+                    {/* Completed Bookings */}
+                    <div className="flex items-center gap-1">
+                        <span className="font-semibold text-green-600">
+                            {totalCompletedBookings}
+                        </span>
+                        <span className="text-gray-500">
+                            {totalCompletedBookings === 1 ? "completed booking" : "completed bookings"}
+                        </span>
                     </div>
                 </div>
+
 
                 {/* Display Beds */}
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-gray-800">
@@ -151,28 +162,6 @@ export default function Rooms({ room, ratingStats, totalCompletedBookings, roomA
                                     <span className="text-[11px] sm:text-xs text-gray-600">
                                         4.5 <span className="opacity-80">(12 reviews)</span>
                                     </span>
-                                </div>
-
-                                {/* Tenant Avatars */}
-                                <div className="flex -space-x-3">
-                                    <img
-                                        src="/storage/profile/rojas.png"
-                                        alt="Tenant 1"
-                                        className="w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition"
-                                    />
-                                    <img
-                                        src="/storage/profile/rojas.png"
-                                        alt="Tenant 2"
-                                        className="w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition"
-                                    />
-                                    <img
-                                        src="/storage/profile/rojas.png"
-                                        alt="Tenant 3"
-                                        className="w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition"
-                                    />
-                                    <div className="w-7 h-7 flex items-center justify-center bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border-2 border-white shadow-sm">
-                                        +9
-                                    </div>
                                 </div>
                             </div>
                         </Link>

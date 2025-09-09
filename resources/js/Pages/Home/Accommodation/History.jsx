@@ -19,11 +19,14 @@ export default function History({ booking, comments: initialComments, rating }) 
         comment: "",
         stars: rating?.stars || 0,
     });
-
     const handleRating = (score) => {
-        console.log('trying to submit rating...');
-        post(route("feedback.bookings.rate", booking.id), { stars: data.stars }, { preserveScroll: true });
+        axios.post(route("feedback.bookings.rate", booking.id), { stars: score })
+            .then(res => {
+                console.log(res.data.message); // "Rating submitted."
+            })
+            .catch(err => console.error(err));
     };
+
 
     const handleCommentSubmit = (e) => {
         e.preventDefault();
@@ -192,7 +195,7 @@ export default function History({ booking, comments: initialComments, rating }) 
                                         ) : (
                                             <p className="text-sm text-gray-700">
                                                 {c.body}
-                                                {c.edited !== null  && (
+                                                {c.edited !== null && (
                                                     <span className="text-xs text-gray-400 ml-2">
                                                         (edited)
                                                     </span>

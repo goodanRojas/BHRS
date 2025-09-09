@@ -8,12 +8,14 @@ import { faHeart, faUserCheck, faMapMarkerAlt, faStar, faDoorOpen, faBuilding, f
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@/Components/Modal';
-import Toast from '@/Components/Toast'; 
+import Toast from '@/Components/Toast';
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
-export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked }) {
-    
-    const {flash} = usePage().props;
+import { comment } from 'postcss';
+export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked, comments, average_rating, rating_count, ratings }) {
+
+    console.log(sibling_beds);
+    const { flash } = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(0);
     const [preventBookingModal, setPreventBookingModal] = useState(false);
@@ -166,14 +168,25 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                             <div className="flex items-center gap-2">
                                 <h4 className="text-2xl font-bold text-gray-800">{bed.name}</h4>
 
-                                {bed.average_rating > 0 ? (
-                                    <div className="flex items-center gap-1 text-yellow-500 text-sm font-medium">
-                                        <span>{bed.average_rating}</span>
-                                        <span>★</span>
+                                {average_rating > 0 ? (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        {/* Star Icon */}
+                                        <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
+
+                                        {/* Rating Value */}
+                                        <span className="font-semibold text-gray-800">
+                                            {average_rating.toFixed(1)}
+                                        </span>
+
+                                        {/* Rating Count */}
+                                        <span className="text-gray-500">
+                                            ({rating_count} {rating_count === 1 ? "review" : "reviews"})
+                                        </span>
                                     </div>
                                 ) : (
-                                    <span className="text-sm text-gray-500">No ratings yet</span>
+                                    <span className="text-sm text-gray-500 italic">No ratings yet</span>
                                 )}
+
                             </div>
                             {/*  Price Section */}
                             <div className="flex items-center justify-between rounded-md p-4">
@@ -243,110 +256,132 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </div>{/* 💬 Feedback Section */}
                     {/* 💬 Feedback Section */}
-                    <div className="px-6 pb-6 space-y-4">
-                        <h4 className="text-xl font-semibold text-gray-800">Feedbacks</h4>
+                    <div className="px-6 pb-6 space-y-6">
+                        <h4 className="text-xl font-semibold text-gray-800">
+                            Feedbacks ({comments?.length || 0})
+                        </h4>
 
-                        {bed.feedbacks?.length > 0 ? (
-                            <div
-                                className={`
-                                            space-y-4 overflow-y-auto
-                                            ${bed.feedbacks.length >= 5 ? 'max-h-[400px] pr-2' : ''}
-                                        `}
-                            >
-                                {bed.feedbacks.map((feedback) => (
+                        <div className="space-y-6">
+                            {ratings.map((rating) => {
+                                const userComments = comments.filter(
+                                    (c) => c.user_id === rating.user_id
+                                );
+
+                                return (
                                     <div
-                                        key={feedback.id}
-                                        className="border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow duration-200 bg-white"
+                                        key={rating.id}
+                                        className="bg-white p-4 rounded-xl shadow border border-gray-100"
                                     >
-                                        {/* User Info */}
-                                        <div className="flex items-center gap-4 mb-2">
+                                        {/* User Header */}
+                                        <div className="flex items-center space-x-3 mb-2">
                                             <img
-                                                src={`/storage/user/${feedback.user?.avatar}` || '/storage/user/default_profile.png'}
-                                                alt={feedback.user?.name || 'Anonymous'}
-                                                className="h-10 w-10 rounded-full object-cover border"
+                                                src={`/storage/${rating.user.avatar || "profile/default-avatar.png"}`}
+                                                alt={rating.user.name}
+                                                className="w-10 h-10 rounded-full object-cover border"
                                             />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-700">
-                                                    {feedback.user?.name || 'Anonymous'}
-                                                </p>
-                                                <div className="flex items-center gap-1 text-yellow-500 text-sm">
-                                                    <span>{feedback.rating}</span>
-                                                    <span><FontAwesomeIcon icon={faStar} /></span>
+                                                <p className="font-semibold text-gray-800">{rating.user.name}</p>
+                                                <div className="flex">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span
+                                                            key={star}
+                                                            className={`text-lg ${star <= rating.stars ? "text-yellow-500" : "text-gray-300"
+                                                                }`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faStar} />
+                                                        </span>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Comment */}
-                                        <p className="text-sm text-gray-600">
-                                            {feedback.comment || 'No comment provided.'}
-                                        </p>
+                                        {/* User Comments */}
+                                        {userComments.length > 0 ? (
+                                            <ul className="ml-12 list-disc space-y-1 text-gray-700">
+                                                {userComments.map((c) => (
+                                                    <li key={c.id} className="text-sm">
+                                                        {c.body}
+                                                        {c.edited && (
+                                                            <span className="ml-2 text-xs text-gray-400">(edited)</span>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="ml-12 text-sm text-gray-500 italic">
+                                                No comments yet.
+                                            </p>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-gray-500">No feedback yet</p>
-                        )}
+                                );
+                            })}
+                        </div>
                     </div>
+
+
 
                     {/* 🛏️ More Beds in This Room */}
                     <div className="px-6 pb-8">
-                        <h4 className="text-2xl font-bold text-gray-800 mb-6">
+                        <h4 className="text-xl font-bold text-gray-800 mb-5">
                             More Beds in <span className="text-indigo-600">{bed.room.name}</span>
                         </h4>
 
                         {sibling_beds?.length > 0 ? (
-
                             <div
                                 className="
-                                            flex gap-6 overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-4 
-                                            scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent pb-4
-                                    "
+                flex gap-4 overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-4
+                scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent pb-2
+            "
                             >
                                 {sibling_beds.map((b) => (
                                     <Link key={b.id} href={`/home/bed/${b.id}`}>
                                         <div
                                             className="
-                                                        min-w-[240px] max-w-[240px] md:min-w-0 
-                                                        bg-gradient-to-br from-indigo-50 via-white to-indigo-100
-                                                        border rounded-xl shadow-sm p-4 flex-shrink-0 
-                                                        hover:shadow-lg hover:-translate-y-1 transition-all duration-300
-                                                    "
+                            min-w-[180px] max-w-[180px] md:min-w-0
+                            bg-white border rounded-lg shadow-sm p-3 flex-shrink-0
+                            hover:shadow-md hover:-translate-y-0.5 transition-all duration-200
+                        "
                                         >
+                                            {/* Image */}
                                             <img
                                                 src={b.image ? `/storage/${b.image}` : '/storage/bed/default_bed.png'}
                                                 alt={b.name}
-                                                className="w-full h-40 object-cover rounded-lg mb-3"
+                                                className="w-full h-28 object-cover rounded-md mb-2"
                                             />
 
-                                            <h5 className="text-lg font-semibold text-gray-800 truncate">
+                                            {/* Title */}
+                                            <h5 className="text-sm font-semibold text-gray-800 truncate">
                                                 {b.name}
                                             </h5>
 
-                                            <div className="text-yellow-500 text-sm flex items-center gap-1 mb-2">
-                                                <span>{b.average_rating ?? 'N/A'}</span>
-                                                <span>★</span>
+                                            {/* Rating */}
+                                            <div className="flex items-center gap-1 mb-1 text-xs text-yellow-500">
+                                                <span className="font-medium">
+                                                    {b.average_rating ? Number(b.average_rating).toFixed(1) : "0.0"}
+                                                </span>
+                                                <FontAwesomeIcon icon={faStar} className="w-3.5 h-3.5" />
                                             </div>
 
-                                            <p className="text-sm text-gray-600 mb-1">
+                                            {/* Price */}
+                                            <p className="text-xs text-gray-600">
                                                 Price:{' '}
-                                                <span className="font-medium text-gray-900">
+                                                <span className="font-semibold text-gray-900">
                                                     ₱{b.price}
                                                 </span>
                                             </p>
 
-                                            <p className="text-xs text-gray-500">
-                                                Completed Bookings: {b.bookings_count ?? 0}
+                                            {/* Bookings */}
+                                            <p className="text-xs text-gray-400">
+                                                {b.completed_bookings_count ?? 0} bookings
                                             </p>
                                         </div>
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-gray-500">
-                                No other beds available in this room.
-                            </p>
+                            <p className="text-sm text-gray-500">No other beds available in this room.</p>
                         )}
                     </div>
 

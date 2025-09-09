@@ -3,14 +3,35 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import GuestSellerLayout from '@/Layouts/GuestSellerLayout';
+import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login({ status, canResetPassword }) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
+        remember: false,
     });
+
+    // rotating welcome text
+    const messages = [
+        "Welcome Seller",
+        "Manage your boarding house",
+        "Track bookings and payments easily",
+    ];
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % messages.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const submit = (e) => {
         e.preventDefault();
@@ -20,61 +41,151 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <GuestSellerLayout>
-            <Head title="Log in" />
+        <GuestLayout>
+            <Head title="Seller Log in" />
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-
-            <form onSubmit={submit} className="w-full backdrop-blur max-w-lg mx-auto p-6 rounded-lg shadow-md space-y-6">
-                <div>
-                    <InputLabel htmlFor="email" value="Email" className="block text-lg font-medium text-gray-700" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" className="block text-lg font-medium text-gray-700" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                    <Link
-                        href={route('password.request')}
-                        className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+            {/* Gradient background wrapper */}
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
+                {/* Card container */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col md:flex-row w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30"
+                >
+                    {/* LEFT WELCOME CARD */}
+                    <motion.div
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.7 }}
+                        className="hidden md:flex flex-col justify-center items-center w-1/2 p-10 text-white bg-gradient-to-br from-indigo-600/80 to-purple-600/80"
                     >
-                        Forgot your password?
-                    </Link>
-                    <PrimaryButton className="ms-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestSellerLayout>
+                        <AnimatePresence mode="wait">
+                            <motion.h2
+                                key={index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.6 }}
+                                className="text-3xl font-bold mb-4 text-center"
+                            >
+                                {messages[index]}
+                            </motion.h2>
+                        </AnimatePresence>
+                        <p className="text-lg opacity-90 text-center">
+                            Log in to manage your properties and reservations.
+                        </p>
+                    </motion.div>
+
+                    {/* LOGIN CARD */}
+                    <motion.div
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.7, delay: 0.2 }}
+                        className="w-full md:w-1/2 p-10 bg-white/80 backdrop-blur-xl rounded-r-2xl"
+                    >
+                        <form onSubmit={submit} className="space-y-6">
+                            {/* Title */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.3 }}
+                                className="text-center mb-6"
+                            >
+                                <h2 className="text-3xl font-bold text-gray-800">Welcome Back, Seller!</h2>
+                                <p className="text-gray-500">Login to continue managing your business</p>
+                            </motion.div>
+
+                            {/* Status message */}
+                            {status && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="mb-4 text-sm font-medium text-green-600 bg-green-100 px-4 py-2 rounded-lg"
+                                >
+                                    {status}
+                                </motion.div>
+                            )}
+
+                            {/* Email */}
+                            <div>
+                                <InputLabel htmlFor="email" value="Email" className="block text-sm font-semibold text-gray-700" />
+                                <TextInput
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={data.email}
+                                    className="mt-2 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                    autoComplete="username"
+                                    isFocused={true}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                />
+                                <InputError message={errors.email} className="mt-2 text-sm text-red-600" />
+                            </div>
+
+                            {/* Password */}
+                            <div className="mt-4">
+                                <InputLabel htmlFor="password" value="Password" className="block text-sm font-semibold text-gray-700" />
+                                <div className="relative mt-2">
+                                    <TextInput
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={data.password}
+                                        className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                        autoComplete="current-password"
+                                        onChange={(e) => setData('password', e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                    </button>
+                                </div>
+                                <InputError message={errors.password} className="mt-2 text-sm text-red-600" />
+                            </div>
+
+                            {/* Remember + Register */}
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        name="remember"
+                                        value="1"
+                                        checked={data.remember}
+                                        onChange={(e) => setData('remember', e.target.checked)}
+                                        className="rounded text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor="remember" className="text-sm text-gray-600">Remember Me</label>
+                                </div>
+                             
+                            </div>
+
+                            {/* Forgot + Login button */}
+                            <div className="mt-6 flex items-center justify-end gap-4">
+                                {canResetPassword && (
+                                    <Link
+                                        href={route('password.request')}
+                                        className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+                                    >
+                                        Forgot your password?
+                                    </Link>
+                                )}
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <PrimaryButton
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
+                                        disabled={processing}
+                                    >
+                                        Log in
+                                    </PrimaryButton>
+                                </motion.div>
+                            </div>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            </div>
+        </GuestLayout>
     );
 }

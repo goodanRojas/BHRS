@@ -1,11 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import Layout from './Layout';
-import { CheckCircle,XCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, MapPin, CalendarDays, Mail, Phone } from 'lucide-react';
 import Modal from '@/Components/Modal';
 import { useForm } from '@inertiajs/inertia-react';
 import { useState, useEffect } from 'react';
 export default function Dashboard({ booking }) {
-
 
     const user = usePage().props.auth.user;
     /* Booking Approved Channel */
@@ -38,7 +37,7 @@ export default function Dashboard({ booking }) {
             channel.stopListening('.UserPaymentConfirmed');
         };
     }, [user?.id]);
-  
+
     useEffect(() => {
 
         const channel = window.Echo.private(`user_booking_expired.${user?.id}`)
@@ -84,16 +83,7 @@ export default function Dashboard({ booking }) {
     }
 
     const bookable = booking.bookable;
-    const type = booking.bookable_type;
-
-    const image = type.endsWith('Bed') ? bookable?.image : null;
-    const name = bookable?.name ?? 'No Name';
-    const roomName = type.endsWith('Bed') ? bookable?.room?.name : (type.endsWith('Room') ? bookable?.name : 'N/A');
-    const buildingName = type.endsWith('Bed') ? bookable?.room?.building?.name : (type.endsWith('Room') ? bookable?.building?.name : 'N/A');
-    const address = type.endsWith('Bed')
-        ? bookable?.room?.building?.address
-        : bookable?.building?.address;
-
+    const address = bookable.room.building.address.address;
     return (
         <Layout>
             <Head title="Booking Dashboard" />
@@ -104,15 +94,15 @@ export default function Dashboard({ booking }) {
                     {/* Left: Image + Details */}
                     <div className="bg-white rounded-2xl shadow-md overflow-hidden">
                         <img
-                            src={image ? `/storage/${image}` : 'https://via.placeholder.com/600x400?text=No+Image'}
-                            alt={name}
+                            src={bookable.image ? `/storage/${bookable.image}` : 'https://via.placeholder.com/600x400?text=No+Image'}
+                            alt={bookable.name}
                             className="w-full h-56 md:h-64 object-cover"
                         />
                         <div className="p-5 space-y-2">
                             <h3 className="text-xl font-bold text-gray-800">{bookable.name}</h3>
-                            <p className="text-gray-600">{roomName} • {buildingName}</p>
+                            <p className="text-gray-600">{bookable.room.name} • {bookable.room.building.name}</p>
                             <p className="text-sm text-gray-500 leading-snug">
-                                {address?.street}, {address?.barangay}, {address?.city}, {address?.province}
+                                {address.barangay}, {address?.municipality}, {address?.province}
                             </p>
                         </div>
                     </div>

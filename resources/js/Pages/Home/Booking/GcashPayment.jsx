@@ -91,7 +91,7 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
           >
             <FontAwesomeIcon icon={faQrcode} className="text-gray-500 mb-2 text-xl" />
             <img
-              src={`/storage/qrcodes/${paymentInfo.qr_code}`}
+              src={`/storage/${paymentInfo.qr_code}`}
               alt="GCash QR Code"
               className="mx-auto w-48 h-48 object-cover border rounded-lg shadow-md"
             />

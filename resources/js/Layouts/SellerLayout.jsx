@@ -6,13 +6,13 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faBell } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faBell, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import SellerNotifModal from '@/Components/SellerNotifModal';
 import BookingNotif from '@/Components/Notifications/Owner/BookingNotif';
 import axios from 'axios';
+
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
-    // console.log(user);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [messagesCount, setMessagesCount] = useState(0);
 
@@ -26,45 +26,40 @@ export default function SellerLayout({ header, children }) {
     useEffect(() => {
         window.Echo.private(`App.Models.Seller.${user.id}`)
             .notification((notification) => {
-                console.log('🔔 New notification received!', notification);
                 setNotifications((prev) => [notification, ...prev]);
                 setNotifVisible(notification);
                 setNotificationsCount(prevCount => prevCount + 1);
-
-
             });
     }, [user?.id]);
+
     useEffect(() => {
         axios.get("/seller/notifications/count").then((res) => {
-            // assuming your backend returns: { count: 5 }
             setNotificationsCount(res.data.count);
         });
-    }, [user?.id]); // 👈 add dependency array so it only runs once on mount
-
-
+    }, [user?.id]);
 
     return (
-        <div className="min-h-screen ">
+        <div className="min-h-screen">
             <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
-
-
 
             {/* Background Image */}
             <div
-                className="fixed top-0 left-0  h-screen bg-cover bg-center bg-no-repeat -z-10"
+                className="fixed top-0 left-0 h-screen bg-cover bg-center bg-no-repeat -z-10"
                 style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
             ></div>
-            {/* Navbar */}
-            <nav className="border-b border-gray-100 bg-gray-800 shadow-lg">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
-                        <div className="flex">
-                            <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link>
-                            </div>
 
+            {/* Navbar */}
+            <nav className="border-b border-gray-700 bg-gray-900 shadow-lg">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 justify-between items-center">
+                        {/* Left Section */}
+                        <div className="flex items-center">
+                            {/* Logo */}
+                            <Link href="/" className="flex items-center">
+                                <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
+                            </Link>
+
+                            {/* Desktop Nav Links */}
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('seller.dashboard.index')}
@@ -78,249 +73,145 @@ export default function SellerLayout({ header, children }) {
                                 >
                                     Building
                                 </NavLink>
+                            </div>
+                        </div>
 
-
-                                <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                                    <div className="relative ms-3">
-                                        <Dropdown
-                                            defaultOpen={
-                                                route().current('seller.guest.index') ||
-                                                route().current('seller.request.bed.index') ||
-                                                route().current('seller.history.index')
-                                            }
-                                        >
-
-                                            <Dropdown.Trigger>
-                                                <span
-                                                    className="inline-flex items-center px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out hover:text-gray-700"
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        className="inline-flex items-center rounded-md  px-3 py-2 text-sm font-medium leading-4 text-white transition duration-150 ease-in-out hover:text-gray-700 focus:"
-                                                    >
-                                                        Guests
-
-                                                        <svg
-                                                            className="-me-0.5 ms-2 h-4 w-4"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 20 20"
-                                                            fill="currentColor"
-                                                        >
-                                                            <path
-                                                                fillRule="evenodd"
-                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                clipRule="evenodd"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            </Dropdown.Trigger>
-
-                                            <Dropdown.Content>
-                                                <Dropdown.Link
-                                                    href={route('seller.guest.index')}
-                                                    active={route().current('seller.guest.index')}
-                                                >
-                                                    Guests
-                                                </Dropdown.Link>
-                                                <Dropdown.Link
-                                                    href={route('seller.request.bed.index')}
-                                                    active={route().current('seller.request.bed.index')}
-                                                >
-                                                    Requests
-                                                </Dropdown.Link>
-                                                <Dropdown.Link
-                                                    href={route('seller.history.index')}
-                                                    active={route().current('seller.history.index')}
-                                                >
-                                                    History
-                                                </Dropdown.Link>
-                                                <Dropdown.Link
-                                                    href={route('seller.request.payments.index')}
-                                                    active={route().current('seller.request.payments.index')}
-                                                >
-                                                    Payments
-                                                </Dropdown.Link>
-                                            </Dropdown.Content>
-                                        </Dropdown>
+                        {/* Right Section */}
+                        <div className="hidden sm:flex sm:items-center space-x-4">
+                            {/* Messages */}
+                            <div className="relative">
+                                {messagesCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                        {messagesCount}
                                     </div>
-                                </div>
-
-                                {/* Message Icon with Badge */}
-                                <div className="relative group flex items-center justify-center">
-                                    {messagesCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {messagesCount}
-                                        </div>
-                                    )}
-                                    <Link href="/seller/messages" className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-blue-400 hover:text-blue-500" />
-                                    </Link>
-                                    <span className="absolute left-1/2 top-10 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Messages
-                                    </span>
-                                </div>
-
-                                {/* Favorites Icon with Badge */}
-                                <div className="relative group">
-                                    {notificationsCount > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                                            {notificationsCount > 9 ?"+9" : notificationsCount}
-                                        </div>
-                                    )}
-                                    <button
-                                        onClick={() => setNotificationsModal(!notificationsModal)}
-                                        className="inline-flex items-center justify-center p-2 text-gray-600 hover:scale-105 transition duration-200">
-                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white hover:text-gray-500 transition duration-100 ease-in-out" />
-                                    </button>
-                                    <span className="absolute left-1/2 top-8 translate-y-2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-md">
-                                        Notificatoins
-                                    </span>
-                                    {notificationsModal && <SellerNotifModal />}
-                                </div>
-
-
-                            </div>
-                        </div>
-
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:"
-                                            >
-                                                <img src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`} alt={user.avatar} className="h-7 w-7 rounded-full mr-2" />
-                                                {user.name.split(' ')[0]}
-
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('seller.profile.edit')}
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('seller.payment-details.index')}
-                                        >
-                                            Payment Details
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('seller.logout.post')}
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <div className="-me-2 flex items-center sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
+                                )}
+                                <Link
+                                    href="/seller/messages"
+                                    className="p-2 text-gray-300 hover:text-white"
                                 >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                                    <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5" />
+                                </Link>
+                            </div>
+
+                            {/* Notifications */}
+                            <div className="relative">
+                                {notificationsCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                        {notificationsCount > 9 ? '+9' : notificationsCount}
+                                    </div>
+                                )}
+                                <button
+                                    onClick={() => setNotificationsModal(!notificationsModal)}
+                                    className="p-2 text-gray-300 hover:text-white"
+                                >
+                                    <FontAwesomeIcon icon={faBell} className="h-5 w-5" />
+                                </button>
+                                {notificationsModal && <SellerNotifModal />}
+                            </div>
+
+                            {/* User Dropdown */}
+                            <Dropdown>
+                                <Dropdown.Trigger>
+                                    <button
+                                        type="button"
+                                        className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                                    >
+                                        <img
+                                            src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`}
+                                            alt="avatar"
+                                            className="h-7 w-7 rounded-full mr-2"
+                                        />
+                                        {user.name.split(' ')[0]}
+                                    </button>
+                                </Dropdown.Trigger>
+                                <Dropdown.Content>
+                                    <Dropdown.Link href={route('seller.profile.edit')}>
+                                        Profile
+                                    </Dropdown.Link>
+                                    <Dropdown.Link href={route('seller.payment-details.index')}>
+                                        Payment Details
+                                    </Dropdown.Link>
+                                    <Dropdown.Link
+                                        href={route('seller.logout.post')}
+                                        method="post"
+                                        as="button"
+                                    >
+                                        Log Out
+                                    </Dropdown.Link>
+                                </Dropdown.Content>
+                            </Dropdown>
+                        </div>
+
+                        {/* Mobile Hamburger */}
+                        <div className="sm:hidden">
+                            <button
+                                onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}
+                                className="p-2 rounded-md text-gray-300 hover:text-white focus:outline-none"
+                            >
+                                {showingNavigationDropdown ? (
+                                    <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
+                                ) : (
+                                    <FontAwesomeIcon icon={faBars} className="h-6 w-6" />
+                                )}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('seller.dashboard.index')}
-                            active={route().current('seller.dashboard.index')}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
+                {/* Mobile Menu */}
+                {showingNavigationDropdown && (
+                    <div className="sm:hidden bg-gray-800 border-t border-gray-700">
+                        <div className="space-y-1 px-4 py-3">
+                            <ResponsiveNavLink href={route('seller.dashboard.index')}>
+                                Dashboard
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.building.index')}>
+                                Building
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.guest.index')}>
+                                Guests
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.request.bed.index')}>
+                                Requests
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.history.index')}>
+                                History
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.request.payments.index')}>
+                                Payments
+                            </ResponsiveNavLink>
 
-                    <div className="pb-1 pt-4">
-                        <ResponsiveNavLink href={route('profile.edit')}>
-                            <div className='flex items-center pl-4'>
-                                <img src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`} alt={user.avatar} className="h-7 w-7 rounded-full mr-2" />
-                                <div className="px-4">
-                                    <div className="text-base font-medium text-gray-800">
-                                        {user.name}
-                                    </div>
-                                    <div className="text-sm font-medium text-gray-500">
-                                        {user.email}
-                                    </div>
-                                </div>
-                            </div>
-                        </ResponsiveNavLink>
-                        <div className="mt-3 space-y-1">
+                            <ResponsiveNavLink href="/seller/messages">
+                                Messages {messagesCount > 0 && `(${messagesCount})`}
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink
+                                as="button"
+                                onClick={() => setNotificationsModal(true)}
+                            >
+                                Notifications {notificationsCount > 0 && `(${notificationsCount})`}
+                            </ResponsiveNavLink>
 
+                            <div className="border-t border-gray-700 my-2"></div>
 
+                            <ResponsiveNavLink href={route('seller.profile.edit')}>
+                                Profile
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.payment-details.index')}>
+                                Payment Details
+                            </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
-                                href={route('seller.logout.post')}
                                 as="button"
+                                href={route('seller.logout.post')}
                             >
                                 Log Out
                             </ResponsiveNavLink>
                         </div>
                     </div>
-                </div>
+                )}
             </nav>
 
+            {/* Header */}
             {header && (
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -329,10 +220,7 @@ export default function SellerLayout({ header, children }) {
                 </header>
             )}
 
-            <main
-                className='min-h-screen'
-            >{children}</main>
-
+            <main className="min-h-screen">{children}</main>
             <Footer />
         </div>
     );

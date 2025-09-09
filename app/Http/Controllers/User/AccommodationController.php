@@ -31,7 +31,9 @@ class AccommodationController extends Controller
                         
                         ],
                     ]);
-                }
+                },
+                'address',
+
             ])
             ->first();
 
