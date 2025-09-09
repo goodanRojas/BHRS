@@ -9,9 +9,6 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
     return (
         <>
-            <GuestLayout
-
-            >
                 <Head title="Welcome" />
 
                 <nav className="flex justify-between items-center px-5 py-4">
@@ -169,7 +166,6 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
                 {/* Footer Section */}
                 <Footer />
-            </GuestLayout>
         </>
     );
 }

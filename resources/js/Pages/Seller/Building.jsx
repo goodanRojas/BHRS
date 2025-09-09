@@ -9,6 +9,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Toast from '@/Components/Toast';
+import RulesAndRegulation from './RulesAndRegulation';
 export default function Building({ building }) {
     
     if (!building) {
@@ -389,6 +390,8 @@ export default function Building({ building }) {
                                     <p className=" text-gray-500 py-4">No features</p>
                                 )}
                             </div>
+                            {/* Rules And Regulations */}
+                            <RulesAndRegulation buildingId={building.id} />
                         </>
                     ) : (
                         // Edit Form

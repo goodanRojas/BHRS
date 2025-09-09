@@ -76,44 +76,6 @@ class BuildingController extends Controller
         ]);
     }
 
-    public function showBuilding(Request $request, Building $building)
-    {
-        if ($building->id) {
-            // Eager load relationships
-            $building->load([
-                'rooms' => function ($query) {
-                    $query->withCount('beds');
-                },
-                'seller',
-                'address'
-            ]);
-
-            $totalBedBookings = Booking::whereHas('bookable.room.building', function ($q) use ($building) {
-                $q->where('id', $building->id);
-            })
-                ->where('bookable_type', Bed::class) // make sure only beds, not other bookables
-                ->count();
-
-
-            $ratingStats = Rating::whereHas('booking.bookable.room.building', function ($query) use ($building) {
-                $query->where('id', $building->id);
-            })
-                ->whereHas('booking', function ($q) {
-                    $q->where('status', 'ended'); // only completed bookings
-                })
-                ->selectRaw('AVG(stars) as avg_rating, COUNT(*) as rating_count')
-                ->first();
-
-            $avgRating = $ratingStats->avg_rating ?? 0;
-            $ratingCount = $ratingStats->rating_count ?? 0;
-            return Inertia::render('Home/Building', [
-                'building' => $building,
-                'totalCompletedBookings' => $totalBedBookings,
-                'ratingCount' => $ratingCount,
-                'avgRating' => $avgRating,
-            ]);
-        }
-    }
     public function searchBuildings(Request $request)
     {
         $search = $request->query('search');
@@ -164,6 +126,46 @@ class BuildingController extends Controller
 
         Log::info($buildings);
         return response()->json($buildings);
+    }
+    public function showBuilding(Request $request, Building $building)
+    {
+        if ($building->id) {
+            // Eager load relationships
+            $building->load([
+                'rooms' => function ($query) {
+                    $query->withCount('beds');
+                },
+                'seller',
+                'address',
+                'features',
+                'rulesAndRegulations',
+            ]);
+
+            $totalBedBookings = Booking::whereHas('bookable.room.building', function ($q) use ($building) {
+                $q->where('id', $building->id);
+            })
+                ->where('bookable_type', Bed::class) // make sure only beds, not other bookables
+                ->count();
+
+
+            $ratingStats = Rating::whereHas('booking.bookable.room.building', function ($query) use ($building) {
+                $query->where('id', $building->id);
+            })
+                ->whereHas('booking', function ($q) {
+                    $q->where('status', 'ended'); // only completed bookings
+                })
+                ->selectRaw('AVG(stars) as avg_rating, COUNT(*) as rating_count')
+                ->first();
+
+            $avgRating = $ratingStats->avg_rating ?? 0;
+            $ratingCount = $ratingStats->rating_count ?? 0;
+            return Inertia::render('Home/Building', [
+                'building' => $building,
+                'totalCompletedBookings' => $totalBedBookings,
+                'ratingCount' => $ratingCount,
+                'avgRating' => $avgRating,
+            ]);
+        }
     }
 
 

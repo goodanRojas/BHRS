@@ -1,12 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import { Head, Link } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faStar, faBed, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faStar, faBed, faMapMarkerAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
-    console.log(totalCompletedBookings);
+    const [showRules, setShowRules] = useState(false);
     return (
         <AuthenticatedLayout>
             <Head title={building.name} />
@@ -65,6 +65,52 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                             )}A
                         </p>
                     </Link>
+
+                    {/* Features */}
+                    <h2 className='text-md sm:text-lg font-semibold text-gray-800 mt-4 hover:cursor-pointer'>Features</h2>
+                    {building.features && building.features.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {building.features.map((feature) => (
+                                <span
+                                    key={feature.id}
+                                    className="bg-indigo-100 text-indigo-800 text-xs sm:text-sm px-2 py-1 rounded-full"
+                                >
+                                    {feature.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Rules And Regulations */}
+                    <h2 className='text-md sm:text-lg font-semibold text-gray-800 mt-4 hover:cursor-pointer'
+                        onClick={() => { setShowRules(!showRules) }}
+                    >
+                        <FontAwesomeIcon icon={faInfoCircle} />  Rules And Regulations
+                    </h2>
+
+
+                    {showRules && (
+                        building.rules_and_regulations && building.rules_and_regulations.length > 0 ? (
+                            building.rules_and_regulations.map((rule) => (
+                                <div key={rule.id} className="mt-2">
+                                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                                        {rule.title}
+                                    </p>
+                                    <p className="text-gray-500 text-sm italic mt-1">
+                                        {rule.description}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-sm italic mt-2">
+                                No rules and regulations provided.
+                            </p>
+                        )
+                    )}
+
+
+
+
                     {/* Stats */}
                     <div className="flex flex-wrap gap-4 sm:gap-6 text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4">
                         {/* ⭐ Rating */}
