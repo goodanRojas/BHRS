@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBed, faBuilding, faDoorClosed, faMoneyBill, faClock, faStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { motion } from "framer-motion";
-import Rate from "./Rate";
 
 export default function Histories({ bookings }) {
 
