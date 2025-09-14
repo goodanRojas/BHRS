@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function landowner({ sentMessages, receivedMessages}) {
+export default function landowner({ sentMessages, receivedMessages }) {
     // console.log("Sent Messages:", sentMessages);
     // console.log("Received Messages:", receivedMessages);
 
@@ -25,6 +25,24 @@ export default function landowner({ sentMessages, receivedMessages}) {
     const menuRef = useRef(null);
 
     const user = usePage().props.auth.user; // Get the authenticated user
+
+
+    const selectedOwnerToSessionStorage = (owner) => {
+        sessionStorage.setItem('selectedOwner', JSON.stringify(owner));
+    };
+    useEffect(() => {
+        const saved = sessionStorage.getItem('selectedOwner');
+        if (saved) {
+            try {
+                const parsedOwner = JSON.parse(saved);
+                setActiveOwner(parsedOwner);
+                fetchMessages(parsedOwner.id);
+            } catch (e) {
+                console.error("Invalid JSON in sessionStorage:", e);
+                sessionStorage.removeItem('selectedOwner');
+            }
+        }
+    }, []);
 
     // Extract users from both sent and received messages
     useEffect(() => {
@@ -56,7 +74,7 @@ export default function landowner({ sentMessages, receivedMessages}) {
         } else {
             setOwners([]); // If no users found, reset users state
         }
-    }, [ receivedMessages, user.id]);
+    }, [receivedMessages, user.id]);
 
     // Fetch messages for the active user
     const fetchMessages = (ownerId) => {
@@ -234,6 +252,7 @@ export default function landowner({ sentMessages, receivedMessages}) {
                                     onClick={() => {
                                         setActiveOwner(owner);
                                         fetchMessages(owner.id);
+                                        selectedOwnerToSessionStorage(owner);
                                     }}
                                     className="group relative cursor-pointer bg-indigo-100 hover:bg-indigo-200 rounded-full transition duration-200 flex items-center p-1"
                                 >
@@ -274,6 +293,7 @@ export default function landowner({ sentMessages, receivedMessages}) {
                                         onClick={() => {
                                             setActiveOwner(owner);
                                             fetchMessages(owner.id);
+                                            selectedOwnerToSessionStorage(owner);
                                             setSearchQuery(''); // optional: clear after select
                                         }}
                                         className="flex  flex-col gap-2 px-3 py-2 hover:bg-indigo-100 cursor-pointer transition-all"

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Log, Storage};
 use App\Models\{Bed, Media, Feature};
 
 class BedController extends Controller
@@ -79,6 +79,57 @@ class BedController extends Controller
         $bed->save();
         return response()->json([
             'description' => $bed->description
+        ]);
+    }
+    
+    public function updateMainImage(Request $request, Bed $bed)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old main image if exists
+        if ($bed->image && Storage::disk('public')->exists($bed->image)) {
+            Storage::disk('public')->delete($bed->image);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $bed->update(['image' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Main image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function updateCarouselImage(Request $request, Media $media)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old file
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $media->update(['file_path' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Carousel image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function deleteCarouselImage(Media $media)
+    {
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $media->delete();
+
+        return response()->json([
+            'success' => 'Carousel image deleted successfully',
         ]);
     }
 }

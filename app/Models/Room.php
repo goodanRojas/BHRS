@@ -15,9 +15,7 @@ class Room extends Model
         'building_id',
         'name',
         'image',
-        'price',
         'description',
-        'sale_price',
     ];
     protected static function booted()
     {

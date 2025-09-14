@@ -10,15 +10,15 @@ export default function AuthenticatedLayout({ children }) {
     const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     return (
-        <div className="flex min-h-screen ">
+        <div className="flex min-h-screen w-full ">
             {/* Background Image */}
             <div
-                className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
+                className="fixed top-0 left-0 w-full h-screen bg-cover bg-center bg-no-repeat -z-10"
                 style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
             ></div>
 
             {/* Sidebar */}
-            <Sidebar isOpen={isSidebarOpen} />
+            <Sidebar className={"flex-shrink-0"} isOpen={isSidebarOpen} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
@@ -77,9 +77,12 @@ export default function AuthenticatedLayout({ children }) {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-6 overflow-y-auto">
-                    {children}
-                </main>
+                <div className="flex-1 flex flex-col min-w-0">
+                    <main className="flex-1 p-6 overflow-auto min-w-0">
+                        {children}
+                    </main>
+                </div>
+
                 <Footer className="" />
                 {/* Footer */}
             </div>

@@ -18,11 +18,14 @@ Route::prefix('admin')->name('admin.')->group(function() {
 
 
 require __DIR__.'/user.php';
+require __DIR__.'/payment_info.php';
 require __DIR__.'/owner.php';
 require __DIR__.'/profile.php';
 require __DIR__.'/building.php';
 require __DIR__.'/route.php';
 require __DIR__.'/map.php';
 require __DIR__.'/building_application.php';
+require __DIR__.'/owner_application.php';
 require __DIR__.'/room.php';
 require __DIR__.'/bed.php';
+require __DIR__.'/subscription.php';

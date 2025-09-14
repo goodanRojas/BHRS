@@ -1,9 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
-import { useState, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import Modal from "@/Components/Modal";
 
-export default function Index({ notifications }) {
+export default function Index({ notifications, highlight }) {
     const [list, setList] = useState(notifications);
     const [showUnread, setShowUnread] = useState(true);
     const [deleteId, setDeleteId] = useState(null);
@@ -12,6 +12,22 @@ export default function Index({ notifications }) {
     const unread = useMemo(() => list.filter(n => n.read_at === null), [list]);
     const read = useMemo(() => list.filter(n => n.read_at !== null), [list]);
     const currentList = showUnread ? unread : read;
+
+    const itemsRefs = useRef({});
+    const [highlightedId, setHighlightedId] = useState(highlight);
+
+    useEffect(() => {
+        if( highlightedId && itemsRefs.current[highlightedId]) {
+            itemsRefs.current[highlightedId].scrollIntoView({ behavior: 'smooth', block: "center" });
+            const timer = setTimeout(() => {
+                setHighlightedId(null);
+            },3000);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [highlightedId]);
 
     // Mark all as read
     const markAllAsRead = () => {
@@ -65,11 +81,13 @@ export default function Index({ notifications }) {
     const renderItem = (n) => (
         <li
             key={n.id}
-            className="relative flex justify-between items-start p-4 border-b"
+            ref={(el) =>( itemsRefs.current[n.id] = el)}
+            className={`relative flex justify-between items-start p-4 border-b rounded 
+                ${highlightedId == n.id ? "bg-yellow-100 animate-pulse" : ""}`}
         >
             <div className="flex-1">
                 <p className="font-medium">
-                    Booking for <span className="text-indigo-600">{n.data.bed_name}</span> 
+                    Booking for <span className="text-indigo-600">{n.data.bed_name}</span>
                     in {n.data.room_name}, {n.data.building_name} has expired.
                 </p>
                 <p className="text-sm text-gray-500">

@@ -67,12 +67,39 @@ export default function SellerLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
-                                <NavLink
-                                    href={route('seller.building.index')}
-                                    active={route().current('seller.building.index')}
-                                >
-                                    Building
-                                </NavLink>
+
+                                <Dropdown>
+                                    <Dropdown.Trigger>
+                                        <button className="inline-flex items-center px-3 py-2 text-sm text-white">
+                                            Building
+                                            <svg className="ml-1 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </Dropdown.Trigger>
+                                    <Dropdown.Content>
+                                        <Dropdown.Link href={route('seller.building.index')}>Building</Dropdown.Link>
+                                        <Dropdown.Link href="/seller/app">Application</Dropdown.Link>
+                                        <Dropdown.Link href="/seller/building/requests">Requests</Dropdown.Link>
+
+                                    </Dropdown.Content>
+                                </Dropdown>
+                                <Dropdown>
+                                    <Dropdown.Trigger>
+                                        <button className="inline-flex items-center px-3 py-2 text-sm text-white">
+                                            Guests
+                                            <svg className="ml-1 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </Dropdown.Trigger>
+                                    <Dropdown.Content>
+                                        <Dropdown.Link href={route('seller.guest.index')}>Guests</Dropdown.Link>
+                                        <Dropdown.Link href={route('seller.request.bed.index')}>Requests</Dropdown.Link>
+                                        <Dropdown.Link href={route('seller.request.payments.index')}>Payments</Dropdown.Link>
+
+                                    </Dropdown.Content>
+                                </Dropdown>
                             </div>
                         </div>
 

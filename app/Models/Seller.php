@@ -34,6 +34,22 @@ class Seller extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    public function hasFeature($feature)
+    {
+        $plan = $this->subscription?->plan; // SubscriptionPlan object or null
+
+        if (!$plan)
+            return false; // no subscription or plan
+
+        // $plan->features is already an array thanks to casts
+        return in_array($feature, $plan->features ?? []);
+    }
+
 
     public function buildings()
     {

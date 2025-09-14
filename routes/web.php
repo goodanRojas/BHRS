@@ -11,8 +11,7 @@ Route::get('/', function () {
 
 
 
-require __DIR__.'/auth.php';
-require __DIR__.'/user/bed.php';
+require __DIR__.'/user/auth.php';
 require __DIR__.'/xendivel.php';
 require __DIR__.'/seller/auth.php';
 require __DIR__.'/admin/admin.php';

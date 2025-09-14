@@ -137,6 +137,7 @@ class BuildingController extends Controller
                 },
                 'seller',
                 'address',
+                'images',
                 'features',
                 'rulesAndRegulations',
             ]);

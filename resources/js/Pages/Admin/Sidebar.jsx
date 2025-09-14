@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
-export default function Sidebar() {
+export default function Sidebar({ className }) {
     const [isOpen, setIsOpen] = useState(false);
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false);
@@ -33,14 +30,14 @@ export default function Sidebar() {
     return (
         <aside
             onClick={toggleSidebar}
-            className={`bg-gradient-to-b from-indigo-900 to-indigio-100 bg-opacity-80 backdrop-blur-md shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'}`}>
+            className={`bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} ${className}`}>
             <div className="h-full flex flex-col">
                 {/* Header */}
                 <div className="relative h-16  flex items-center justify-center">
                     <img
                         src={`/storage/system/logo/logo-no-bg.png`}
                         alt="BH Logo"
-                        className={`cursor-pointer transition-all duration-300 ${isOpen ? 'h-20 w-20' : 'h-10 w-10'}`}
+                        className={`cursor-pointer transition-all duration-300 ${isOpen ? 'h-20 w-20' : 'h-8 w-8'}`}
                     />
                 </div>
 
@@ -81,10 +78,16 @@ export default function Sidebar() {
                                             Owners
                                         </SidebarLink>
                                         <SidebarLink
-                                            href={route('admin.owners.requests.index')}
-                                            active={route().current('admin.owners.requests.index')}
+                                            href={route('admin.applications.index')}
+                                            active={route().current('admin.applications.index')}
                                         >
-                                            Requests
+                                            Applications
+                                        </SidebarLink>
+                                        <SidebarLink
+                                            href={route('admin.subscriptions.index')}
+                                            active={route().current('admin.subscriptions.index')}
+                                        >
+                                            Subscriptions
                                         </SidebarLink>
 
                                     </div>
@@ -132,6 +135,9 @@ export default function Sidebar() {
 
                             <NavLink href={route('admin.profile')} active={route().current('admin.profile')}>
                                 Profile
+                            </NavLink>
+                            <NavLink href={route('admin.payment.info.index')} active={route().current('admin.payment.info.index')}>
+                                Payment Info
                             </NavLink>
                             <NavLink href={route('admin.logout.post')} active={route().current('admin.logout.post')}>
                                 Logout

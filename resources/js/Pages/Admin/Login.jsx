@@ -3,12 +3,12 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
+import ApplicationLogo from '@/Components/ApplicationLogo';
 export default function Login({ status, error }) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -29,6 +29,18 @@ export default function Login({ status, error }) {
     return (
         <GuestLayout>
             <Head title="Admin Login" />
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
+                <Link
+                    href="/"
+                    className="pointer-events-auto"
+                >
+                    <img
+                        src="/storage/system/logo/logo-no-bg.png"
+                        alt="BH Reservation Logo"
+                        className="h-20 w-auto"
+                    />
+                </Link>
+            </nav>
 
             {/* Centered Card */}
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">

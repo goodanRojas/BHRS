@@ -13,8 +13,6 @@ class Booking extends Model
 
     protected $fillable = [
         'user_id',
-        'user_receipt',
-        'seller_receipt',
         'bookable_id',
         'bookable_type',
         'start_date',
@@ -56,5 +54,8 @@ class Booking extends Model
     }
     public function ratings(){
         return $this->hasMany(Rating::class);
+    }
+    public function cancels(){
+        return $this->hasMany(Cancel::class);
     }
 }

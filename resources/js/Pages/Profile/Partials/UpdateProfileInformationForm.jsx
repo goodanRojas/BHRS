@@ -7,14 +7,12 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
-
 import { useState } from 'react';
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
     className = '',
-    address
 }) {
     const user = usePage().props.auth.user;
     const [preview, setPreview] = useState(user.avatar ? `/storage/${user.avatar}` : '/storage/profile/default_avatar.png');
@@ -24,14 +22,7 @@ export default function UpdateProfileInformation({
             email: user.email,
             avatar: user.avatar || null, // Initialize avatar to null if not set
             phone: user.phone || '', // Ensure phone is initialized
-            address: {
-                street: address?.street || '',
-                barangay: address?.barangay || '',
-                city: address?.city || '',
-                province: address?.province || '',
-                postal_code: address?.postal_code || '',
-                country: address?.country || '',
-            },
+           
         });
 
     const submit = (e) => {
@@ -50,8 +41,6 @@ export default function UpdateProfileInformation({
             formData.append('avatar', '');  // Ensure avatar field is always included
         }
 
-        formData.append('address', JSON.stringify(data.address)); // Ensure address is correctly appended
-
         // Send the form data to the backend using a POST request
         post(route('profile.update'),formData);
     };
@@ -64,9 +53,6 @@ export default function UpdateProfileInformation({
         }
     };
 
-    const handleAddressChange = (field, value) => {
-        setData('address', { ...data.address, [field]: value });
-    };
 
     return (
         <section className={className}>
@@ -159,99 +145,7 @@ export default function UpdateProfileInformation({
 
                     <InputError className="mt-2" message={errors.phone} />
                 </div>
-                {/* Address Fields */}
-                <div className="space-y-6 items-center justify-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Street Field */}
-                    <div>
-                        <InputLabel htmlFor="street" value="Street" />
-                        <TextInput
-                            id="street"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.street}
-                            onChange={(e) => handleAddressChange('street', e.target.value)}
-                            required
-                            autoComplete="address-line1"
-                        />
-                        <InputError className="mt-2" message={errors.address?.street} />
-                    </div>
-
-                    {/* Barangay Field */}
-                    <div>
-                        <InputLabel htmlFor="barangay" value="Barangay" />
-                        <TextInput
-                            id="barangay"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.barangay}
-                            onChange={(e) => handleAddressChange('barangay', e.target.value)}
-                            required
-                            autoComplete="address-line1"
-                        />
-                        <InputError className="mt-2" message={errors.address?.barangay} />
-                    </div>
-
-                    {/* City Field */}
-                    <div>
-                        <InputLabel htmlFor="city" value="City" />
-                        <TextInput
-                            id="city"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.city}
-                            onChange={(e) => handleAddressChange('city', e.target.value)}
-                            required
-                            autoComplete="address-level2"
-                        />
-                        <InputError className="mt-2" message={errors.address?.city} />
-                    </div>
-
-                    {/* Province Field */}
-                    <div>
-                        <InputLabel htmlFor="province" value="Province" />
-                        <TextInput
-                            id="province"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.province}
-                            onChange={(e) => handleAddressChange('province', e.target.value)}
-                            required
-                            autoComplete="address-level2"
-                        />
-                        <InputError className="mt-2" message={errors.address?.province} />
-                    </div>
-
-                    {/* Postal Code Field */}
-                    <div>
-                        <InputLabel htmlFor="postal_code" value="Postal Code" />
-                        <TextInput
-                            id="postal_code"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.postal_code}
-                            onChange={(e) => handleAddressChange('postal_code', e.target.value)}
-                            required
-                            autoComplete="postal-code"
-                        />
-                        <InputError className="mt-2" message={errors.address?.postal_code} />
-                    </div>
-
-                    {/* Country Field */}
-                    <div>
-                        <InputLabel htmlFor="country" value="Country" />
-                        <TextInput
-                            id="country"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.address.country}
-                            onChange={(e) => handleAddressChange('country', e.target.value)}
-                            required
-                            autoComplete="country"
-                        />
-                        <InputError className="mt-2" message={errors.address?.country} />
-                    </div>
-                </div>
-
+               
                 {/* Verification Logic */}
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>

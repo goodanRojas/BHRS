@@ -108,7 +108,7 @@ export default function RecommendationsCarousel() {
     return (
         <motion.div className="overflow-hidden w-full relative py-4">
             <h1
-                className=" font-bold text-gray-800 tracking-tight py-4"
+                className=" font-bold text-white tracking-tight py-4"
             >Recommendations</h1>
             <motion.div
                 ref={ref}

@@ -38,24 +38,7 @@ export default function Buildings({ initialBuildings }) {
             <Head title="Buildings" />
             <div className="p-4">
                 <div className="flex sm:flex-row sm:items-center sm:justify-between w-full gap-4 mb-4">
-                    <div className='flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto'>
-                        <Link
-                            href="/seller/app"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-                        >
-                            <FontAwesomeIcon icon={faUserTie} className="w-4 h-4 text-white" />
-                            Apply a Building
-                        </Link>
-
-                        <Link
-                          href="/seller/building/requests"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-                        >
-                            <FontAwesomeIcon icon={faInfo} className="w-4 h-4 text-white" />
-                            Requests
-                        </Link>
-                    </div>
-
+                  
                     {/* Search Bar */}
                     <div className="flex w-full sm:w-80 relative">
                         <FontAwesomeIcon
@@ -76,9 +59,8 @@ export default function Buildings({ initialBuildings }) {
                     <table className="min-w-full table-auto text-sm">
                         <thead className="bg-indigo-50 text-indigo-700 text-left uppercase text-xs sticky top-0 z-10">
                             <tr>
-                                <th className="px-6 py-3">Building Name</th>
-                                <th className="px-6 py-3">Address</th>
                                 <th className="px-6 py-3">Image</th>
+                                <th className="px-6 py-3">Building Name</th>
                                 <th className="px-6 py-3">Actions</th>
                             </tr>
                         </thead>
@@ -88,16 +70,16 @@ export default function Buildings({ initialBuildings }) {
                                     key={building.id}
                                     className="hover:bg-indigo-50 transition duration-150 ease-in-out"
                                 >
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium">
-                                        {building.name}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{building.address}</td>
+
                                     <td className="px-6 py-4">
                                         <img
                                             src={`/storage/${building.image}`}
                                             alt={building.name}
                                             className="w-20 h-20 object-cover rounded-md border"
                                         />
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                        {building.name}
                                     </td>
                                     <td className="px-6 py-4">
                                         <Link

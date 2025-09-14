@@ -48,6 +48,11 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function ownerApplications()
+    {
+        return $this->hasMany(SellerApplication::class);
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);
@@ -110,5 +115,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function conversationAiSettings()
     {
         return $this->hasMany(ConversationAiSetting::class);
+    }
+
+    public function cancels()
+    {
+        return $this->hasMany(Cancel::class);
     }
 }

@@ -7,6 +7,7 @@ import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRating }) {
     const images = room.images;
+    console.log(room);
     // Normalize avgRating at the top of your component
     const ratingValue = avgRating ? Number(parseFloat(avgRating).toFixed(1)) : 0;
 
@@ -38,43 +39,74 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                 />
 
                 {/* Image Section */}
-                <div className="overflow-hidden rounded-t-lg">
-                    <div className="relative w-full h-60 overflow-hidden rounded-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Left: Main Image (spans 2 rows on desktop) */}
+                    <div className="relative md:row-span-2 overflow-hidden rounded-2xl shadow-md h-[300px]">
                         <img
                             src={
-                                images && images.length > 0
-                                    ? `/storage/${images[currentIndex].file_path}`
-                                    : room.image
-                                        ? `/storage/${room.image}`
-                                        : '/images/default-room.jpg' // <-- your default placeholder path
+                                currentIndex === -1
+                                    ? (room.image ? `/storage/${room.image}` : "/storage/room/default_room.svg")
+                                    : (images[currentIndex]?.file_path ? `/storage/${images[currentIndex].file_path}` : "/storage/room/default_room.svg")
                             }
-                            alt={`Slide ${currentIndex + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-500"
+                            alt={room.name}
+                            className="w-full h-72 md:h-full object-cover transition-transform duration-500 hover:scale-105"
                         />
 
-                        {images && images.length > 1 && (
+                    </div>
+
+                    {/* Top Right: Building Name */}
+                    <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-200">
+                        <h2 className="text-xl md:text-2xl font-semibold text-gray-800 p-4 text-center">
+                            {room.name}
+                        </h2>
+                    </div>
+
+                    {/* Bottom Right: Mini Carousel */}
+                    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-200 p-2 flex flex-col items-center">
+                        {images && images.length > 0 && (
                             <>
+                                {/* Small Preview Image */}
+                                <div className="w-full">
+                                    <img
+                                        src={`/storage/${images[currentIndex === -1 ? 0 : currentIndex].file_path
+                                            }`}
+                                        alt={room.name}
+                                        className="w-full h-28 object-cover rounded-lg"
+                                    />
+                                </div>
+
                                 {/* Arrows */}
-                                <button
-                                    onClick={handlePrev}
-                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
-                                >
-                                    &#10094;
-                                </button>
-                                <button
-                                    onClick={handleNext}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
-                                >
-                                    &#10095;
-                                </button>
+                                <div className="flex justify-between w-full mt-2 px-2">
+                                    <button
+                                        onClick={handlePrev}
+                                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
+                                    >
+                                        &#10094;
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
+                                    >
+                                        &#10095;
+                                    </button>
+                                </div>
 
                                 {/* Dots */}
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                <div className="flex gap-1 mt-2">
+                                    {/* Main Image Dot */}
+                                    <button
+                                        onClick={() => setCurrentIndex(-1)}
+                                        className={`h-2 w-2 rounded-full ${currentIndex === -1 ? "bg-blue-600" : "bg-gray-400"
+                                            }`}
+                                    ></button>
+
+                                    {/* Extra Images Dots */}
                                     {images.map((_, index) => (
                                         <button
                                             key={index}
-                                            onClick={() => handleImageClick(index)}
-                                            className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-white' : 'bg-gray-400'} transition duration-300`}
+                                            onClick={() => setCurrentIndex(index)}
+                                            className={`h-2 w-2 rounded-full ${currentIndex === index ? "bg-blue-600" : "bg-gray-400"
+                                                }`}
                                         ></button>
                                     ))}
                                 </div>
@@ -85,36 +117,55 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
 
                 {/* Content Section */}
                 <div className="p-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{room.name}</h2>
+                    <h2 className="text-lg font-semibold text-white mb-2">{room.name}</h2>
 
-                </div>
-                {/* ⭐ Rating and 📊 Booking Stats */}
-                <div className="flex flex-wrap gap-4 text-sm mt-3 text-gray-700">
-                    {/* Rating */}
-                    <div className="flex items-center gap-1">
-                        <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
-                        <span className="font-semibold text-gray-800">
-                            {ratingValue}
-                        </span>
-                        <span className="text-gray-500">
-                            ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
-                        </span>
-                    </div>
+                    {/* ⭐ Rating and 📊 Booking Stats */}
+                    <div className="flex flex-wrap gap-4 text-sm mt-3 text-gray-700">
+                        {/* Rating */}
+                        <div className="flex items-center gap-1">
+                            <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
+                            <span className="font-semibold text-white">
+                                {ratingValue}
+                            </span>
+                            <span className="text-white">
+                                ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
+                            </span>
+                        </div>
 
-                    {/* Completed Bookings */}
-                    <div className="flex items-center gap-1">
-                        <span className="font-semibold text-green-600">
-                            {totalCompletedBookings}
-                        </span>
-                        <span className="text-gray-500">
-                            {totalCompletedBookings === 1 ? "completed booking" : "completed bookings"}
-                        </span>
+                        {/* Completed Bookings */}
+                        <div className="flex items-center gap-1">
+                            <span className="font-semibold text-green-600">
+                                {totalCompletedBookings}
+                            </span>
+                            <span className="text-white">
+                                {totalCompletedBookings === 1 ? "completed booking" : "completed bookings"}
+                            </span>
+                        </div>
                     </div>
                 </div>
+                {/* Display room features: such as Aircon, steel frame, etc. */}
+                {room.features?.length > 0 ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                        {room.features.map((feature) => (
+                            <span key={feature.id} className="bg-white text-indigo-800 text-xs sm:text-sm px-2 py-1 rounded-full">
+                                {feature.name}
+                            </span>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-500 text-sm">No features</p>
+                )}
+
+                {/* Description */}
+                <div className="p-4 flex flex-col gap-4">
+                    <h3 className="text-white font-semibold mb-2">Description</h3>
+                    <pre className="text-slate-100 text-sm">{room.description ? room.description : "No description provided."}</pre>
+                </div>
+
 
 
                 {/* Display Beds */}
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-gray-800">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-white">
                     Beds
                 </h3>
 
@@ -128,7 +179,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                             {/* Bed Image */}
                             <div className="relative">
                                 <img
-                                    src={`/storage/${bed.image}`}
+                                    src={`/storage/${bed.image? bed.image : "bed/default_bed.svg"}`}
                                     alt={bed.name}
                                     className="w-full h-36 sm:h-44 object-cover group-hover:scale-105 transition-transform duration-500"
                                 />

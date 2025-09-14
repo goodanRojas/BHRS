@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
-use App\Models\{Building, Feature, Room, Address};
+use Illuminate\Support\Facades\{Log, Storage, Auth};
+use App\Models\{Building, Feature, Room, Address, Bed, Media};
 
 class BuildingController extends Controller
 {
@@ -85,7 +84,6 @@ class BuildingController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
             'image' => 'required|image|',
         ]);
 
@@ -98,7 +96,6 @@ class BuildingController extends Controller
             'building_id' => $request->building_id,
             'name' => $request->name,
             'image' => $imagePath,
-            'price' => $request->price,
         ]);
         return response()->json([
             'room' => $rooms
@@ -145,4 +142,78 @@ class BuildingController extends Controller
             'building' => $building,
         ]);
     }
+
+    public function uploadImage(Request $request)
+    {
+        // Log::info($request->all());
+        $validated = $request->validate([
+            'image' => 'required',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
+        }
+        $media = Media::create([
+            'imageable_id' => $request->id,
+            'imageable_type' => Building::class,
+            'file_path' => $imagePath,
+        ]);
+        Log::info($media);
+        return response()->json([
+            'uploadedImages' => $media
+        ]);
+    }
+    public function updateMainImage(Request $request, Building $building)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old main image if exists
+        if ($building->image && Storage::disk('public')->exists($building->image)) {
+            Storage::disk('public')->delete($building->image);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $building->update(['image' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Main image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function updateCarouselImage(Request $request, Media $media)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old file
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $media->update(['file_path' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Carousel image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function deleteCarouselImage(Media $media)
+    {
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $media->delete();
+
+        return response()->json([
+            'success' => 'Carousel image deleted successfully',
+        ]);
+    }
+
+
 }

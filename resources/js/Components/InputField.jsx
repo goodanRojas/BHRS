@@ -9,6 +9,7 @@ const InputField = ({
   required = false,
   className = '',
   error = '',
+  min,
   ...rest
 }) => {
   return (
@@ -27,6 +28,7 @@ const InputField = ({
           value={value}
           onChange={onChange}
           required={required}
+          
           {...rest}
           className={`mt-2 w-full px-2 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 ${
             error ? 'border-red-500' : 'border-gray-300'
@@ -40,6 +42,7 @@ const InputField = ({
           value={type === 'file' ? undefined : value} // File input shouldn't have value
           onChange={onChange}
           required={required}
+          min={min}
           {...rest}
           className={`mt-2 w-full px-2 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 ${
             error ? 'border-red-500' : 'border-gray-300'

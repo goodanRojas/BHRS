@@ -5,7 +5,7 @@ import Modal from '@/Components/Modal';
 import { useForm } from '@inertiajs/inertia-react';
 import { useState, useEffect } from 'react';
 export default function Dashboard({ booking }) {
-
+    console.log(booking.receipt);
     const user = usePage().props.auth.user;
     /* Booking Approved Channel */
     useEffect(() => {
@@ -257,6 +257,128 @@ export default function Dashboard({ booking }) {
                                     Cancel
                                 </button>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Payment Details */}
+                <div className="bg-white rounded-2xl shadow-md p-6 space-y-6">
+                    <h4 className="text-lg md:text-xl font-bold text-gray-800 border-b pb-3">
+                        Payment Details
+                    </h4>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Left column */}
+                        <div className="space-y-3">
+                            <p className="text-sm text-gray-500">Payment Method</p>
+                            <p className="text-base font-semibold capitalize">
+                                {booking.receipt.payment_method}
+                            </p>
+
+                            <p className="text-sm text-gray-500">Amount Paid</p>
+                            <p className="text-lg font-bold text-green-600">
+                                ₱{parseFloat(booking.receipt.amount).toLocaleString()}
+                            </p>
+
+                            <div className='flex items-center gap-4'>
+                                <p className="text-sm text-gray-500">Status</p>
+                                <span
+                                    className={`inline-block px-3 py-1 text-sm rounded-full font-medium ${booking.receipt.status === "completed"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-yellow-100 text-yellow-700"
+                                        }`}
+                                >
+                                    {booking.receipt.status}
+                                </span>
+                            </div>
+
+                            <div className='flex items-center gap-4'>
+                                <p className="text-sm text-gray-500">Paid At</p>
+                                <p className="text-base font-medium">
+                                    {new Date(booking.receipt.paid_at).toLocaleString('en-US', {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    })}
+                                </p>
+                            </div>{/* Reference and Remarks */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* User's reference and remarks */}
+                                <div className="space-y-3">
+                                    <h5 className="text-base font-semibold text-gray-700">
+                                        Your Details
+                                    </h5>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Reference Number</p>
+                                        <p className="text-base font-medium">
+                                            {booking.receipt.user_ref_number || (
+                                                <span className="text-gray-400 italic">No reference provided</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Remarks</p>
+                                        <p className="text-base font-medium">
+                                            {booking.receipt.user_remarks || (
+                                                <span className="text-gray-400 italic">No remarks provided</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Owner's reference and remarks */}
+                                <div className="space-y-3">
+                                    <h5 className="text-base font-semibold text-gray-700">
+                                        Owner’s Details
+                                    </h5>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Reference Number</p>
+                                        <p className="text-base font-medium">
+                                            {booking.receipt.seller_ref_number || (
+                                                <span className="text-gray-400 italic">No reference provided</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Remarks</p>
+                                        <p className="text-base font-medium">
+                                            {booking.receipt.seller_remarks || (
+                                                <span className="text-gray-400 italic">No remarks provided</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Right column: Receipts */}
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">User Receipt</p>
+                                {booking.receipt.user_receipt ? (
+                                    <img
+                                        src={`/storage/${booking.receipt.user_receipt}`}
+                                        alt="User Receipt"
+                                        className="rounded-lg border shadow-sm w-full max-w-sm"
+                                    />
+                                ) : (
+                                    <p className="text-gray-400 italic text-sm">No receipt uploaded</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">Seller Receipt</p>
+                                {booking.receipt.seller_receipt ? (
+                                    <img
+                                        src={`/storage/${booking.receipt.seller_receipt}`}
+                                        alt="Seller Receipt"
+                                        className="rounded-lg border shadow-sm w-full max-w-sm"
+                                    />
+                                ) : (
+                                    <p className="text-gray-400 italic text-sm">No receipt uploaded</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

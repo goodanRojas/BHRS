@@ -5,17 +5,16 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Log, Storage, Auth};
 use App\Models\Feedback;
 use App\Models\Booking;
-use App\Models\{Bed, Room, Media, Feature,};
+use App\Models\{Bed, Room, Media, Feature, };
 
 class RoomController extends Controller
 {
     public function showRoom($id)
     {
-        $room = Room::with('images', 'building', 'features', 'beds',)->find($id);
+        $room = Room::with('images', 'building', 'features', 'beds', )->find($id);
         return Inertia::render('Seller/Room', [
             'room' => $room
         ]);
@@ -46,7 +45,7 @@ class RoomController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'featureable_id' => 'required|exists:buildings,id', // Assuming featureable_id is related to Building
+            'featureable_id' => 'required|exists:rooms,id', // Assuming featureable_id is related to Building
         ]);
         $feature = Feature::create([
             'name' => $request->name,
@@ -109,4 +108,56 @@ class RoomController extends Controller
             'description' => $bed->description
         ]);
     }
+
+    public function updateMainImage(Request $request, Room $room)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old main image if exists
+        if ($room->image && Storage::disk('public')->exists($room->image)) {
+            Storage::disk('public')->delete($room->image);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $room->update(['image' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Main image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function updateCarouselImage(Request $request, Media $media)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Delete old file
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $imagePath = $request->file('image')->store('images', 'public');
+        $media->update(['file_path' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Carousel image updated successfully',
+            'image' => $imagePath,
+        ]);
+    }
+    public function deleteCarouselImage(Media $media)
+    {
+        if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
+            Storage::disk('public')->delete($media->file_path);
+        }
+
+        $media->delete();
+
+        return response()->json([
+            'success' => 'Carousel image deleted successfully',
+        ]);
+    }
+
 }

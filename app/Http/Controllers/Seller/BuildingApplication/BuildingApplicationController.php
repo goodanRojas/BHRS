@@ -33,8 +33,8 @@ class BuildingApplicationController extends Controller
             'numberOfRooms' => 'required|integer',
             'aminities' => 'nullable|array',
             'aminities.*' => 'string|max:255',
-            'bir' => 'required|file|mimes:pdf|max:2048',
-            'fireSafetyCertificate' => 'required|file|mimes:pdf|max:2048',
+            'bir' => 'required|file|mimes:pdf,image/*',
+            'fireSafetyCertificate' => 'required|file|mimes:pdf,image/*',
             'image' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -77,6 +77,6 @@ class BuildingApplicationController extends Controller
 
 
 
-        return redirect()->back()->with('success', 'Thanks for applying! Please wait for our staff to review your application.');
+        return redirect()->route('seller.building.requests.index')->with('success', 'Thanks for applying! Please wait for our staff to review your application.');
     }
 }

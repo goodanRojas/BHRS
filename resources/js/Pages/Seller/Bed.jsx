@@ -2,12 +2,13 @@ import SellerLayout from '@/Layouts/SellerLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faTimes,faPen, faTrash, faBed, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Breadcrumbs from '@/Components/Breadcrumbs';
+import Toast from '@/Components/Toast';
 import axios from 'axios';
 export default function Bed({ bed }) {
     console.log(bed)
@@ -17,6 +18,11 @@ export default function Bed({ bed }) {
     const [features, setFeatures] = useState(bed.features);
     const [description, setDescription] = useState(bed.description || '');
     const [images, setImages] = useState(bed.images);
+    const [toastMessage, setToastMessage] = useState({
+        'message': '',
+        'isTrue': false,
+        'isType': '',
+    });
     const fileInputRef = useRef(null);
     const handleFileChange = async (e) => {
         const file = e.target.files[0]; // only take first file
@@ -41,11 +47,20 @@ export default function Bed({ bed }) {
     };
 
     const handleImageButtonClick = () => {
+        if (images.length >= 5) {
+            // Show a toast or alert instead of opening the file picker
+            setToastMessage({
+                message: "You can only upload up to 5 images.",
+                isTrue: true,
+                isType: "error",
+            });
+            return;
+        }
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
     };
-    const handleDescriptionSubmit = async(e) => {
+    const handleDescriptionSubmit = async (e) => {
         e.preventDefault(); // Prevent page reload
 
         console.log("Description saved:", description);
@@ -108,10 +123,68 @@ export default function Bed({ bed }) {
         }
     };
 
+
+    // EDIT MAIN IMAGE
+    const handleEditMainImage = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await axios.post(`/seller/bed/update-main-image/${bed.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            bed.image = response.data.image; // backend should return new file path
+            setToastMessage({ message: "Main image updated.", isTrue: true, isType: "success" });
+        } catch (error) {
+            console.error("Error updating main image:", error);
+        }
+    };
+
+    // DELETE CAROUSEL IMAGE
+    const handleDeleteCarouselImage = async (imageId) => {
+        try {
+            const response = await axios.post(`/seller/bed/delete-image/${imageId}`);
+            if (response.data.success) {
+                setImages((prev) => prev.filter((img) => img.id !== imageId));
+                setToastMessage({ message: "Image deleted.", isTrue: true, isType: "success" });
+            }
+        } catch (error) {
+            console.error("Error deleting image:", error);
+        }
+    };
+
+    // EDIT CAROUSEL IMAGE
+    const handleEditCarouselImage = async (e, imageId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await axios.post(`/seller/bed/update-image/${imageId}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            // update state
+            setImages((prev) =>
+                prev.map((img) => (img.id === imageId ? { ...img, file_path: response.data.image } : img))
+            );
+            setToastMessage({ message: "Image updated.", isTrue: true, isType: "success" });
+        } catch (error) {
+            console.error("Error updating carousel image:", error);
+        }
+    };
+
     return (
         <SellerLayout>
             <div className='p-4'>
                 <Head title={bed.name} />
+                {toastMessage && <Toast message={toastMessage.message} isTrue={toastMessage.isTrue} isType={toastMessage.isType} id={Date.now()} />}
+
                 <Breadcrumbs
                     links={[
                         { label: 'Buildings', url: '/seller/building' },
@@ -119,51 +192,101 @@ export default function Bed({ bed }) {
                         { label: bed.room.name, url: `/seller/room/${bed.room.id}` },
                         { label: bed.name },
                     ]} />
-                <div>
-                    <h2 className='text-lg font-semibold mb-4'>{bed.name}</h2>
-                </div>
-                {/* Image Section */}
-                <div className="overflow-hidden rounded-t-lg">
-                    <img
-                        src={`/storage/${bed.image}`}
-                        alt={bed.name}
-                        className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                </div>
-                <div className="py-4 overflow-hidden rounded-t-lg">
-                    <div>
-                        <h4 className="text-gray-500">Images</h4>
-                        {/* Hidden file input */}
-                        <input
-                            type="file"
-                            name="image-carousel"
-                            accept="image/*"
-                            multiple
-                            ref={fileInputRef}
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-                        {/* Custom button */}
-                        <button
-                            type="button"
-                            onClick={handleImageButtonClick}
-                            className="hover:bg-gray-300 rounded-md p-2 flex items-center gap-1"
-                        >
-                            <FontAwesomeIcon icon={faPlus} className="text-gray-500 text-sm" />
-                            <span className="text-gray-500 text-sm">Add Image</span>
-                        </button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Main Image Section */}
+                    <div className="relative overflow-hidden rounded-lg shadow-md group">
+                        {bed.image ? (
+                            <>
+                                <img
+                                    src={`/storage/${bed.image}`}
+                                    alt={bed.name}
+                                    className="w-full h-56 md:h-72 object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+
+                                {/* Edit button */}
+                                <label className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-black/50 text-white px-2 py-1 rounded-md cursor-pointer hover:bg-black/70 transition">
+                                    <FontAwesomeIcon icon={faPen} className="text-sm" />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleEditMainImage}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </>
+                        ) : (
+                            <div className="w-full h-56 md:h-72 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <p className="text-gray-400">No main image</p>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Image Carousel */}
-                    <div className="overflow-x-auto mt-4 flex gap-4">
-                        {images.map((image, index) => (
-                            <img
-                                key={index}
-                                src={`/storage/${image.file_path}`}
-                                alt={`uploaded-${index}`}
-                                className="w-24 h-24 object-cover rounded-md"
-                            />
-                        ))}
+                    {/* Image Carousel Section */}
+                    <div>
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-gray-700 font-medium">Additional Images</h4>
+
+                            {/* Upload Button */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="file"
+                                    name="image-carousel"
+                                    accept="image/*"
+                                    multiple
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleImageButtonClick}
+                                    className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition"
+                                >
+                                    <FontAwesomeIcon icon={faPlus} className="text-gray-500 text-xs" />
+                                    Add (max 5)
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Carousel */}
+                        <div className="overflow-x-hidden hover:overflow-x-auto mt-4 flex gap-4 pb-2">
+                            {images.length > 0 ? (
+                                images.map((image) => (
+                                    <div
+                                        key={image.id}
+                                        className="relative min-w-[96px] h-24 rounded-md overflow-hidden shadow group"
+                                    >
+                                        <img
+                                            src={`/storage/${image.file_path}`}
+                                            alt={`uploaded-${image.id}`}
+                                            className="w-24 h-24 object-cover rounded-md"
+                                        />
+
+                                        {/* Hover Controls */}
+                                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 group-hover:opacity-100 transition">
+                                            <button
+                                                onClick={() => handleDeleteCarouselImage(image.id)}
+                                                className="bg-white text-red-600 p-1.5 rounded-full shadow hover:bg-red-50 transition"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                                            </button>
+                                            <label className="bg-white text-indigo-600 p-1.5 rounded-full shadow cursor-pointer hover:bg-indigo-50 transition">
+                                                <FontAwesomeIcon icon={faPen} className="text-xs" />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleEditCarouselImage(e, image.id)}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">No additional images</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 

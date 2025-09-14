@@ -11,8 +11,8 @@ export default defineConfig({
         }),
         react(),
     ],
-/* 
-    server: {
+
+    /* server: {
         // host: '192.168.100.212',  // Your local IP
         host: '192.168.100.7',  // Your local IP
         // host: '192.168.3.206:8000',

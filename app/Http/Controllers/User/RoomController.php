@@ -20,6 +20,7 @@ class RoomController extends Controller
                 $query->where('status', 'completed');
             },
             'bookings',
+            'features',
             'favorites'
         ]);
 

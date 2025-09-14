@@ -9,7 +9,9 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\AddressController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Seller\SellerRegisterController;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -56,5 +58,30 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-    
+
+    Route::put('profile/address/update', [AddressController::class, 'update'])->name('profile.address.update');
+
+
+    Route::put("/seller/register/{id}/cancel", [SellerRegisterController::class, 'cancel'])->name('seller.register.cancel');
+    Route::get("/seller/register", [SellerRegisterController::class, 'index'])->name('seller.register.index');
+    Route::post("seller/register", [SellerRegisterController::class, 'store'])->name('seller.register.store');
+    Route::get("/seller/register/show", [SellerRegisterController::class, 'show'])->name('seller.register.show');
+    Route::get("/seller/register/approved", [SellerRegisterController::class, 'approved'])->name('seller.register.approved');
+    Route::get("/seller/register/{application}/show/approved", [SellerRegisterController::class, 'showApproved'])->name('seller.register.show.approved');
 });
+
+
+
+
+require __DIR__ . '/accommodation.php';
+require __DIR__ . '/booking.php';
+require __DIR__ . '/building.php';
+require __DIR__ . '/favorite.php';
+require __DIR__ . '/map.php';
+require __DIR__ . '/message.php';
+require __DIR__ . '/notification.php';
+require __DIR__ . '/room.php';
+require __DIR__ . '/profile.php';
+require __DIR__ . '/onboarding.php';
+require __DIR__ . '/feedback.php';
+require __DIR__ . '/bed.php';

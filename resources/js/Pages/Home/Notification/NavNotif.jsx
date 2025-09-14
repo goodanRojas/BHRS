@@ -65,11 +65,14 @@ const NavNotif = () => {
 
                         return (
                             <li key={notif.id} className="p-2 border-b last:border-none">
-                                <div className="text-sm text-gray-700">
-                                    <span className="font-semibold">{type}:</span> {notif.data.message}
-                                </div>
-                                <div className="text-xs text-gray-400">{date}</div>
-                            </li>
+                                <Link
+                                    href={route('notifications.index', { highlight: notif.id })}
+                                    className="block text-sm text-gray-700 hover:bg-gray-100 rounded p-2"
+                                >
+                                    <div className="font-semibold">{getNotificationType(notif.type)}:</div>
+                                    <div>{notif.data.message}</div>
+                                    <div className="text-xs text-gray-400">{formatDate(notif.created_at)}</div>
+                                </Link> </li>
                         );
                     })}
                     {remainingCount > 0 && (

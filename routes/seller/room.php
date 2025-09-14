@@ -17,4 +17,9 @@ Route::prefix('seller/room')->name('seller.room.')->middleware('seller')->group(
 
     Route::post('/add-bed', [RoomController::class, 'addBed'])->name('add.bed');
     Route::post('/update-description', [RoomController::class, 'updateDescription'])->name('update.description');
+
+   Route::post('/update-main-image/{room}', [RoomController::class, 'updateMainImage'])->name('update.main.image');
+    Route::post('/update-image/{media}', [RoomController::class, 'updateCarouselImage'])->name('update.carousel.image');
+    Route::post('/delete-image/{media}', [RoomController::class, 'deleteCarouselImage'])->name('delete.carousel.image');
+
 });

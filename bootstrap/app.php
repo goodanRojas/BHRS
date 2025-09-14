@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\{SellerMiddleware, AdminMiddleware, RedirectIfAuthenticated};
+use App\Http\Middleware\Seller\{CheckSubscriptionFeature, CheckPendingSubscription};
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => SellerMiddleware::class,
             'admin' => AdminMiddleware::class,
             'guest' => RedirectIfAuthenticated::class,
+            'check.subscription' => CheckSubscriptionFeature::class,
+            'check.pending.subscription' => CheckPendingSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

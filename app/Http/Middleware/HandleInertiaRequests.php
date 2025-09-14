@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
+                'message' => session('message'),
             ],
             'ziggy' => fn() => [
                 ...(new Ziggy)->toArray(),

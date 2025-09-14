@@ -24,14 +24,17 @@ class AccommodationController extends Controller
                         Bed::class => [
                             'room' => function ($query) {
                                 $query->select(['id', 'name', 'building_id'])
-                                    ->with(['building' => function ($query) {
-                                        $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
-                                    }]);
+                                    ->with([
+                                        'building' => function ($query) {
+                                            $query->select(['id', 'name', 'seller_id'])->with(['address', 'seller']);
+                                        }
+                                    ]);
                             },
-                        
+
                         ],
                     ]);
                 },
+                'receipt',
                 'address',
 
             ])

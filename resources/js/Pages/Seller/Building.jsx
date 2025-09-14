@@ -11,10 +11,7 @@ import TextInput from '@/Components/TextInput';
 import Toast from '@/Components/Toast';
 import RulesAndRegulation from './RulesAndRegulation';
 export default function Building({ building }) {
-    
-    if (!building) {
-        return <div>Loading...</div>; // or null
-    }
+
     console.log(building);
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');
@@ -22,7 +19,8 @@ export default function Building({ building }) {
     const [addRoomModalOpen, setAddRoomModalOpen] = useState(false);
     const [features, setFeatures] = useState(building?.features || []);
     const [rooms, setRooms] = useState(building?.rooms || []);
-
+    const [images, setImages] = useState(building.images);
+    const [roomPreview, setRoomPreview] = useState(null);
     const [toastMessage, setToastMessage] = useState({
         'message': '',
         'isTrue': false,
@@ -32,8 +30,9 @@ export default function Building({ building }) {
     const [openSettings, setOpensettings] = useState(false);
     const optionButtonRef = useRef(null);
     const optionPopupRef = useRef(null);
-
     const [isEditing, setIsEditing] = useState(false);
+
+    const fileInputRef = useRef(null);
     const { data: buildingData, setData: setBuildingData, post: postBuilding, processing: buildingProcessing, errors: buildingErrors, reset: resetBuilding } = useForm({
         name: building?.name || '',
         images: building?.images || [],
@@ -46,20 +45,53 @@ export default function Building({ building }) {
         latitude: building?.latitude || '',
         longitude: building?.longitude || '',
     });
+    const [showEditBuildingDetails, setShowEditBuildingDetails] = useState(false);
+    const [birFile, setBirFile] = useState(null);
+    const [permitFile, setPermitFile] = useState(null);
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0]; // only take first file
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setImages((prevImages) => [...prevImages, e.target.result]);
-        };
-        reader.readAsDataURL(file);
-    }
+
+        const formData = new FormData();
+        formData.append("image", file); // note: key "image" (not array)
+        formData.append('id', building.id);
+
+        try {
+            const response = await axios.post("/seller/building/upload-image", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            console.log(response);
+            // backend returns single image object
+            const uploadedImage = response.data.uploadedImages;
+            setImages((prevImages) => [...prevImages, uploadedImage]);
+        } catch (error) {
+            console.error("Error uploading image:", error);
+        }
+        // clear input so user can upload same file again if needed
+        e.target.value = null;
+    };
+
+    const handleImageButtonClick = () => {
+        if (images.length >= 5) {
+            // Show a toast or alert instead of opening the file picker
+            setToastMessage({
+                message: "You can only upload up to 5 images.",
+                isTrue: true,
+                isType: "error",
+            });
+            return;
+        }
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+
+    };
+
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
-        price: '',
         image: '',
         building_id: building.id,
     });
@@ -120,7 +152,6 @@ export default function Building({ building }) {
         try {
             const formData = new FormData();
             formData.append('name', data.name);
-            formData.append('price', data.price);
             formData.append('image', data.image);
             formData.append('building_id', building.id);
 
@@ -139,7 +170,6 @@ export default function Building({ building }) {
                         id: response.data.room.id,
                         name: response.data.room.name,
                         image: response.data.room.image,
-                        price: response.data.room.price,
                     },
                 ]);
             }
@@ -179,6 +209,64 @@ export default function Building({ building }) {
             console.error('Error updating building:', error);
         }
     };
+
+
+
+    // EDIT MAIN IMAGE
+    const handleEditMainImage = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await axios.post(`/seller/building/update-main-image/${building.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            building.image = response.data.image; // backend should return new file path
+            setToastMessage({ message: "Main image updated.", isTrue: true, isType: "success" });
+        } catch (error) {
+            console.error("Error updating main image:", error);
+        }
+    };
+
+    // DELETE CAROUSEL IMAGE
+    const handleDeleteCarouselImage = async (imageId) => {
+        try {
+            const response = await axios.post(`/seller/building/delete-image/${imageId}`);
+            if (response.data.success) {
+                setImages((prev) => prev.filter((img) => img.id !== imageId));
+                setToastMessage({ message: "Image deleted.", isTrue: true, isType: "success" });
+            }
+        } catch (error) {
+            console.error("Error deleting image:", error);
+        }
+    };
+
+    // EDIT CAROUSEL IMAGE
+    const handleEditCarouselImage = async (e, imageId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await axios.post(`/seller/building/update-image/${imageId}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            // update state
+            setImages((prev) =>
+                prev.map((img) => (img.id === imageId ? { ...img, file_path: response.data.image } : img))
+            );
+            setToastMessage({ message: "Image updated.", isTrue: true, isType: "success" });
+        } catch (error) {
+            console.error("Error updating carousel image:", error);
+        }
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -216,7 +304,7 @@ export default function Building({ building }) {
     return (
         <SellerLayout>
             <Head title={building.name} />
-            {toastMessage && <Toast message={toastMessage.message} isTrue={toastMessage.isTrue} isType={toastMessage.isType} />}
+            {toastMessage && <Toast message={toastMessage.message} isTrue={toastMessage.isTrue} isType={toastMessage.isType} id={Date.now()} />}
             <div className="p-4">
                 <div className='relative flex justify-end p-2'>
                     <button
@@ -236,15 +324,13 @@ export default function Building({ building }) {
                                 {/* Option content */}
                                 <div className="pt-2">
                                     <button
-                                        onClick={() => setIsEditing(true)}
+                                        onClick={() => {
+                                            setShowEditBuildingDetails(true);
+                                        }}
                                         className=" group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <FontAwesomeIcon className='group-hover:text-gray-900 transition-all duration-200' icon={faPen} /> Edit
                                     </button>
-                                    <button
-                                        onClick={() => setDeleteBHModalOpen(true)}
-                                        className="group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <FontAwesomeIcon className='group-hover:text-red-500 transition-all duration-200' icon={faTrash} /> Delete
-                                    </button>
+
                                 </div>
                             </div>
                         </div>
@@ -252,31 +338,106 @@ export default function Building({ building }) {
                 </div>
 
 
-                {/* Image Section */}
-                <div className="overflow-hidden rounded-t-lg">
-                    <img
-                        src={`/storage/${building.image}`}
-                        alt={building.name}
-                        className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                </div>
-                {/* Image Carousel */}
-                {buildingData.images.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto py-2">
-                        {buildingData.images.map((img, i) => (
-                            <img
-                                key={i}
-                                src={img}
-                                alt="Building"
-                                className="w-28 h-20 rounded-lg object-cover flex-shrink-0"
-                            />
-                        ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Main Image Section */}
+                    <div className="relative overflow-hidden rounded-lg shadow-md group">
+                        {building.image ? (
+                            <>
+                                <img
+                                    src={`/storage/${building.image}`}
+                                    alt={building.name}
+                                    className="w-full h-56 md:h-72 object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+
+                                {/* Edit button */}
+                                <label className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-black/50 text-white px-2 py-1 rounded-md cursor-pointer hover:bg-black/70 transition">
+                                    <FontAwesomeIcon icon={faPen} className="text-sm" />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleEditMainImage}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </>
+                        ) : (
+                            <div className="w-full h-56 md:h-72 flex items-center justify-center bg-gray-100 rounded-lg">
+                                <p className="text-gray-400">No main image</p>
+                            </div>
+                        )}
                     </div>
-                )}
+
+                    {/* Image Carousel Section */}
+                    <div>
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-gray-700 font-medium">Additional Images</h4>
+
+                            {/* Upload Button */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="file"
+                                    name="image-carousel"
+                                    accept="image/*"
+                                    multiple
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleImageButtonClick}
+                                    className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition"
+                                >
+                                    <FontAwesomeIcon icon={faPlus} className="text-gray-500 text-xs" />
+                                    Add (max 5)
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Carousel */}
+                        <div className="overflow-x-hidden hover:overflow-x-auto mt-4 flex gap-4 pb-2">
+                            {images.length > 0 ? (
+                                images.map((image) => (
+                                    <div
+                                        key={image.id}
+                                        className="relative min-w-[96px] h-24 rounded-md overflow-hidden shadow group"
+                                    >
+                                        <img
+                                            src={`/storage/${image.file_path}`}
+                                            alt={`uploaded-${image.id}`}
+                                            className="w-24 h-24 object-cover rounded-md"
+                                        />
+
+                                        {/* Hover Controls */}
+                                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 group-hover:opacity-100 transition">
+                                            <button
+                                                onClick={() => handleDeleteCarouselImage(image.id)}
+                                                className="bg-white text-red-600 p-1.5 rounded-full shadow hover:bg-red-50 transition"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                                            </button>
+                                            <label className="bg-white text-indigo-600 p-1.5 rounded-full shadow cursor-pointer hover:bg-indigo-50 transition">
+                                                <FontAwesomeIcon icon={faPen} className="text-xs" />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleEditCarouselImage(e, image.id)}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">No additional images</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
                 {/* Content Section */}
                 <div className="p-4 flex flex-col justify-between">
-                    {!isEditing ? (
+                    {!isEditing && (
                         <>
                             <div className='flex items-center justify-between'>
                                 <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
@@ -313,27 +474,50 @@ export default function Building({ building }) {
 
                                 <div className="flex items-center mb-2 sm:mb-0 mr-4">
                                     {building.bir ? (
-                                        <FontAwesomeIcon
-                                            icon={faCheckSquare}
-                                            className="mr-1 text-green-500"
-                                        />
-                                    ) : (
+                                        <>
+                                            <FontAwesomeIcon
+                                                icon={faCheckSquare}
+                                                className="mr-1 text-green-500"
+                                            />
+                                            <a
+                                                href={`/storage/${building.bir}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline"
+                                            >
+                                                <span className="ml-1">BIR</span>
+                                            </a>
+                                        </>
+                                    ) : (<>
                                         <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
+                                        <span className="ml-1">BIR</span>
+                                    </>
                                     )}
-                                    BIR
+                                </div>
+                                <div className="flex items-center mb-2 sm:mb-0 mr-4">
+                                    {building.business_permit ? (
+                                        <>
+                                            <FontAwesomeIcon
+                                                icon={faCheckSquare}
+                                                className="mr-1 text-green-500"
+                                            />
+                                            <a
+                                                href={`/storage/${building.business_permit}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline"
+                                            >
+                                                <span className="ml-1">Fire Safety Certificate</span>
+                                            </a>
+                                        </>
+                                    ) : (<>
+                                        <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
+                                        <span className="ml-1">Fire Safety Certificate</span>
+                                    </>
+                                    )}
                                 </div>
 
-                                <div className="flex items-center">
-                                    {building.business_permit ? (
-                                        <FontAwesomeIcon
-                                            icon={faCheckSquare}
-                                            className="mr-1 text-green-500"
-                                        />
-                                    ) : (
-                                        <FontAwesomeIcon icon={faTimes} className="mr-1 text-red-500" />
-                                    )}
-                                    Business Permit
-                                </div>
+
                             </div>
 
                             {/* Features */}
@@ -393,164 +577,6 @@ export default function Building({ building }) {
                             {/* Rules And Regulations */}
                             <RulesAndRegulation buildingId={building.id} />
                         </>
-                    ) : (
-                        // Edit Form
-                        <div className="space-y-3">
-                            <form onSubmit={handleUpdateBuilding} method="POST">
-
-                                {/* Name */}
-                                <div className='flex justify-end' >
-                                    <button className='text-gray-500 hover:text-gray-600 focus:outline-none' onClick={() => setIsEditing(false)}>
-                                        <FontAwesomeIcon icon={faClose} />
-                                    </button>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium">Name</label>
-                                    <input
-                                        type="text"
-                                        value={buildingData.name}
-                                        onChange={(e) => setBuildingData("name", e.target.value)}
-                                        className="w-full border rounded-lg p-2 mt-1"
-                                    />
-                                </div>
-
-                                {/* Address fields */}
-                                <div className="space-y-4">
-                                    {/* Region */}
-                                    <label className="block">
-                                        <span>Region</span>
-                                        <select
-                                            value={buildingData.address.region}
-                                            onChange={(e) =>
-                                                setBuildingData("address", {
-                                                    region: e.target.value,
-                                                    province: "",
-                                                    municipality: "",
-                                                    barangay: "",
-                                                })
-                                            }
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                        >
-                                            <option value="">Select Region</option>
-                                            {regions.map(([key, region]) => (
-                                                <option key={key} value={key}>
-                                                    {region.region_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    {/* Province */}
-                                    <label className="block">
-                                        <span>Province</span>
-                                        <select
-                                            value={buildingData.address.province}
-                                            onChange={(e) =>
-                                                setBuildingData("address", {
-                                                    ...buildingData.address,
-                                                    province: e.target.value,
-                                                    municipality: "",
-                                                    barangay: "",
-                                                })
-                                            }
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                        >
-                                            <option value="">Select Province</option>
-                                            {provinces.map((prov) => (
-                                                <option key={prov} value={prov}>
-                                                    {prov}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    {/* Municipality */}
-                                    <label className="block">
-                                        <span>Municipality</span>
-                                        <select
-                                            value={buildingData.address.municipality}
-                                            onChange={(e) =>
-                                                setBuildingData("address", {
-                                                    ...buildingData.address,
-                                                    municipality: e.target.value,
-                                                    barangay: "",
-                                                })
-                                            }
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                        >
-                                            <option value="">Select Municipality</option>
-                                            {municipalities.map((mun) => (
-                                                <option key={mun} value={mun}>
-                                                    {mun}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    {/* Barangay */}
-                                    <label className="block">
-                                        <span>Barangay</span>
-                                        <select
-                                            value={buildingData.address.barangay}
-                                            onChange={(e) =>
-                                                setBuildingData("address", {
-                                                    ...buildingData.address,
-                                                    barangay: e.target.value,
-                                                })
-                                            }
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                        >
-                                            <option value="">Select Barangay</option>
-                                            {barangays.map((brgy, idx) => (
-                                                <option key={idx} value={brgy}>
-                                                    {brgy}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    {/* Latitude */}
-                                    <label className="block">
-                                        <span>Latitude</span>
-                                        <input
-                                            type="text"
-                                            value={buildingData.latitude}
-                                            onChange={(e) => setBuildingData("latitude", e.target.value)}
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                            placeholder="e.g. 14.5995"
-                                        />
-                                        {buildingErrors.latitude && (
-                                            <span className="text-red-500 text-sm">{buildingErrors.latitude}</span>
-                                        )}
-                                    </label>
-
-                                    {/* Longitude */}
-                                    <label className="block">
-                                        <span>Longitude</span>
-                                        <input
-                                            type="text"
-                                            value={buildingData.longitude}
-                                            onChange={(e) => setBuildingData("longitude", e.target.value)}
-                                            className="mt-1 block w-full rounded border-gray-300"
-                                            placeholder="e.g. 120.9842"
-                                        />
-                                        {buildingErrors.longitude && (
-                                            <span className="text-red-500 text-sm">{buildingErrors.longitude}</span>
-                                        )}
-                                    </label>
-                                </div>
-
-                                {/* Save button */}
-                                <button
-                                    type="submit"
-                                    disabled={buildingProcessing}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
-                                >
-                                    {buildingProcessing ? "Saving..." : "Save Changes"}
-                                </button>
-
-                            </form>
-                        </div>
                     )}
                 </div>
 
@@ -568,59 +594,43 @@ export default function Building({ building }) {
 
                     </div>
                     {rooms.length > 0 ? (
-                        <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-                            <table className="min-w-full text-sm text-gray-800">
-                                <thead className="bg-indigo-50 text-indigo-700 uppercase text-xs">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left">Room Name</th>
-                                        <th className="px-6 py-3 text-left">Image</th>
-                                        <th className="px-6 py-3 text-left">Price</th>
-                                        <th className="px-6 py-3 text-left">Action</th>
+                        <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
+                            <table className="min-w-full text-sm text-gray-700">
+                                <thead>
+                                    <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3">Room Name</th>
+                                        <th className="px-6 py-3">Image</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rooms.map((room) => (
+                                    {rooms.map((room, idx) => (
                                         <tr
                                             key={room.id}
-                                            className="border-t border-gray-200 hover:bg-indigo-50 transition"
+                                            onClick={() => (window.location.href = `/seller/room/${room.id}`)}
+                                            className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                                } border-t border-gray-100 hover:bg-indigo-50/50 hover:cursor-pointer transition-colors`}
                                         >
                                             <td className="px-6 py-4 font-medium whitespace-nowrap">
-                                                <Link
-                                                    href={`/home/room/${room.id}`}
-                                                    className="text-indigo-600 hover:underline"
-                                                >
-                                                    {room.name}
-                                                </Link>
+                                                {room.name}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <img
                                                     src={`/storage/${room.image}`}
                                                     alt={room.name}
-                                                    className="w-20 h-20 object-cover rounded-md border"
+                                                    className="w-16 h-16 object-cover rounded-lg shadow-sm border border-gray-200"
                                                 />
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-gray-700 font-semibold">₱{room.price}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Link
-                                                    href={`/seller/room/${room.id}`}
-                                                    className="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-full shadow hover:bg-indigo-700 transition"
-                                                >
-                                                    View Details
-                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
-
                     ) : (
-                        <div className="text-center  text-gray-500 py-4">
+                        <div className="text-center text-gray-500 py-6 text-sm">
                             No rooms found.
                         </div>
                     )}
+
                 </div>
 
             </div>
@@ -629,70 +639,329 @@ export default function Building({ building }) {
 
             {/* Add Room Modal */}
             <Modal show={addRoomModalOpen} onClose={() => setAddRoomModalOpen(false)}>
-                <div>
-                    <h2>Add Room</h2>
-                    <form onSubmit={handleRoomCreateSubmit} className="space-y-4">
+                <div className="p-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Add Room</h2>
+
+                    <form onSubmit={handleRoomCreateSubmit} className="space-y-5">
+                        {/* Image Upload with Drag & Drop + Preview */}
                         <div>
-                            <InputLabel htmlFor="image" value="Image" className="block text-lg font-medium text-gray-700" />
-                            <TextInput
-                                id="imagea"
-                                type="file"
-                                name="image"
-                                accept="image/*"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                onChange={(e) => setData('image', e.target.files[0])}
+                            <InputLabel
+                                htmlFor="image"
+                                value="Room Image"
+                                className="block text-sm font-medium text-gray-600 mb-2"
                             />
-                            <InputError message={errors.image} className="mt-2 text-sm text-red-600" />
+
+                            <div
+                                className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 transition"
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    const file = e.dataTransfer.files[0];
+                                    if (file) {
+                                        setData("image", file);
+                                        setPreview(URL.createObjectURL(file));
+                                    }
+                                }}
+                                onClick={() => document.getElementById("imageInput").click()}
+                            >
+                                {roomPreview ? (
+                                    <img
+                                        src={roomPreview}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover rounded-lg"
+                                    />
+                                ) : (
+                                    <p className="text-gray-400 text-sm">
+                                        Drag & drop an image here, or click to select
+                                    </p>
+                                )}
+                                <input
+                                    id="imageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            setData("image", file);
+                                            setRoomPreview(URL.createObjectURL(file));
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            <InputError message={errors.image} className="mt-2 text-sm text-red-500" />
                         </div>
+
+                        {/* Room Name */}
                         <div>
-                            <InputLabel htmlFor="name" value="Name" className="block text-lg font-medium text-gray-700" />
+                            <InputLabel
+                                htmlFor="name"
+                                value="Room Name"
+                                className="block text-sm font-medium text-gray-600 mb-1"
+                            />
                             <TextInput
                                 id="name"
                                 type="text"
                                 name="name"
                                 value={data.name}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 autoComplete="name"
                                 isFocused={true}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) => setData("name", e.target.value)}
                             />
-                            <InputError message={errors.name} className="mt-2 text-sm text-red-600" />
+                            <InputError message={errors.name} className="mt-1 text-sm text-red-500" />
                         </div>
-                        <div>
-                            <InputLabel htmlFor="price" value="Price" className="block text-lg font-medium text-gray-700" />
-                            <TextInput
-                                id="price"
-                                type="number"
-                                name="price"
-                                value={data.price}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="price"
-                                isFocused={true}
-                                onChange={(e) => setData('price', e.target.value)}
-                            />
-                            <InputError message={errors.price} className="mt-2 text-sm text-red-600" />
-                        </div>
-                        <div className='flex items-center justify-end gap-4'>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-3 pt-2">
                             <button
-                                type='button'
+                                type="button"
                                 onClick={() => setAddRoomModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition"
                             >
                                 Cancel
                             </button>
                             <button
-                                type='submit'
-                                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                type="submit"
+                                disabled={processing}
+                                className={`px-4 py-2 rounded-lg text-white transition ${processing
+                                    ? "bg-indigo-400 cursor-not-allowed"
+                                    : "bg-indigo-600 hover:bg-indigo-700"
+                                    }`}
                             >
-                                Save
+                                {processing ? "Saving..." : "Save"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+
+            {/*Edit Building Details Modal  */}
+            <Modal show={showEditBuildingDetails} onClose={() => setShowEditBuildingDetails(false)}>
+                <div className="space-y-3">
+                    <form onSubmit={handleUpdateBuilding} method="POST">
+                        {/* Close Button */}
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                className="text-gray-500 hover:text-gray-600 focus:outline-none"
+                                onClick={() => setIsEditing(false)}
+                            >
+                                <FontAwesomeIcon icon={faClose} />
                             </button>
                         </div>
 
+                        {/* Name */}
+                        <div>
+                            <label className="text-sm font-medium">Name</label>
+                            <input
+                                type="text"
+                                value={buildingData.name}
+                                onChange={(e) => setBuildingData("name", e.target.value)}
+                                className="w-full border rounded-lg p-2 mt-1"
+                            />
+                        </div>
+
+                        {/* Address fields */}
+                        <div className="space-y-4">
+                            {/* Region */}
+                            <label className="block">
+                                <span>Region</span>
+                                <select
+                                    value={buildingData.address.region}
+                                    onChange={(e) =>
+                                        setBuildingData("address", {
+                                            region: e.target.value,
+                                            province: "",
+                                            municipality: "",
+                                            barangay: "",
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                >
+                                    <option value="">Select Region</option>
+                                    {regions.map(([key, region]) => (
+                                        <option key={key} value={key}>
+                                            {region.region_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {/* Province */}
+                            <label className="block">
+                                <span>Province</span>
+                                <select
+                                    value={buildingData.address.province}
+                                    onChange={(e) =>
+                                        setBuildingData("address", {
+                                            ...buildingData.address,
+                                            province: e.target.value,
+                                            municipality: "",
+                                            barangay: "",
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                >
+                                    <option value="">Select Province</option>
+                                    {provinces.map((prov) => (
+                                        <option key={prov} value={prov}>
+                                            {prov}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {/* Municipality */}
+                            <label className="block">
+                                <span>Municipality</span>
+                                <select
+                                    value={buildingData.address.municipality}
+                                    onChange={(e) =>
+                                        setBuildingData("address", {
+                                            ...buildingData.address,
+                                            municipality: e.target.value,
+                                            barangay: "",
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                >
+                                    <option value="">Select Municipality</option>
+                                    {municipalities.map((mun) => (
+                                        <option key={mun} value={mun}>
+                                            {mun}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {/* Barangay */}
+                            <label className="block">
+                                <span>Barangay</span>
+                                <select
+                                    value={buildingData.address.barangay}
+                                    onChange={(e) =>
+                                        setBuildingData("address", {
+                                            ...buildingData.address,
+                                            barangay: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                >
+                                    <option value="">Select Barangay</option>
+                                    {barangays.map((brgy, idx) => (
+                                        <option key={idx} value={brgy}>
+                                            {brgy}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {/* Latitude */}
+                            <label className="block">
+                                <span>Latitude</span>
+                                <input
+                                    type="text"
+                                    value={buildingData.latitude}
+                                    onChange={(e) => setBuildingData("latitude", e.target.value)}
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                    placeholder="e.g. 14.5995"
+                                />
+                                {buildingErrors.latitude && (
+                                    <span className="text-red-500 text-sm">{buildingErrors.latitude}</span>
+                                )}
+                            </label>
+
+                            {/* Longitude */}
+                            <label className="block">
+                                <span>Longitude</span>
+                                <input
+                                    type="text"
+                                    value={buildingData.longitude}
+                                    onChange={(e) => setBuildingData("longitude", e.target.value)}
+                                    className="mt-1 block w-full rounded border-gray-300"
+                                    placeholder="e.g. 120.9842"
+                                />
+                                {buildingErrors.longitude && (
+                                    <span className="text-red-500 text-sm">{buildingErrors.longitude}</span>
+                                )}
+                            </label>
+                        </div>
+
+                        {/* BIR Upload */}
+                        <div>
+                            <label className="block text-sm font-medium">BIR Document</label>
+                            <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                onChange={(e) => handleFileChange(e, "bir")}
+                                className="mt-1 block w-full border rounded-lg p-2"
+                            />
+                            {buildingData.bir && (
+                                <div className="mt-2">
+                                    {buildingData.bir.type?.startsWith("image/") ? (
+                                        <img
+                                            src={URL.createObjectURL(buildingData.bir)}
+                                            alt="BIR Preview"
+                                            className="w-32 h-32 object-cover rounded-lg border"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-gray-500">PDF Selected</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Business Permit Upload */}
+                        <div>
+                            <label className="block text-sm font-medium">Business Permit</label>
+                            <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                onChange={(e) => handleFileChange(e, "business_permit")}
+                                className="mt-1 block w-full border rounded-lg p-2"
+                            />
+                            {buildingData.business_permit && (
+                                <div className="mt-2">
+                                    {buildingData.business_permit.type?.startsWith("image/") ? (
+                                        <img
+                                            src={URL.createObjectURL(buildingData.business_permit)}
+                                            alt="Business Permit Preview"
+                                            className="w-32 h-32 object-cover rounded-lg border"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-gray-500">PDF Selected</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowEditBuildingDetails(false)}
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={buildingProcessing}
+                                className={`px-4 py-2 rounded-lg text-white transition ${buildingProcessing
+                                    ? "bg-indigo-400 cursor-not-allowed"
+                                    : "bg-indigo-600 hover:bg-indigo-700"
+                                    }`}
+                            >
+                                {buildingProcessing ? "Saving..." : "Save"}
+                            </button>
+                        </div>
+
+
                     </form>
-
                 </div>
-            </Modal >
 
+            </Modal>
         </SellerLayout >
     );
 

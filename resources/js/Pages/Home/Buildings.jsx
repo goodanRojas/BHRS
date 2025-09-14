@@ -45,22 +45,23 @@ export default function Buildings({ initialBuildings }) {
 
                 {/* Page Title */}
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-800">
-                        Explore Boarding Houses
+                    <h1 className="text-3xl font-bold tracking-tight text-white italic [text-shadow:2px_2px_4px_rgba(0,0,0,0.6)]">
+                        Boarding House Reservation
                     </h1>
-                    <p className="text-gray-500 text-sm">
+
+                    <p className="text-slate-100 text-sm">
                         Find the perfect place that suits your needs
                     </p>
                 </div>
                 {/* Keywords */}
                 <div className="mb-6">
-                    <h3 className="py-2 font-bold tracking-tight text-gray-800">
+                    <h3 className="py-2 font-bold tracking-tight text-white">
                         Keywords
                     </h3>
                     <Keywords
                         keywords={["Aircon", "Wi-Fi", "Parking", "Laundry", "CCTV"]}
-                        size="sm"
-                        variant="soft"
+                        size="md"
+                        variant="light"
                         max={5}
                     />
                 </div>
@@ -72,7 +73,7 @@ export default function Buildings({ initialBuildings }) {
                 {/* Buildings */}
                 <section>
                     <h1
-                        className=" font-bold text-gray-800 tracking-tight py-4"
+                        className=" font-bold text-white tracking-tight py-4"
                     >Buildings</h1>
                     {/* Buildings Grid */}
                     <div className="flex flex-wrap justify-center sm:justify-start md:justify-start lg:justify-start xl:justify-start gap-3">

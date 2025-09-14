@@ -333,21 +333,31 @@ export default function CreateBuildingModal({ owner, isOpen, onClose }) {
     }
     return (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center overflow-y-auto items-start">
+
             <div
-                className="bg-white p-6 rounded-lg shadow w-full max-w-2xl my-10"
+                className="relative bg-white p-6 rounded-lg shadow w-full max-w-2xl my-10"
                 onClick={(e) => e.stopPropagation()} // prevent accidental outside click
             >
+                {/* Close button */}
+                <div className=" absolute top-1 right-2 flex justify-end mt-4">
+                    <button
+                        onClick={onClose}
+                        className="text-gray-600 text-sm hover:underline hover:text-black"
+                    >
+                        <FontAwesomeIcon icon={faTimes} className="mr-2 text-lg" />
+                    </button>
+                </div>
                 <h2 className="text-lg font-semibold mb-4">Create Building</h2>
                 <div>
                     <h3 className="text-lg font-semibold mb-4">Step {step}</h3>
                 </div>
                 <form
                     onSubmit={handleSubmit}
-                  /*   onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                        }
-                    }} */
+                /*   onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                          e.preventDefault();
+                      }
+                  }} */
                 >
                     {renderStep()}
                     <div className="flex justify-between mt-6">
@@ -376,7 +386,7 @@ export default function CreateBuildingModal({ owner, isOpen, onClose }) {
                         <button
                             type="submit"
                             disabled={processing || step !== 4}
-                            className={`px-4 py-2 rounded-md ${processing? 'bg-green-400 text-gray-200': ''}  ${step === 4 ? 'bg-green-600 text-white hover:bg-green-700' : 'hidden'
+                            className={`px-4 py-2 rounded-md ${processing ? 'bg-green-400 text-gray-200' : ''}  ${step === 4 ? 'bg-green-600 text-white hover:bg-green-700' : 'hidden'
                                 }`}
                         >
                             Submit
@@ -385,15 +395,7 @@ export default function CreateBuildingModal({ owner, isOpen, onClose }) {
 
                 </form>
 
-                {/* Close button */}
-                <div className=" absolute top-8 right-16 flex justify-end mt-4">
-                    <button
-                        onClick={onClose}
-                        className="text-gray-600 text-sm hover:underline hover:text-black"
-                    >
-                        <FontAwesomeIcon icon={faTimes} className="mr-2 text-lg" />
-                    </button>
-                </div>
+
             </div>
         </div>
     );

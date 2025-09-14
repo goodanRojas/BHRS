@@ -60,6 +60,7 @@ class SellerNotificationController extends Controller
     {
         return Inertia::render('Seller/Notification/Index', [
             'notifications' => auth()->guard('seller')->user()->notifications()->latest()->get(),
+            'highlight' => request('highlight'),
         ]);
     }
     public function markAllRead()

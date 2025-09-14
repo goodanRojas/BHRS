@@ -13,7 +13,7 @@ export default function UseMessageLayout({ children }) {
             setActiveTab('landowner');
         } else if (url.includes('/messages')) {
             setActiveTab('direct');
-        } else if (url.includes('/group-chat')) {
+        } else if (url.includes('/group')) {
             setActiveTab('group');
         }
     }, [url]);

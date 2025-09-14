@@ -8,4 +8,5 @@ Route::prefix('admin/owner/building/application')->name('admin.owner.building.ap
     Route::get('/', [Application::class, 'index'])->name('index');
     Route::post('/approve', [Application::class, 'store'])->name('store');
     Route::get('/show/{application}', [Application::class, 'show'])->name('show');
+    Route::post('/reject/{application}', [Application::class, 'reject'])->name('reject');
 });

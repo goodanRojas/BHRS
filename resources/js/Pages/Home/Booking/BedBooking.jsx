@@ -22,7 +22,7 @@ export default function Booking({ bed, userPreferences }) {
             municipality: '',
             barangay: '',
         },
-        start_date: userPreferences?.start_date || '',
+        start_date: '',
         month_count: 1,
         message: userPreferences?.special_request || '',
         payment_method: userPreferences?.payment_method || 'cash',
@@ -177,7 +177,8 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.start_date}
                             value={data.start_date}
                             onChange={handleChange}
-
+                        min={new Date().toLocaleDateString("en-CA")}
+                            
                         />
                         <InputField
                             label="Duration (Months)"

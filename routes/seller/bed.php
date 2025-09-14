@@ -13,6 +13,10 @@ Route::prefix('/seller')->name('seller.building.')->middleware('seller')->group(
     Route::post('/bed/add-feature', [BedController::class, 'addBedFeature'])->name('add.bed.feature');
     Route::delete('/bed/delete-feature/{id}', [BedController::class, 'deleteFeature'])->name('delete.feature');
     Route::post('/bed/update-description', [BedController::class, 'updateDescription'])->name('update.description');
-    
+
+    Route::post('/bed/update-main-image/{bed}', [BedController::class, 'updateMainImage'])->name('update.main.image');
+    Route::post('/bed/update-image/{media}', [BedController::class, 'updateCarouselImage'])->name('update.carousel.image');
+    Route::post('/bed/delete-image/{media}', [BedController::class, 'deleteCarouselImage'])->name('delete.carousel.image');
+
 });
 

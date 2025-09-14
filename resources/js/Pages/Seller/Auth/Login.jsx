@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import ApplicationLogo from '@/Components/ApplicationLogo';
 export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -43,9 +43,20 @@ export default function Login({ status, canResetPassword }) {
     return (
         <GuestLayout>
             <Head title="Seller Log in" />
-
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
+                <Link
+                    href="/"
+                    className="pointer-events-auto"
+                >
+                    <img
+                        src="/storage/system/logo/logo-no-bg.png"
+                        alt="BH Reservation Logo"
+                        className="h-20 w-auto"
+                    />
+                </Link>
+            </nav>
             {/* Gradient background wrapper */}
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4 pt-[60px]">
                 {/* Card container */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -160,7 +171,7 @@ export default function Login({ status, canResetPassword }) {
                                     />
                                     <label htmlFor="remember" className="text-sm text-gray-600">Remember Me</label>
                                 </div>
-                             
+
                             </div>
 
                             {/* Forgot + Login button */}
@@ -181,7 +192,14 @@ export default function Login({ status, canResetPassword }) {
                                         Log in
                                     </PrimaryButton>
                                 </motion.div>
+
                             </div>
+                            <p>
+                                Don't have an account?
+                                <Link href={route('seller.register.index')} className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline">
+                                    Apply here
+                                </Link>
+                            </p>
                         </form>
                     </motion.div>
                 </motion.div>

@@ -68,12 +68,12 @@ export default function AuthenticatedLayout({ header, children }) {
             <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
 
             <div className="min-h-screen ">
-                {/* Background Image */}
+            
                 <div
-                    className="fixed top-0 left-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10"
-                    style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
-                ></div>
+                    className='-z-10 fixed top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900'
+                >
 
+                </div>
                 {/* Navigation */}
                 <nav className="border-b border-gray-100 bg-gray-800 z-50 shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -186,6 +186,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
                                     <Dropdown.Content>
                                         <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                        <Dropdown.Link href={route('seller.register.index')}>Apply as owner</Dropdown.Link>
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
                                             Log Out
                                         </Dropdown.Link>
@@ -249,7 +250,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 )}
 
                 {user && !user.has_completed_onboarding && <OnboardingModal />}
-                <main className="min-h-screen">{children}</main>
+                <main className="min-h-screen bg-blue">{children}</main>
                 <Footer />
             </div>
         </FavoriteContext.Provider>

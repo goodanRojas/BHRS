@@ -64,4 +64,10 @@ class Application extends Controller
 
         return redirect()->route('admin.owner.building.application.index');
     }
+
+    public function reject(BuildingApplication $application){
+        $application->status = "rejected";
+        $application->save();
+        return redirect()->route('admin.owner.building.application.index')->with('success', 'Application rejected successfully.');
+    }
 }

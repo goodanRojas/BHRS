@@ -24,6 +24,33 @@ export default function GroupChat({ groups }) {
         }
     }, [activeGroup]);
 
+    
+    // ⬇️ Load active group from localStorage on mount
+    useEffect(() => {
+        const storedGroupId = localStorage.getItem("activeGroupId");
+        if (storedGroupId) {
+            const group = groups.find(g => g.id === parseInt(storedGroupId));
+            if (group) {
+                setActiveGroup(group);
+            }
+        }
+    }, [groups]);
+
+    // ⬇️ Store active group in localStorage when it changes
+    useEffect(() => {
+        if (activeGroup) {
+            localStorage.setItem("activeGroupId", activeGroup.id);
+        } else {
+            localStorage.removeItem("activeGroupId");
+        }
+    }, [activeGroup]);
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [activeGroup]);
+
     const handleSend = async (e) => {
         e.preventDefault();
         if (!message.trim() || !activeGroup) return;
@@ -191,10 +218,7 @@ export default function GroupChat({ groups }) {
                                         <button className='w-full truncate text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
                                             <FontAwesomeIcon icon={faPencil} /> Change Avatar
                                         </button>
-                                        <button className="w-full truncate text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2">
-                                            <FontAwesomeIcon className='text-red-600' icon={faTrashCan} />
-                                            Delete Conversation
-                                        </button>
+
                                     </div>
                                 )}
                             </div>

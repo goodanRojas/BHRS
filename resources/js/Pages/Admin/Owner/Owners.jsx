@@ -106,6 +106,7 @@ export default function Owner({ owners }) {
                                     ))}
                                 </tbody>
                             </table>
+                            {/*
                             <div className="fixed bottom-0 left-0 w-full py-3 shadow flex justify-center space-x-2 z-50">
                                 {links?.map((link, index) => (
                                     <button
@@ -117,7 +118,7 @@ export default function Owner({ owners }) {
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ))}
-                            </div>
+                            </div> */}
                         </div>
                     ) : (
                         <div className="flex justify-center mt-4 space-x-2">

@@ -13,6 +13,7 @@ class NotificationController extends Controller
     {
         return Inertia::render('Home/Notification/Index', [
             'notifications' => auth()->user()->notifications()->latest()->get(),
+            'highlight' => request('highlight'),
         ]);
     }
 

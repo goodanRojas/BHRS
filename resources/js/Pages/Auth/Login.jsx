@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -29,7 +30,7 @@ export default function Login({ status }) {
     useEffect(() => {
         const interval = setInterval(() => {
             setIndex((prev) => (prev + 1) % messages.length);
-        }, 3000); 
+        }, 3000);
         return () => clearInterval(interval);
     }, []);
 
@@ -43,7 +44,18 @@ export default function Login({ status }) {
     return (
         <GuestLayout>
             <Head title="Log in" />
-
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
+                <Link
+                    href="/"
+                    className="pointer-events-auto"
+                >
+                    <img
+                        src="/storage/system/logo/logo-no-bg.png"
+                        alt="BH Reservation Logo"
+                        className="h-20 w-auto"
+                    />
+                </Link>
+            </nav>
             {/* Gradient background wrapper */}
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
                 {/* Card container */}

@@ -1,22 +1,29 @@
 import React, { useMemo, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faWifi,
+  faSnowflake,
+  faCar,
+  faKitchenSet,
+  faShirt,
+  faVideo,
+  faShieldHalved,
+  faFaucet,
+  faFire,
+  faTv,
+  faSatelliteDish,
+  faShower,
+  faSnowman,
+  faBlender,
+  faLeaf,
+  faBed,
+  faTable,
+  faBroom,
+  faElevator,
+  faDumbbell,
+} from "@fortawesome/free-solid-svg-icons";
+import { motion } from "framer-motion";
 
-/**
- * Keywords – display a list of amenity/feature keywords (e.g., "Aircon", "Wi‑Fi").
- *
- * Props:
- * - keywords: string[]                      // list of keywords to render
- * - className?: string                      // extra wrapper classes
- * - size?: "sm" | "md" | "lg"              // pill size (default: "md")
- * - variant?: "solid" | "soft" | "outline" // style variant (default: "soft")
- * - rounded?: "full" | "xl" | "lg"          // corner radius (default: "full")
- * - max?: number                            // show only first N; adds a "+X more" expander
- * - showIcons?: boolean                     // show built‑in emoji icons for common amenities (default: true)
- * - onKeywordClick?: (kw: string) => void   // click handler; makes pills clickable if provided
- * - dedupe?: boolean                        // remove duplicate keywords (default: true)
- *
- * Usage:
- *   <Keywords keywords={["Aircon", "Wi‑Fi", "Parking"]} />
- */
 export default function Keywords({
   keywords = [],
   className = "",
@@ -55,55 +62,60 @@ export default function Keywords({
   };
 
   const variants = {
-    solid: "bg-gray-900 text-white dark:bg-white dark:text-gray-900",
-    soft:
-      "bg-gray-100 text-gray-700 dark:bg-gray-800/70 dark:text-gray-200 ring-1 ring-inset ring-black/0",
-    outline:
-      "border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200",
+    solid: "bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
+    soft: "bg-gray-100 text-gray-700 dark:bg-gray-800/70 dark:text-gray-200 ring-1 ring-inset ring-black/0",
+    light: "bg-white text-gray-700 ring-1 ring-inset ring-black/0",
+    outline: "border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200",
   };
 
   const clickableBase =
-    onKeywordClick ?
-      "cursor-pointer transition-transform active:scale-[0.98] hover:shadow-sm" :
-      "";
+    onKeywordClick
+      ? "cursor-pointer transition-transform active:scale-[0.98] hover:shadow-sm"
+      : "";
 
   const container = `flex flex-wrap items-center gap-2 ${className}`;
 
-  const DEFAULT_ICONS = {
-    "wi-fi": "📶",
-    wifi: "📶",
-    internet: "📶",
-    aircon: "❄️",
-    "air con": "❄️",
-    "air conditioning": "❄️",
-    parking: "🅿️",
-    kitchen: "🍳",
-    laundry: "🧺",
-    cctv: "🎥",
-    security: "🛡️",
-    water: "🚰",
-    heater: "🔥",
-    tv: "📺",
-    cable: "📡",
-    shower: "🚿",
-    fridge: "🧊",
-    microwave: "🍲",
-    balcony: "🌿",
-    bed: "🛏️",
-    desk: "🪑",
-    cleaning: "🧹",
-    elevator: "🛗",
-    gym: "🏋️",
+  // Map keywords to FontAwesome icons
+  const ICON_MAP = {
+    wifi: faWifi,
+    "wi-fi": faWifi,
+    internet: faWifi,
+    aircon: faSnowflake,
+    "air con": faSnowflake,
+    "air conditioning": faSnowflake,
+    parking: faCar,
+    kitchen: faKitchenSet,
+    laundry: faShirt,
+    cctv: faVideo,
+    security: faShieldHalved,
+    water: faFaucet,
+    heater: faFire,
+    tv: faTv,
+    cable: faSatelliteDish,
+    shower: faShower,
+    fridge: faSnowman,
+    microwave: faBlender,
+    balcony: faLeaf,
+    bed: faBed,
+    desk: faTable,
+    cleaning: faBroom,
+    elevator: faElevator,
+    gym: faDumbbell,
   };
 
   const renderIcon = (label) => {
     if (!showIcons) return null;
     const key = ("" + label).trim().toLowerCase();
-    const match = Object.keys(DEFAULT_ICONS).find((k) => key.includes(k));
+    const match = Object.keys(ICON_MAP).find((k) => key.includes(k));
     return match ? (
-      <span aria-hidden className="inline-block leading-none">
-        {DEFAULT_ICONS[match]}
-      </span>
+      <motion.span
+        aria-hidden
+        className="inline-block leading-none "
+        animate={{ y: [0, -2, 0] }}
+        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+      >
+        <FontAwesomeIcon icon={ICON_MAP[match]} className="text-indigo-700" />
+      </motion.span>
     ) : null;
   };
 
@@ -114,9 +126,7 @@ export default function Keywords({
 
   const hiddenCount = items.length - visible.length;
 
-  if (items.length === 0) {
-    return null; // nothing to render
-  }
+  if (items.length === 0) return null;
 
   return (
     <div className={container}>

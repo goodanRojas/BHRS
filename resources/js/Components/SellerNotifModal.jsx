@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
 import { Link } from '@inertiajs/inertia-react';
+import { router } from '@inertiajs/react';
 
 const NavNotif = () => {
     const [notifications, setNotifications] = useState([]);
@@ -24,8 +25,7 @@ const NavNotif = () => {
 
     const displayed = notifications.slice(0, maxToShow);
     let remainingCount = notifications.length - maxToShow;
-    if(remainingCount > 9)
-    {
+    if (remainingCount > 9) {
         remainingCount = 9;
     }
 
@@ -42,24 +42,30 @@ const NavNotif = () => {
                     {displayed.map((notif) => (
                         <li
                             key={notif.id}
-                            className="flex items-center gap-3 p-3 border-b last:border-none hover:bg-gray-50 transition"
-                        >
-                            {notif.image ? (
-                                <img
-                                    src={`/storage/${notif.image}`}
-                                    alt="User"
-                                    className="w-10 h-10 rounded-full object-cover border"
-                                />
-                            ) : (
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-                                    ?
-                                </div>
-                            )}
+                            className="flex hover:cursor-pointer items-center gap-3 p-3 border-b last:border-none hover:bg-gray-50 transition"
 
-                            <div className="flex flex-col">
-                                <p className="text-sm text-gray-700 leading-snug">{notif.message}</p>
-                                <span className="text-xs text-gray-400">{notif.created_at}</span>
-                            </div>
+                        >
+                            <Link
+                                href={route('seller.notifications.index', { highlight: notif.id })}
+                                className="block text-sm text-gray-700 hover:bg-gray-100 rounded p-2"
+                            >
+                                {notif.image ? (
+                                    <img
+                                        src={`/storage/${notif.image}`}
+                                        alt="User"
+                                        className="w-10 h-10 rounded-full object-cover border"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                                        ?
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col">
+                                    <p className="text-sm text-gray-700 leading-snug">{notif.message}</p>
+                                    <span className="text-xs text-gray-400">{notif.created_at}</span>
+                                </div>
+                            </Link>
                         </li>
                     ))}
 

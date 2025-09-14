@@ -12,9 +12,10 @@ import Toast from '@/Components/Toast';
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import { comment } from 'postcss';
+import BedGuests from '../Seller/Guest/Guests';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked, comments, average_rating, rating_count, ratings }) {
 
-    console.log(sibling_beds);
+    console.log(bed);
     const { flash } = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,49 +83,81 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 <div className="bg-white shadow-lg rounded-xl overflow-hidden">
                     {/* 📸 Bed Image Section */}
                     <div className="relative group">
-                        {/* 🖼️ Image Carousel or Single Image */}
-                        {images.length > 0 ? (
-                            <div className="relative w-full h-60 overflow-hidden rounded-md">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Left: Main Image (spans 2 rows on desktop) */}
+                            <div className="relative md:row-span-2 overflow-hidden rounded-2xl shadow-md h-[300px]">
                                 <img
-                                    src={`/storage/${images[currentIndex].file_path}`}
-                                    alt={`Slide ${currentIndex + 1}`}
-                                    className="w-full h-full object-cover transition-transform duration-500"
+                                    src={
+                                        currentIndex === -1
+                                            ? (BedGuests.image ? `/storage/${room.image}` : "/storage/room/default_room.svg")
+                                            : (images[currentIndex]?.file_path ? `/storage/${images[currentIndex].file_path}` : "/storage/room/default_room.svg")
+                                    }
+                                    alt={bed.name}
+                                    className="w-full h-72 md:h-full object-cover transition-transform duration-500 hover:scale-105"
                                 />
 
-                                {/* Arrows */}
-                                <button
-                                    onClick={handlePrev}
-                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
-                                >
-                                    &#10094;
-                                </button>
-                                <button
-                                    onClick={handleNext}
-                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
-                                >
-                                    &#10095;
-                                </button>
+                            </div>
 
-                                {/* Dots */}
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
-                                    {images.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => handleImageClick(index)}
-                                            className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-white' : 'bg-gray-400'} transition duration-300`}
-                                        ></button>
-                                    ))}
-                                </div>
+                            {/* Top Right: bed Name */}
+                            <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-200">
+                                <h2 className="text-xl md:text-2xl font-semibold text-gray-800 p-4 text-center">
+                                    {bed.name}
+                                </h2>
                             </div>
-                        ) : (
-                            <div className="w-full h-60 overflow-hidden rounded-md">
-                                <img
-                                    src={`/storage/${bed.image}`}
-                                    alt="Bed"
-                                    className="w-full h-full object-cover"
-                                />
+
+                            {/* Bottom Right: Mini Carousel */}
+                            <div className="relative bg-white rounded-2xl shadow-sm border border-gray-200 p-2 flex flex-col items-center">
+                                {images && images.length > 0 && (
+                                    <>
+                                        {/* Small Preview Image */}
+                                        <div className="w-full">
+                                            <img
+                                                src={`/storage/${images[currentIndex === -1 ? 0 : currentIndex].file_path
+                                                    }`}
+                                                alt={bed.name}
+                                                className="w-full h-28 object-cover rounded-lg"
+                                            />
+                                        </div>
+
+                                        {/* Arrows */}
+                                        <div className="flex justify-between w-full mt-2 px-2">
+                                            <button
+                                                onClick={handlePrev}
+                                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
+                                            >
+                                                &#10094;
+                                            </button>
+                                            <button
+                                                onClick={handleNext}
+                                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
+                                            >
+                                                &#10095;
+                                            </button>
+                                        </div>
+
+                                        {/* Dots */}
+                                        <div className="flex gap-1 mt-2">
+                                            {/* Main Image Dot */}
+                                            <button
+                                                onClick={() => setCurrentIndex(-1)}
+                                                className={`h-2 w-2 rounded-full ${currentIndex === -1 ? "bg-blue-600" : "bg-gray-400"
+                                                    }`}
+                                            ></button>
+
+                                            {/* Extra Images Dots */}
+                                            {images.map((_, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => setCurrentIndex(index)}
+                                                    className={`h-2 w-2 rounded-full ${currentIndex === index ? "bg-blue-600" : "bg-gray-400"
+                                                        }`}
+                                                ></button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                        )}
+                        </div>
 
 
                         {/* ❤️ Favorite Icon – Top Left */}
@@ -215,12 +248,6 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         <div>
                             <p className="text-md font-semibold text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faDoorOpen} /> {bed.room.name}</p>
                             <p className="text-sm text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faBuilding} /> {bed.room.building.name}</p>
-                            <p className="flex items-center text-gray-700 text-sm mb-2 line-clamp-2">
-                                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-indigo-500" />
-                                {bed.room.building.address
-                                    ? `${bed.room.building.address.street}, ${bed.room.building.address.barangay}, ${bed.room.building.address.city}, ${bed.room.building.address.province} ${bed.room.building.address.postal_code}, ${bed.room.building.address.country}`
-                                    : "N/A"}
-                            </p>
                         </div>
                         {/* Contact Seller */}
                         <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -242,18 +269,25 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         {/* 📃 Description */}
                         <div>
                             <h5 className="text-sm font-semibold text-gray-700 mb-1">Description</h5>
-                            {/* <pre className="text-sm text-gray-600 whitespace-pre-wrap">{bed.description}</pre> */}
+                            {bed.description ? <pre className="text-sm text-gray-600 whitespace-pre-wrap">{bed.description}</pre> : <p className="text-sm text-gray-500 italic">No description provided.</p>}
                             <div>
-                                {bed.features.map((feature) => (
-                                    <div
-                                        key={feature.id}
-                                        className="relative inline-block p-1 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
-                                    >
-                                        {/* Feature name container with hover effect */}
-                                        <span className="text-xs text-gray-600">{feature.name}</span>
-
-                                    </div>
-                                ))}
+                                <h3 className='text-sm font-semibold text-gray-700 mb-1'>Features</h3>
+                                {bed.features?.length > 0 ? (
+                                    <>
+                                        {bed.features.map((feature) => (
+                                            <div
+                                                key={feature.id}
+                                                className="relative inline-block p-1 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
+                                            >
+                                                {/* Feature name container with hover effect */}
+                                                {/* Changes this into a pill shape */}
+                                                <span className="text-xs text-gray-600 rounded-full px-2 py-1 bg-gray-100">{feature.name}</span>
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic">No features provided.</p>
+                                )}
                             </div>
                         </div>
                     </div>{/* 💬 Feedback Section */}
@@ -346,7 +380,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                         >
                                             {/* Image */}
                                             <img
-                                                src={b.image ? `/storage/${b.image}` : '/storage/bed/default_bed.png'}
+                                                src={b.image ? `/storage/${b.image}` : '/storage/bed/default_bed.svg'}
                                                 alt={b.name}
                                                 className="w-full h-28 object-cover rounded-md mb-2"
                                             />

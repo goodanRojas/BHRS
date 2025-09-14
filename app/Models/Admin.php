@@ -40,6 +40,10 @@ class Admin extends Authenticatable
         ];
     }
 
+    public function paymentInfo()
+    {
+        return $this->hasOne(AdminPaymentInfo::class);
+    }
 
     public function sessions()
     {
