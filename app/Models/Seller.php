@@ -34,23 +34,45 @@ class Seller extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function subscription()
+
+
+    public function subscriptions()
     {
-        return $this->hasOne(Subscription::class)->latestOfMany();
+        return $this->hasMany(Subscription::class);
     }
 
-    public function hasFeature($feature)
+    // Always return the latest *active* subscription
+    public function currentSubscription()
     {
-        $plan = $this->subscription?->plan; // SubscriptionPlan object or null
-
-        if (!$plan)
-            return false; // no subscription or plan
-
-        // $plan->features is already an array thanks to casts
-        return in_array($feature, $plan->features ?? []);
+        return $this->hasOne(Subscription::class)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('end_date')->orWhere('end_date', '>', now());
+            })
+            ->latest('created_at');
     }
 
+    public function hasPlan($allowedPlans)
+    {
+        $subscription = $this->currentSubscription()->first();
 
+        if (!$subscription || !$subscription->plan) {
+            return false;
+        }
+
+        $currentPlan = strtolower($subscription->plan->plan); // assumes `plan` is a relation with a "plan" column
+
+        if (is_array($allowedPlans)) {
+            return in_array($currentPlan, array_map('strtolower', $allowedPlans));
+        }
+
+        return $currentPlan === strtolower($allowedPlans);
+    }
+
+    public function defaultMessages()
+    {
+        return $this->morphToMany(DefaultMessage::class, 'owner');
+    }
     public function buildings()
     {
         return $this->hasMany(Building::class);

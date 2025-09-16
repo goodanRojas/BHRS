@@ -4,9 +4,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Head } from '@inertiajs/react';
 import ReactDOM from 'react-dom/client';
+import * as turf from '@turf/turf'; // Add the destance between two poi
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export default function MapBox({ buildings, destinations, focusId }) {
+  console.log(buildings);
   const mapContainer = useRef(null);
   const map = useRef(null);
   const routeLayerIds = useRef([]);
@@ -66,9 +68,10 @@ export default function MapBox({ buildings, destinations, focusId }) {
             id: b.id,
             name: b.name,
             image: b.image,
-            rating: b.feedback.length > 0
-              ? (b.feedback.reduce((sum, f) => sum + f.rating, 0) / b.feedback.length).toFixed(1)
-              : "No rating",
+            rating: b.avg_rating,
+            rating_count: b.rating_count,
+            newest_raters: b.newest_raters,
+            remaining_raters_count: b.remaining_raters_count,
             owner: b.seller?.name || "Unknown",
           },
           geometry: {
@@ -285,22 +288,72 @@ export default function MapBox({ buildings, destinations, focusId }) {
 
         const coords = e.features[0].geometry.coordinates.slice();
         const props = e.features[0].properties;
+        console.log(props);
+        const newestRaters = (() => {
+          try {
+            return JSON.parse(props.newest_raters);
+          } catch {
+            return [];
+          }
+        })();
+        console.log(newestRaters);
         const buildingId = parseInt(props.id);
         const building = buildings.find((b) => b.id === parseInt(buildingId));
         const targetMarker = domMarkers.current.find(
           ({ building: b }) => b.id === buildingId
         );
 
+
         const html = `
-        <a href="/home/building/${buildingId}" class="flex flex-col items-center">
-          <div  class="p-2">
-              <img src="/storage/${props.image}" class="rounded-lg w-full h-28 object-cover mb-2" />
-              <h3 class="text-md font-bold">${props.name}</h3>
-              <p class="text-sm text-gray-600"> ${props.owner}</p>
-              <p class="text-sm text-yellow-500">Rating: ${props.rating} ⭐</p>
-          </div>
-        </a>   
-      `;
+<a href="/home/building/${buildingId}" 
+   class="flex flex-col w-full transition-transform hover:scale-[1.02]">
+  
+  <!-- Image (smaller) -->
+  <img src="/storage/${props.image}" 
+       alt="${props.name}" 
+       class="rounded-lg w-full h-24 object-cover mb-3" />
+
+  <!-- Content -->
+  <div>
+    <h3 class="text-base font-semibold text-gray-900 truncate">${props.name}</h3>
+    <p class="text-xs text-gray-500 mb-2">${props.owner}</p>
+
+    <!-- Rating + Raters row -->
+    <div class="flex items-center justify-between">
+      <!-- Rating -->
+      <div class="flex items-center gap-1">
+        <span class="text-yellow-500 font-medium text-sm">
+          ${Number(props.rating ?? 0).toFixed(1)} ★
+        </span>
+        <span class="text-xs text-gray-600">
+          (${props.rating_count})
+        </span>
+      </div>
+
+      <!-- Avatars + Count -->
+      <div class="flex items-center">
+        <div class="flex -space-x-2">
+          ${(Array.isArray(newestRaters) ? newestRaters : [])
+            .map(user => `
+              <img src="${user.avatar
+                ? `/storage/${user.avatar.replace(/^storage\//, '')}`
+                : '/storage/profile/default_avatar.png'}"
+                alt="${user.name}"
+                title="${user.name}"
+                class="w-6 h-6 rounded-full border border-white shadow-sm" />
+            `).join('')}
+        </div>
+        ${props.remaining_raters_count > 0
+            ? `<span class="ml-2 text-[11px] text-gray-500">+${props.remaining_raters_count}</span>`
+            : ''
+          }
+      </div>
+    </div>
+  </div>
+</a>
+`;
+
+
 
         const popup = new mapboxgl.Popup({
           offset: {
@@ -382,7 +435,19 @@ export default function MapBox({ buildings, destinations, focusId }) {
         parseFloat(pt.lng),
         parseFloat(pt.lat),
       ]);
+      // Create a LineString from the route coordinates
+      const line = turf.lineString(coordinates);
 
+      // Calculate the length of the route in kilometers
+      let distanceKm = turf.length(line, { units: "kilometers" });
+
+      // Decide display unit: meters if < 1km, else km
+      const distanceDisplay =
+        distanceKm < 1
+          ? `${(distanceKm * 1000).toFixed(0)} m`
+          : `${distanceKm.toFixed(2)} km`;
+
+        console.log(distanceDisplay);
       const id = `route-${building.id}-${index}`;
 
       map.current.addSource(id, {
@@ -392,6 +457,9 @@ export default function MapBox({ buildings, destinations, focusId }) {
           geometry: {
             type: 'LineString',
             coordinates,
+          },
+          properties: {
+            distance: distanceDisplay,
           },
         },
       });
@@ -412,6 +480,19 @@ export default function MapBox({ buildings, destinations, focusId }) {
       });
       // 🔹 Listen for clicks on this route
       map.current.on('click', id, () => {
+        highlightRoute(id);
+      });
+
+      map.current.on("click", id, (e) => {
+        const coords = e.lngLat;
+        const distance =
+          e.features?.[0]?.properties?.distance || distanceDisplay;
+
+        new mapboxgl.Popup()
+          .setLngLat([coords.lng, coords.lat])
+          .setHTML(`<div class="text-sm font-semibold">Distance: ${distance}</div>`)
+          .addTo(map.current);
+
         highlightRoute(id);
       });
       routeLayerIds.current.push(id);

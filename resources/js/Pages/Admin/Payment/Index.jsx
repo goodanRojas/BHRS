@@ -1,13 +1,24 @@
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "../AuthenticatedLayout";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect,  useRef } from "react";
+import Toast from "@/Components/Toast";
 
 export default function Index({ paymentInfo }) {
+
+    const {flash} = usePage().props;
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    useEffect(() => {
+        if (flash?.message) {
+            setToast({ show: true, message: flash.message, type: 'success' });
+        }
+    }, [flash?.message]);
+
     const [isEditing, setIsEditing] = useState(!paymentInfo);
     const [preview, setPreview] = useState(paymentInfo?.qr_code ? `/storage/${paymentInfo.qr_code}` : null);
     const [dragActive, setDragActive] = useState(false);
-
+   
     const handleDrag = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -36,7 +47,7 @@ export default function Index({ paymentInfo }) {
         e.preventDefault();
 
         if (paymentInfo) {
-            put(route("admin.payment.info.update", paymentInfo.id), {
+            post(route("admin.payment.info.update", paymentInfo.id), {
                 forceFormData: true,
                 onSuccess: () => setIsEditing(false),
             });
@@ -81,6 +92,7 @@ export default function Index({ paymentInfo }) {
     return (
         <AuthenticatedLayout>
             <Head title="Payment Info" />
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} id={Date.now()} />
             <motion.div
                 className="p-6 max-w-3xl mx-auto"
                 variants={container}

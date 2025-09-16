@@ -26,6 +26,7 @@ class BedRequestController extends Controller
             ->whereHas('bookable.room.building', function ($query) use ($seller) {
                 $query->where('seller_id', $seller->id);
             })
+            ->orderBy('created_at', 'desc')
             ->get();
 
 

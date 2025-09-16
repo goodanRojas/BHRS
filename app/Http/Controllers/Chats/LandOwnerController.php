@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Chats;
 use App\Events\Message\OwnerMessageSentToUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Events\MessageSent;
-use App\Http\Controllers\Admin\Owner\Building\Buildings;
 use App\Events\Message\UserMessageSentToOwner;
 use Illuminate\Support\Facades\{Http, Log};
 use Inertia\Inertia;
@@ -179,7 +177,7 @@ class LandOwnerController extends Controller
 
     public function sendMessage(Request $request)
     {
-        // Validate the request
+        
         $validated = $request->validate([
             'receiver_id' => 'required|exists:sellers,id',
             'content' => 'required|string',
@@ -202,10 +200,10 @@ class LandOwnerController extends Controller
         $settings = ConversationAiSetting::firstOrCreate([
             'seller_id' => $validated['receiver_id'], // seller is receiver in this case
             'user_id'   => auth()->id(),
+            'ai_enabled' => false
         ]);
-        $seller = $settings->seller;
 
-
+        Log::info($settings);
         if ($settings->ai_enabled) {
             $seller = $settings->seller;
 

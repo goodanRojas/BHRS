@@ -81,7 +81,7 @@ class BedController extends Controller
             'description' => $bed->description
         ]);
     }
-    
+
     public function updateMainImage(Request $request, Bed $bed)
     {
         $request->validate([
@@ -130,6 +130,39 @@ class BedController extends Controller
 
         return response()->json([
             'success' => 'Carousel image deleted successfully',
+        ]);
+    }
+
+    public function deleteBed(Bed $bed)
+    {
+        if ($bed->bookings()->exists()) {
+            return redirect()->back()->with('error', 'You cannot delete this bed because it has bookings.');
+        }
+        $room = $bed->room;
+        $bed->delete();
+        return redirect()
+            ->route('seller.room.details', $room) // pass the model, not just id
+            ->with('success', 'Bed deleted successfully.')
+            ->with('message', 'Bed deleted.');
+
+
+    }
+
+    public function updateName(Request $request, Bed $bed)
+    {
+        $bed->name = $request->name;
+        $bed->save();
+
+        return response()->json([
+            'name' => $bed->name
+        ]);
+    }
+    public function updatePrice(Request $request, Bed $bed)
+    {
+        $bed->price = $request->price;
+        $bed->save();
+        return response()->json([
+            'price' => $bed->price
         ]);
     }
 }

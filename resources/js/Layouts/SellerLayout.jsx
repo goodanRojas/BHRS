@@ -21,6 +21,13 @@ export default function SellerLayout({ header, children }) {
     const [notifications, setNotifications] = useState([]);
     const [notifVisiblt, setNotifVisible] = useState(null);
     const [notificationsCount, setNotificationsCount] = useState(0);
+    const [subscriptionType, setSubscriptionType] = useState(null);
+    useEffect(() => {
+        axios.get('/seller/current/subscription').then((res) => {
+            const sub = res.data.subscription;
+            setSubscriptionType(sub ? sub.plan.plan : null);
+        });
+    }, [user?.id]);
 
     // Listen for new notifications
     useEffect(() => {
@@ -143,20 +150,50 @@ export default function SellerLayout({ header, children }) {
                                         type="button"
                                         className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
                                     >
-                                        <img
-                                            src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`}
-                                            alt="avatar"
-                                            className="h-7 w-7 rounded-full mr-2"
-                                        />
+                                        <div className="relative h-9 w-9 mr-2">
+                                            {/* Avatar with colored border */}
+                                            <div
+                                                className={`h-9 w-9 rounded-full border-2 p-0.5
+                        ${subscriptionType === "Bronze" ? "border-yellow-700" :
+                                                        subscriptionType === "Silver" ? "border-gray-400" :
+                                                            subscriptionType === "Gold" ? "border-yellow-500" :
+                                                                "border-transparent"}`}
+                                            >
+                                                <img
+                                                    src={`/storage/${user.avatar ? user.avatar : 'profile/default_avatar.png'}`}
+                                                    alt="avatar"
+                                                    className="h-full w-full rounded-full object-cover"
+                                                />
+                                            </div>
+
+                                            {/* Plan label */}
+                                            {subscriptionType && (
+                                                <span
+                                                    className={`absolute -bottom-1 left-1 -translate-x-1/2 px-0.5 text-[7px] font-semibold rounded-full
+                                                                   ${subscriptionType === "Bronze" ? "bg-yellow-700 text-white" :
+                                                            subscriptionType === "Silver" ? "bg-gray-400 text-black" :
+                                                                subscriptionType === "Gold" ? "bg-yellow-500 text-black" :
+                                                                    "bg-gray-600 text-white"}`}
+                                                >
+                                                    {subscriptionType}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* First name */}
                                         {user.name.split(' ')[0]}
                                     </button>
                                 </Dropdown.Trigger>
+
                                 <Dropdown.Content>
                                     <Dropdown.Link href={route('seller.profile.edit')}>
                                         Profile
                                     </Dropdown.Link>
                                     <Dropdown.Link href={route('seller.payment-details.index')}>
                                         Payment Details
+                                    </Dropdown.Link>
+                                    <Dropdown.Link href={route('seller.subscription.landing')}>
+                                        Subscription
                                     </Dropdown.Link>
                                     <Dropdown.Link
                                         href={route('seller.logout.post')}
@@ -167,6 +204,7 @@ export default function SellerLayout({ header, children }) {
                                     </Dropdown.Link>
                                 </Dropdown.Content>
                             </Dropdown>
+
                         </div>
 
                         {/* Mobile Hamburger */}
@@ -225,6 +263,9 @@ export default function SellerLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('seller.payment-details.index')}>
                                 Payment Details
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('seller.subscription.landing')}>
+                                Subscription
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"

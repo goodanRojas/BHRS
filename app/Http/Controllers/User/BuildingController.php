@@ -133,7 +133,17 @@ class BuildingController extends Controller
             // Eager load relationships
             $building->load([
                 'rooms' => function ($query) {
-                    $query->withCount('beds');
+                    $query->withCount('beds')
+                        ->with([
+                            'beds' => function ($bedQuery) {
+                                $bedQuery->with([
+                                    'bookings' => function ($bookingQuery) {
+                                        $bookingQuery->where('status', 'ended')
+                                            ->with('ratings.user');
+                                    }
+                                ]);
+                            }
+                        ]);
                 },
                 'seller',
                 'address',
@@ -141,6 +151,18 @@ class BuildingController extends Controller
                 'features',
                 'rulesAndRegulations',
             ]);
+
+            foreach ($building->rooms as $room) {
+                $ratings = collect();
+
+                foreach ($room->beds as $bed) {
+                    foreach($bed->bookings as $booking) {
+                        $ratings = $ratings->merge($booking->ratings);
+                    }
+                }
+                $room->rating_count = $ratings->count();
+                $room->avg_rating = $ratings->avg('stars');
+            }
 
             $totalBedBookings = Booking::whereHas('bookable.room.building', function ($q) use ($building) {
                 $q->where('id', $building->id);

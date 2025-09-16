@@ -160,4 +160,27 @@ class RoomController extends Controller
         ]);
     }
 
+    public function updateName(Request $request, Room $room)
+    {
+        $room->name = $request->name;
+        $room->save();
+
+        return response()->json([
+            'name' => $room->name
+        ]);
+    }
+    public function deleteRoom(Room $room)
+    {
+        if ($room->beds()->whereHas('bookings')->exists()) {
+            return redirect()->back()->with('error', 'You cannot delete this bed because it has bookings.');
+        }
+        $building = $room->building;
+        $room->delete();
+        return redirect()
+            ->route('seller.building.show.building', $building) // pass the model, not just id
+            ->with('success', 'Room deleted successfully.')
+            ->with('message', 'Room deleted.');
+
+
+    }
 }

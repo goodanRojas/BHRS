@@ -13,7 +13,7 @@ Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->middleware('
     Route::get('/pending', [SubscriptionController::class, 'pending'])->name('pending');
     Route::get('/pending/{subscription}/show', [SubscriptionController::class, 'showPending'])->name('show');
 
-    Route::post('/{subscription}/confirm', [SubscriptionController::class, 'confirm'])->name('confirm');
+    Route::post('/confirm', [SubscriptionController::class, 'confirm'])->name('confirm');
     Route::post('/{subscription}/reject', [SubscriptionController::class, 'reject'])->name('reject');
 
 });

@@ -1,8 +1,8 @@
 import SellerLayout from '@/Layouts/SellerLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useState, useRef } from 'react';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faTimes, faBed, faTrash, faPen, faBedPulse, faCheckSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faExclamationTriangle, faCheck, faUpload, faTimes, faTrash, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -10,21 +10,24 @@ import TextInput from '@/Components/TextInput';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
+import { motion, AnimatePresence } from "framer-motion";
 export default function Room({ room }) {
     console.log(room);
+    const { flash } = usePage().props;
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');
     const [featureDescription, setFeatureDescription] = useState('');
     const [addBedModalOpen, setAddBedModalOpen] = useState(false);
+    const [showDeleteRoomModal, setShowDeleteRoomModal] = useState(false);
     const [features, setFeatures] = useState(room.features);
     const [beds, setBeds] = useState(room.beds);
     const [images, setImages] = useState(room.images);
     const fileInputRef = useRef(null);
-    const [toastMessage, setToastMessage] = useState({
-        'message': '',
-        'isTrue': false,
-        'isType': '',
-    });
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [name, setName] = useState(room.name);
     const [description, setDescription] = useState(room.description || '');
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -32,6 +35,39 @@ export default function Room({ room }) {
         image: '',
         room_id: room.id,
     });
+    useEffect(() => {
+        if (flash?.success) {
+            setToast({
+                show: true,
+                message: flash.success, // ✅ use flash.success as the message
+                type: 'success'
+            });
+        }
+
+        if (flash?.error) {
+            setToast({
+                show: true,
+                message: flash.error,
+                type: 'error'
+            });
+        }
+    }, [flash]);
+
+    const deleteRoom = () => {
+        router.delete(`/seller/room/delete/${room.id}`);
+        setShowDeleteRoomModal(false);
+    };
+    const submitName = async (name) => {
+        try {
+            const response = await axios.post(`/seller/room/update-name/${room.id}`, {
+                name,
+            });
+            setIsEditingName(false);
+            setName(response.data.name);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0]; // only take first file
@@ -225,20 +261,22 @@ export default function Room({ room }) {
     };
     return (
         <SellerLayout>
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} id={Date.now()} />
             <div className='p-4'>
                 <Head title={room.name} />
-                {toastMessage && <Toast message={toastMessage.message} isTrue={toastMessage.isTrue} isType={toastMessage.isType} id={Date.now()} />}
+                <div className='flex items-center justify-between py-4'>
 
-                <Breadcrumbs
-                    links={[
-                        { label: 'Buildings', url: '/seller/building/' },
-                        { label: room.building.name, url: `/seller/building/${room.building_id}` },
-                        { label: room.name },
-                    ]} />
-                <div>
-                    <h2 className='text-lg font-semibold mb-4'>{room.name}</h2>
+                    <Breadcrumbs
+                        links={[
+                            { label: 'Buildings', url: '/seller/building/' },
+                            { label: room.building.name, url: `/seller/building/${room.building_id}` },
+                            { label: room.name },
+                        ]} />
+                    <button
+                        onClick={() => setShowDeleteRoomModal(!showDeleteRoomModal)}
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >Delete Room</button>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Main Image Section */}
                     <div className="relative overflow-hidden rounded-lg shadow-md group">
@@ -338,13 +376,68 @@ export default function Room({ room }) {
 
                 {/* Content Section */}
                 <div className="p-4 flex flex-col justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-2">{room.name}</h2>
-                  
+                    <div className="flex items-center gap-2 group">
+                        {/* Edit Icon */}
+                        <button
+                            onClick={() => setIsEditingName(!isEditingName)}
+                            className="opacity-0 group-hover:opacity-100 transition"
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                className="text-gray-400 hover:text-indigo-600 transition"
+                            />
+                        </button>
+
+                        {/* Editable Area */}
+                        <AnimatePresence mode="wait">
+                            {isEditingName ? (
+                                <motion.div
+                                    key="edit"
+                                    className="flex items-center gap-2"
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 5 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="p-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-sm"
+                                        placeholder="Enter name..."
+                                    />
+
+                                    <motion.button
+                                        onClick={() => {
+                                            setIsEditingName(false);
+                                            submitName(name);
+                                        }}
+                                        className="px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <FontAwesomeIcon icon={faCheck} />
+                                    </motion.button>
+                                </motion.div>
+                            ) : (
+                                <motion.p
+                                    key="view"
+                                    className="text-gray-700 text-sm font-medium"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    {name || "Untitled Bed"}
+                                </motion.p>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
 
                     {/* Features */}
                     <div >
                         <div className='flex items-center gap-2'>
-                            <p className='text-sm text-gray-500'>Features</p>
+                            <p className='text-sm text-gray-900'>Features</p>
 
                             {/* Button with hover effect */}
                             <button
@@ -368,51 +461,123 @@ export default function Room({ room }) {
                             )}
                         </div>
                         {features.length > 0 ? (
-                            <div className="relative p-4">
+                            <motion.div
+                                className="relative p-4 flex flex-wrap gap-3"
+                                initial="hidden"
+                                animate="show"
+                                variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    show: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } }
+                                }}
+                            >
                                 {features.map((feature) => (
-                                    <div
+                                    <motion.div
                                         key={feature.id}
-                                        className="relative inline-block p-2 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
+                                        className="relative group cursor-pointer"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
-                                        {/* Feature name container with hover effect */}
-                                        <div className="bg-gray-100 rounded-lg p-2 relative group-hover:bg-gray-200 transition-all">
-                                            <span className="text-xs text-gray-600">{feature.name}</span>
+                                        {/* Feature Card */}
+                                        <div className="bg-gradient-to-r from-indigo-50 to-white border border-gray-200 shadow-sm rounded-xl px-3 py-2 transition-all group-hover:shadow-md group-hover:border-indigo-200">
+                                            <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">
+                                                {feature.name}
+                                            </span>
                                         </div>
 
-                                        {/* Delete button (X) appears only on hover */}
-                                        <button
+                                        {/* Delete button (X) */}
+                                        <motion.button
                                             onClick={() => handleDeleteFeature(feature.id)}
-                                            className="absolute top-1 right-1 p-1 text-gray-500 group-hover:text-red-500 focus:outline-none hidden group-hover:block"
+                                            className="absolute -top-2 -right-2 p-1 bg-white rounded-full shadow-md text-gray-400 hover:text-red-500 transition"
+                                            initial={{ opacity: 0, scale: 0 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            whileHover={{ scale: 1.1 }}
+                                            transition={{ type: "spring", stiffness: 300 }}
                                         >
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
-                                    </div>
+                                            <FontAwesomeIcon icon={faTimes} className="h-3 w-3" />
+                                        </motion.button>
+                                    </motion.div>
                                 ))}
-                            </div>
+                            </motion.div>
                         ) : (
-                            <p className=" text-gray-500 py-4">
-                                No features
-                            </p>
+                            <motion.p
+                                className="text-gray-500 py-6 text-center text-sm"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            >
+                                No features added yet ✨
+                            </motion.p>
                         )}
                     </div>
+
                     {/* Description */}
                     <div className="flex flex-col gap-4">
-                        <h3 className="text-xl font-semibold mb-2">Description</h3>
-                        <form onSubmit={handleDescriptionSubmit}>
-                            <textarea
-                                name="description"
-                                className="p-2 border rounded-md w-full mb-4"
-                                placeholder="Enter description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
+                        {/* Header with edit button */}
+                        <div className="relative flex items-center gap-3 group">
+                            <h3 className="text-lg font-semibold text-gray-800">Description</h3>
                             <button
-                                type="submit"
-                                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                type="button"
+                                onClick={() => setIsEditingDescription(!isEditingDescription)}
+                                className="opacity-0 group-hover:opacity-100 transition"
                             >
-                                Save
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    className="text-gray-400 hover:text-indigo-600 transition"
+                                />
                             </button>
-                        </form>
+                        </div>
+
+                        {/* Description content */}
+                        <AnimatePresence mode="wait">
+                            {isEditingDescription ? (
+                                <motion.form
+                                    key="edit"
+                                    onSubmit={handleDescriptionSubmit}
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="flex flex-col gap-3"
+                                >
+                                    <textarea
+                                        name="description"
+                                        className="p-3 border border-gray-300 rounded-lg w-full text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-sm"
+                                        placeholder="Enter description..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        rows={3}
+                                    />
+                                    <div className="flex gap-2">
+                                        <motion.button
+                                            type="submit"
+                                            className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg shadow hover:bg-indigo-700 transition"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            Save
+                                        </motion.button>
+                                        <motion.button
+                                            type="button"
+                                            onClick={() => setIsEditingDescription(false)}
+                                            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg shadow hover:bg-gray-200 transition"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            Cancel
+                                        </motion.button>
+                                    </div>
+                                </motion.form>
+                            ) : (
+                                <motion.pre
+                                    key="view"
+                                    className="text-gray-700 text-sm bg-gray-50 rounded-lg p-3 border border-gray-200 shadow-sm"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    {room.description || "No description available."}
+                                </motion.pre>
+                            )}
+                        </AnimatePresence>
                     </div>
 
 
@@ -481,25 +646,73 @@ export default function Room({ room }) {
                         </div>
                     )}
                 </div>
-                {/* Add Room Modal */}
+                {/* Add Bed Modal */}
                 <Modal show={addBedModalOpen} onClose={() => setAddBedModalOpen(false)}>
-                    <div>
-                        <h2>Add Room</h2>
-                        <form onSubmit={handleBedCreateSubmit} className="space-y-4">
+                    <motion.div
+                        className="p-6"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <h2 className="text-xl font-semibold text-gray-800 mb-5">Add Bed</h2>
+
+                        <form onSubmit={handleBedCreateSubmit} className="space-y-6">
+                            {/* Image Upload */}
                             <div>
-                                <InputLabel htmlFor="image" value="Image" className="block text-lg font-medium text-gray-700" />
-                                <TextInput
-                                    id="image"
-                                    type="file"
-                                    name="image"
-                                    accept="image/*"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                    onChange={(e) => setData('image', e.target.files[0])}
+                                <InputLabel
+                                    htmlFor="image"
+                                    value="Image"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                 />
+
+                                <motion.label
+                                    htmlFor="image"
+                                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden"
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {!previewUrl ? (
+                                        <div className="flex flex-col items-center text-gray-500">
+                                            <FontAwesomeIcon icon={faUpload} className="h-8 w-8 mb-2" />
+                                            <span className="text-sm">Click to upload or drag & drop</span>
+                                            <span className="text-xs text-gray-400">PNG, JPG, JPEG</span>
+                                        </div>
+                                    ) : (
+                                        <motion.div
+                                            className="absolute inset-0 flex items-center justify-center bg-black/10"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                        >
+                                            <img
+                                                src={previewUrl}
+                                                alt="Preview"
+                                                className="object-cover w-full h-full rounded-lg"
+                                            />
+                                        </motion.div>
+                                    )}
+                                    <input
+                                        id="image"
+                                        type="file"
+                                        name="image"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            setData("image", file);
+                                            if (file) {
+                                                setPreviewUrl(URL.createObjectURL(file));
+                                            }
+                                        }}
+                                    />
+                                </motion.label>
+
                                 <InputError message={errors.image} className="mt-2 text-sm text-red-600" />
                             </div>
+
+                            {/* Bed Name */}
                             <div>
-                                <InputLabel htmlFor="name" value="Name" className="block text-lg font-medium text-gray-700" />
+                                <InputLabel htmlFor="name" value="Name" />
                                 <TextInput
                                     id="name"
                                     type="text"
@@ -507,13 +720,14 @@ export default function Room({ room }) {
                                     value={data.name}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     autoComplete="name"
-                                    isFocused={true}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) => setData("name", e.target.value)}
                                 />
                                 <InputError message={errors.name} className="mt-2 text-sm text-red-600" />
                             </div>
+
+                            {/* Price */}
                             <div>
-                                <InputLabel htmlFor="price" value="Price" className="block text-lg font-medium text-gray-700" />
+                                <InputLabel htmlFor="price" value="Price" />
                                 <TextInput
                                     id="price"
                                     type="number"
@@ -521,31 +735,77 @@ export default function Room({ room }) {
                                     value={data.price}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     autoComplete="price"
-                                    isFocused={true}
-                                    onChange={(e) => setData('price', e.target.value)}
+                                    onChange={(e) => setData("price", e.target.value)}
                                 />
                                 <InputError message={errors.price} className="mt-2 text-sm text-red-600" />
                             </div>
-                            <div className='flex items-center justify-end gap-4'>
-                                <button
-                                    type='button'
+
+                            {/* Actions */}
+                            <div className="flex justify-end gap-3 pt-2">
+                                <motion.button
+                                    type="button"
                                     onClick={() => setAddBedModalOpen(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                    className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
                                     Cancel
-                                </button>
-                                <button
-                                    type='submit'
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                </motion.button>
+                                <motion.button
+                                    type="submit"
+                                    className="px-4 py-2 rounded-md bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
                                     Save
-                                </button>
+                                </motion.button>
                             </div>
-
                         </form>
+                    </motion.div>
+                </Modal>
 
-                    </div>
-                </Modal >
+                {/* Delete Room modal */}
+                <Modal show={showDeleteRoomModal} onClose={() => setShowDeleteRoomModal(false)}>
+                    <motion.div
+                        className="text-center p-6"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {/* Icon */}
+                        <div className="flex justify-center mb-4">
+                            <div className="bg-red-100 text-red-600 p-3 rounded-full">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="h-6 w-6" />
+                            </div>
+                        </div>
+
+                        {/* Title & Text */}
+                        <h2 className="text-lg font-semibold text-gray-800 mb-2">Delete Room</h2>
+                        <p className="text-sm text-gray-600 mb-1">Are you sure you want to delete this room?</p>
+                        <p className="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+
+                        {/* Actions */}
+                        <div className="flex justify-center gap-3">
+                            <motion.button
+                                onClick={() => setShowDeleteRoomModal(false)}
+                                className="px-5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                Cancel
+                            </motion.button>
+                            <motion.button
+                                onClick={() => deleteRoom()}
+                                className="px-5 py-2 rounded-lg bg-red-600 text-white shadow-sm hover:bg-red-700"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                Delete
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                </Modal>
             </div>
         </SellerLayout>
     );

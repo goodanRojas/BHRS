@@ -5,7 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Seller\SellerRequestController;
 use App\Http\Controllers\Seller\Requests\{BedRequestController, PaymentInfo};
 
-Route::prefix('seller/request/bed')->name('seller.request.bed.')->middleware('seller')->group(function () {
+Route::prefix('seller/request/bed')->name('seller.request.bed.')->middleware(['seller', 'check.has.subscription:bronze,silver,gold'])->group(function () {
     Route::get('/{id}', [BedRequestController::class, 'show'])->name('show');
     Route::get('/', [BedRequestController::class, 'index'])->name('index');
      // Handle accept action

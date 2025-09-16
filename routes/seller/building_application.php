@@ -6,7 +6,7 @@ use App\Http\Controllers\Seller\BuildingApplication\BuildingApplicationControlle
 
 
 
-Route::prefix('seller/app')->name('seller.building.application.')->middleware('seller')->group(function () {
+Route::prefix('seller/app')->name('seller.building.application.')->middleware(['seller', 'check.has.subscription:silver,gold'])->group(function () {
     Route::get('/', [BuildingApplicationController::class, 'index'])->name('index');
     Route::post('/submit', [BuildingApplicationController::class, 'store'])->name('store');
 });

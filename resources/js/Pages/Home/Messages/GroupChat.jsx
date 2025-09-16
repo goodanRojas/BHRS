@@ -4,19 +4,19 @@ import axios from 'axios';
 import UserMessageLayout from './UserMessageLayout';
 import AvatarCollage from './AvatarCollage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEllipsisV, faPencil, faTrashCan, faClock, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
+import { faArrowLeft, faEllipsisV, faPencil, faPaperPlane, faClock, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 export default function GroupChat({ groups }) {
     const [activeGroup, setActiveGroup] = useState(null);
     const [message, setMessage] = useState('');
-    const messagesEndRef = useRef(null);
     const { auth } = usePage().props;
     const currentUserId = auth?.user?.id;
 
     const menuRef = useRef(null);
     const [messageOptionOpen, setMessageOptionOpen] = useState(false);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -24,7 +24,7 @@ export default function GroupChat({ groups }) {
         }
     }, [activeGroup]);
 
-    
+
     // ⬇️ Load active group from localStorage on mount
     useEffect(() => {
         const storedGroupId = localStorage.getItem("activeGroupId");
@@ -137,19 +137,27 @@ export default function GroupChat({ groups }) {
             <div className="flex h-[calc(100vh-4rem)]">
                 {/* Left: Group List */}
                 <div className="w-1/3 border-r overflow-y-auto">
-                    <h2 className="p-4 font-bold text-lg">Groups</h2>
+                    <h2 className="p-4 font-semibold text-gray-700 text-lg border-b">
+                        Groups
+                    </h2>
+
                     {groups.map((group) => (
                         <div
                             key={group.id}
                             onClick={() => setActiveGroup(group)}
-                            className={`p-4 cursor-pointer hover:bg-gray-100 ${activeGroup?.id === group.id ? 'bg-gray-200' : ''} grid [grid-template-columns:3rem_1fr] items-center`}
+                            className={`px-4 py-3 cursor-pointer transition-all duration-200 
+                ${activeGroup?.id === group.id
+                                    ? 'bg-gray-100 shadow-sm'
+                                    : 'hover:bg-gray-50'} 
+                grid grid-cols-[3rem_1fr] gap-x-3 items-center`}
                         >
-                            <div className='row-span-2'>
+                            {/* Avatar / Collage */}
+                            <div className="row-span-2">
                                 {group.avatar ? (
                                     <img
                                         src={`/storage/${group.avatar}`}
                                         alt="Group Avatar"
-                                        className="w-10 h-10 rounded-full"
+                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
                                     />
                                 ) : (
                                     <AvatarCollage
@@ -160,20 +168,25 @@ export default function GroupChat({ groups }) {
                                 )}
                             </div>
 
-                            <div className="font-semibold">{group.name}</div>
+                            {/* Group name */}
+                            <div className="font-medium text-gray-800 truncate">
+                                {group.name}
+                            </div>
 
-                            <div className="col-start-2 text-sm text-gray-600 truncate">
+                            {/* Last message preview */}
+                            <div className="col-start-2 text-sm text-gray-500 truncate">
                                 {group.messages?.[0]?.content || "No messages yet"}
                             </div>
                         </div>
                     ))}
                 </div>
 
+
                 {/* Right: Chat Panel */}
                 {activeGroup ? (
                     <div className="w-2/3 h-full flex flex-col">
                         {/* Header */}
-                        <div className="p-4 flex items-center justify-between border-b bg-gray-50">
+                        <div className="p-4 flex items-center justify-between border-b ">
                             <div className='flex items-center gap-4'>
                                 <button
                                     onClick={() => setActiveGroup(null)}
@@ -225,7 +238,7 @@ export default function GroupChat({ groups }) {
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 ">
                             {activeGroup.messages?.length > 0 ? (
                                 activeGroup.messages.map((msg) => {
                                     const isCurrentUser = msg.sender_id === currentUserId;
@@ -276,16 +289,16 @@ export default function GroupChat({ groups }) {
                         </div>
 
                         {/* Send Form */}
-                        <form onSubmit={handleSend} className="p-4 border-t bg-gray-50 flex gap-2">
+                        <form onSubmit={handleSend} className="p-4   flex gap-2">
                             <input
                                 type="text"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 placeholder="Type a message..."
-                                className="flex-1 border rounded px-4 py-2 focus:outline-none focus:ring"
+                                className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring"
                             />
-                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                Send
+                            <button type="submit" className="">
+                                <FontAwesomeIcon icon={faPaperPlane} className='text-indigo-600 hover:text-indigo-700' />
                             </button>
                         </form>
                     </div>

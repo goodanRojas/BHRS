@@ -1,115 +1,89 @@
-import { Link, useForm } from "@inertiajs/react";
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link, useForm } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+export default function ChooseUpgrade({ plan, paymentInfo }) {
+    console.log(paymentInfo);
 
-export default function ChoosePlan({ selectedPlan, paymentInfo }) {
-    const container = {
-        hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: { staggerChildren: 0.2 },
-        },
+    const staticFeatures = {
+        Bronze: [
+            "Basic listing visibility",
+            "Up to 5 rooms",
+            "Email support",
+        ],
+        Silver: [
+            "Priority listing visibility",
+            "Up to 15 rooms",
+            "Email & chat support",
+            "Custom branding",
+        ],
+        Gold: [
+            "Top search placement",
+            "Unlimited rooms",
+            "24/7 support",
+            "Advanced analytics",
+            "Custom promotions",
+        ],
     };
-
-    const item = {
-        hidden: { opacity: 0, y: 30 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-    };
-
     return (
-        <div className="p-6 max-w-5xl mx-auto">
+        <div className="min-h-screen bg-gray-50 flex justify-center items-center p-6">
             <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mb-6"
+                transition={{ duration: 0.6 }}
+                className="bg-white shadow-xl rounded-2xl max-w-lg w-full p-8"
             >
-                <Link
-                    href={route("seller.subscription.landing")}
-                    className="inline-block px-5 py-2 rounded-lg font-semibold text-indigo-600 
-                           bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 
-                           transition-colors shadow-sm"
+                {/* Header */}
+                <motion.h1
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-2xl font-bold text-gray-800 text-center"
                 >
-                    ← Back to Plans
-                </Link>
-            </motion.div>
-            {selectedPlan && (
+                    Upgrade to <span className="text-indigo-600">{plan.plan}</span>
+                </motion.h1>
+                <p className="mt-2 text-center text-gray-500">
+                    Unlock premium features for your business
+                </p>
+
+                {/* Plan Card */}
                 <motion.div
-                    className="grid md:grid-cols-2 gap-8 items-start"
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
+                    whileHover={{ scale: 1.02 }}
+                    className="mt-6 mb-6 border border-gray-200 rounded-xl p-6 bg-gradient-to-br from-indigo-50 to-white shadow-sm"
                 >
-                    {/* Plan Info Card */}
+                    <h2 className="text-xl font-semibold text-gray-800">{plan.plan} Plan</h2>
+                    <p className="mt-2 text-gray-600">
+                        Duration: <span className="font-medium">{plan.duration_days} days</span>
+                    </p>
+                    <p className="mt-1 text-gray-600">
+                        Price:{" "}
+                        <span className="font-bold text-indigo-600">₱{plan.price}</span>
+                    </p>
+
+                    <ul className="mt-4 space-y-2">
+                        {(staticFeatures[plan.plan] || []).map((feature, idx) => (
+                            <motion.li
+                                key={idx}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 * idx }}
+                                className="flex items-center text-gray-700"
+                            >
+                                <span className="mr-2 text-green-500">✔</span> {feature}
+                            </motion.li>
+                        ))}
+                    </ul>
+                </motion.div>
+
+                {/* GCash Payment Info */}
+                {paymentInfo && (
                     <motion.div
-                        variants={item}
-                        className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
-                    >
-                        {/* Plan Info Card */}
-
-                        <h2 className="text-2xl font-bold text-indigo-800 mb-4">
-                            {selectedPlan.plan} Plan
-                        </h2>
-
-                        <p className="text-3xl font-extrabold text-indigo-700 mb-2">
-                            ₱{selectedPlan.price}
-                        </p>
-                        <p className="text-gray-500 mb-6">
-                            {selectedPlan.duration_days} days access
-                        </p>
-
-                        <div className="space-y-3">
-                            <h3 className="font-semibold text-gray-700">Features</h3>
-                            <ul className="space-y-2 text-sm text-gray-600">
-                                {(() => {
-                                    let staticFeatures = [];
-                                    switch (selectedPlan.plan.toLowerCase()) {
-                                        case "bronze":
-                                            staticFeatures = [
-                                                "Access to Dashboard",
-                                                "Basic Support",
-                                            ];
-                                            break;
-                                        case "silver":
-                                            staticFeatures = [
-                                                "Access to Dashboard",
-                                                "Map Integration",
-                                                "AI Chatbot",
-                                            ];
-                                            break;
-                                        case "gold":
-                                            staticFeatures = [
-                                                "All Silver Features",
-                                                "Priority Support",
-                                                "Advanced Analytics",
-                                            ];
-                                            break;
-                                        default:
-                                            staticFeatures = ["Basic Access"];
-                                    }
-
-                                    return staticFeatures.map((f, i) => (
-                                        <li key={i} className="flex items-center">
-                                            <span className="text-green-500 mr-2">✔</span>
-                                            {f}
-                                        </li>
-                                    ));
-                                })()}
-                            </ul>
-                        </div>
-
-
-                    </motion.div>
-                    {/* Gcash Payment Info */}
-                    <motion.div
-                        variants={item}
                         className="bg-indigo-50 rounded-2xl shadow-inner p-6"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                     >
                         <h2 className="text-xl font-semibold text-indigo-800 mb-6">
-                            Where to pay
+                            Where to Pay
                         </h2>
 
                         <div className="flex flex-col items-center space-y-4">
@@ -121,14 +95,18 @@ export default function ChoosePlan({ selectedPlan, paymentInfo }) {
 
                             <div className="w-full space-y-3 text-center">
                                 <div>
-                                    <p className="text-sm text-gray-500 uppercase tracking-wide">GCash Name</p>
+                                    <p className="text-sm text-gray-500 uppercase tracking-wide">
+                                        GCash Name
+                                    </p>
                                     <p className="text-lg font-semibold text-indigo-900">
                                         {paymentInfo.gcash_name}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500 uppercase tracking-wide">GCash Number</p>
+                                    <p className="text-sm text-gray-500 uppercase tracking-wide">
+                                        GCash Number
+                                    </p>
                                     <p className="text-lg font-medium text-gray-800">
                                         {paymentInfo.gcash_number}
                                     </p>
@@ -136,19 +114,34 @@ export default function ChoosePlan({ selectedPlan, paymentInfo }) {
                             </div>
                         </div>
                     </motion.div>
+                )}
 
+                {/* Upload Receipt Form */}
+                <motion.div
+                    className="bg-indigo-50 rounded-2xl shadow-inner p-6 mt-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                    <h2 className="text-xl font-semibold text-indigo-800 mb-4">
+                        Upload Receipt for {plan.plan}
+                    </h2>
                     {/* Upload Receipt Form */}
                     <motion.div
-                        variants={item}
                         className="bg-indigo-50 rounded-2xl shadow-inner p-6"
                     >
-                        <h2 className="text-xl font-semibold text-indigo-800 mb-4">
-                            Upload Receipt for {selectedPlan.plan}
-                        </h2>
-                        <SubscriptionForm plan={selectedPlan} />
+                        <SubscriptionForm plan={plan} />
                     </motion.div>
                 </motion.div>
-            )}
+
+
+                <Link
+                    href={route("seller.subscription.upgrade")}
+                    className="block text-center mt-4 text-gray-500 hover:text-indigo-600 transition"
+                >
+                    Cancel
+                </Link>
+            </motion.div>
         </div>
     );
 }
@@ -175,7 +168,7 @@ function SubscriptionForm({ plan }) {
     }, [data.receipt]);
     function submit(e) {
         e.preventDefault();
-        post(route("seller.subscription.store"));
+        post(route("seller.subscription.upgrade.store"));
     }
 
     return (
@@ -277,10 +270,11 @@ function SubscriptionForm({ plan }) {
                 disabled={processing}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="w-full px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition"
+                className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-full shadow-lg hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition"
             >
-                {processing ? "Submitting..." : "Submit"}
+                {processing ? "Loading..." : "Upgrade"}
             </motion.button>
+
         </motion.form>
     );
 }

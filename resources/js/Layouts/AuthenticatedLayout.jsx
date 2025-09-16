@@ -69,9 +69,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
             <div className="min-h-screen ">
             
-                <div
-                    className='-z-10 fixed top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900'
-                >
+<div
+    className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
+>
+
 
                 </div>
                 {/* Navigation */}

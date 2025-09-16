@@ -194,12 +194,7 @@ export default function Login({ status, canResetPassword }) {
                                 </motion.div>
 
                             </div>
-                            <p>
-                                Don't have an account?
-                                <Link href={route('seller.register.index')} className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline">
-                                    Apply here
-                                </Link>
-                            </p>
+                         
                         </form>
                     </motion.div>
                 </motion.div>

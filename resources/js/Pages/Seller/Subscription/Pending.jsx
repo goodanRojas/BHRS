@@ -9,7 +9,7 @@ export default function Pending() {
     useEffect(() => {
         if (message) {
             console.log(message);
-            setToast({ show: true, message: message, type: "error" });
+            setToast({ show: true, message: message, type: message.type ? message.type : "error" });
         }
     }, [message]);
     return (<>

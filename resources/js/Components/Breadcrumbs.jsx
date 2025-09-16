@@ -1,26 +1,46 @@
 // Components/Breadcrumbs.js
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import '../../css/breadcrumb.css'; // Import the custom CSS file
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { motion } from 'framer-motion';
+
 export default function Breadcrumbs({ links }) {
     return (
-        <nav
-            className="breadcrumbs-container text-sm text-slate-100 mb-4 overflow-x-auto whitespace-nowrap flex items-center space-x-2"
+        <motion.nav
+            className="breadcrumbs-container text-sm mb-6 overflow-x-auto whitespace-nowrap flex items-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
         >
             {links.map((link, index) => (
-                <span key={index}>
+                <motion.span
+                    key={index}
+                    className="flex items-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                >
                     {link.url ? (
-                        <Link href={link.url} className="text-slate-300 hover:underline cursor-pointer">
+                        <Link
+                            href={link.url}
+                            className="text-slate-600 hover:text-indigo-600 font-medium transition-colors"
+                        >
                             {link.label}
                         </Link>
                     ) : (
-                        <span className='text-white'>{link.label}</span>
+                        <span className="text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded-md shadow-sm">
+                            {link.label}
+                        </span>
                     )}
-                    {index < links.length - 1 && <span className="mx-2 "><FontAwesomeIcon icon={faChevronRight} className=" text-sm text-slate-100" /></span>}
-                </span>
+                    {index < links.length - 1 && (
+                        <FontAwesomeIcon
+                            icon={faChevronRight}
+                            className="mx-2 text-slate-400 text-xs"
+                        />
+                    )}
+                </motion.span>
             ))}
-        </nav>
+        </motion.nav>
     );
 }

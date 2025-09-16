@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Subscription;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{Subscription, SubscriptionPlan};
+use Illuminate\Support\Facades\Log;
 class SubscriptionController extends Controller
 {
     public function index()
@@ -55,9 +56,29 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function confirm(Subscription $subscription)
+    public function confirm(Request $request)
     {
+        Log::info($request);
+        $validated = $request->validate([
+            'subscription_id' => 'required|exists:subscriptions,id',
+            'receipt' => 'required|image|max:2048',
+            'remarks' => 'nullable|string',
+            'reference_number' => 'nullable|string',
+        ]);
+
+        $subscription = Subscription::findOrFail($validated['subscription_id']);
+        Log::info($subscription);
+        // Update subscription fields
         $subscription->status = 'active';
+        $subscription->admin_ref_num = $validated['reference_number'] ?? null;
+        $subscription->admin_remarks = $validated['remarks'] ?? null;
+
+        // Handle file upload
+        if ($request->hasFile('receipt')) {
+            $filePath = $request->file('receipt')->store('receipts', 'public');
+            $subscription->admin_receipt_path = $filePath;
+        }
+
         $subscription->save();
 
         return redirect()->route('admin.subscriptions.index')

@@ -11,6 +11,19 @@ export default function Toast({ message, isTrue, isType = "success", id }) {
         success: "green",
     };
 
+    let textColor = 'white';
+    switch (isType) {
+        case "error":
+            textColor = "white";
+            break;
+        case "warning":
+            textColor = "indigo-700";
+            break;
+        case "success":
+            textColor = "white";
+            break;
+    };
+
     const type = typeColors[isType] || "green";
     const [show, setShow] = useState(isTrue || false);
     useEffect(() => {
@@ -36,7 +49,7 @@ export default function Toast({ message, isTrue, isType = "success", id }) {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                 >
                     <div
-                        className={`flex items-center gap-2 bg-${type}-500 text-white text-sm px-3 py-2 rounded-lg shadow-md`}
+                        className={`flex items-center gap-2 bg-${type}-500 text-${textColor} text-sm px-3 py-2 rounded-lg shadow-md`}
                     >
                         <span>{message}</span>
                         <button

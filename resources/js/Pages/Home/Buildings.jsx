@@ -55,7 +55,7 @@ export default function Buildings({ initialBuildings }) {
                 </div>
                 {/* Keywords */}
                 <div className="mb-6">
-                    <h3 className="py-2 font-bold tracking-tight text-white">
+                    <h3 className="py-2 font-bold tracking-tight text-gray-800 uppercase">
                         Keywords
                     </h3>
                     <Keywords
@@ -73,7 +73,7 @@ export default function Buildings({ initialBuildings }) {
                 {/* Buildings */}
                 <section>
                     <h1
-                        className=" font-bold text-white tracking-tight py-4"
+                        className=" font-bold text-gray-800 uppercase tracking-tight py-4"
                     >Buildings</h1>
                     {/* Buildings Grid */}
                     <div className="flex flex-wrap justify-center sm:justify-start md:justify-start lg:justify-start xl:justify-start gap-3">

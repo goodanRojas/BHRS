@@ -10,9 +10,10 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Toast from '@/Components/Toast';
 import RulesAndRegulation from './RulesAndRegulation';
+import { motion, AnimatePresence } from 'framer-motion';
 export default function Building({ building }) {
 
-    console.log(building);
+    // console.log(building);
     const [showFeatureInput, setShowFeatureInput] = useState(false);
     const [featureName, setFeatureName] = useState('');
     const [featureDescription, setFeatureDescription] = useState('');
@@ -44,10 +45,10 @@ export default function Building({ building }) {
         },
         latitude: building?.latitude || '',
         longitude: building?.longitude || '',
+        bir: '',
+        business_permit: ''
     });
     const [showEditBuildingDetails, setShowEditBuildingDetails] = useState(false);
-    const [birFile, setBirFile] = useState(null);
-    const [permitFile, setPermitFile] = useState(null);
 
 
     const handleFileChange = async (e) => {
@@ -184,30 +185,55 @@ export default function Building({ building }) {
 
     const handleUpdateBuilding = async (e) => {
         e.preventDefault();
-        console.log(buildingData);
-        try {
-            const response = await axios.put(`/seller/building/update/${building.id}`, {
-                id: building.id,
-                name: buildingData.name,
-                image: buildingData.image,
-                address: {
-                    region: buildingData.address.region,
-                    province: buildingData.address.province,
-                    municipality: buildingData.address.municipality,
-                    barangay: buildingData.address.barangay,
-                },
-                latitude: buildingData.latitude,
-                longitude: buildingData.longitude,
-            });
 
+        const formData = new FormData();
+        formData.append("id", building.id);
+        formData.append("name", buildingData.name);
+        formData.append("latitude", buildingData.latitude);
+        formData.append("longitude", buildingData.longitude);
+
+        // address
+        formData.append("address[region]", buildingData.address.region);
+        formData.append("address[province]", buildingData.address.province);
+        formData.append("address[municipality]", buildingData.address.municipality);
+        formData.append("address[barangay]", buildingData.address.barangay);
+
+        // files
+        if (buildingData.bir) formData.append("bir", buildingData.bir);
+        if (buildingData.business_permit) formData.append("business_permit", buildingData.business_permit);
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+        
+        try {
+            const response = await axios.post(`/seller/building/update/${building.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            resetBuilding();
+            setShowEditBuildingDetails(false);
             setToastMessage({
-                'message': 'Building updated successfully',
-                'isTrue': true,
-                'isType': 'success',
+                message: "Building updated successfully",
+                isTrue: true,
+                isType: "success",
             });
         } catch (error) {
-            console.error('Error updating building:', error);
+            console.error("Error updating building:", error);
         }
+    };
+
+
+    const handleUpdateFileChange = (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // store the file in buildingData under the correct type
+        setBuildingData((prev) => ({
+            ...prev,
+            [type]: file,
+        }));
+
+        // clear input so same file can be re-selected
+        e.target.value = null;
     };
 
 
@@ -521,20 +547,19 @@ export default function Building({ building }) {
                             </div>
 
                             {/* Features */}
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-sm text-gray-500">Features</p>
+                            <div >
+                                <div className='flex items-center gap-2'>
+                                    <p className='text-sm text-gray-900'>Features</p>
 
+                                    {/* Button with hover effect */}
                                     <button
                                         onClick={() => setShowFeatureInput(!showFeatureInput)}
                                         className="hover:bg-gray-300 rounded-md p-2 "
                                     >
-                                        <FontAwesomeIcon
-                                            icon={faPlus}
-                                            className="text-gray-500 text-sm"
-                                        />
+                                        <FontAwesomeIcon icon={faPlus} className="text-gray-500 text-sm" />
                                     </button>
 
+                                    {/* Conditionally show the input field when button is clicked */}
                                     {showFeatureInput && (
                                         <input
                                             type="text"
@@ -547,33 +572,56 @@ export default function Building({ building }) {
                                         />
                                     )}
                                 </div>
-
                                 {features.length > 0 ? (
-                                    <div className="relative p-4">
+                                    <motion.div
+                                        className="relative p-4 flex flex-wrap gap-3"
+                                        initial="hidden"
+                                        animate="show"
+                                        variants={{
+                                            hidden: { opacity: 0, y: 20 },
+                                            show: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } }
+                                        }}
+                                    >
                                         {features.map((feature) => (
-                                            <div
+                                            <motion.div
                                                 key={feature.id}
-                                                className="relative inline-block p-2 mb-2 mr-4 group"
+                                                className="relative group cursor-pointer"
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
                                             >
-                                                <div className="bg-gray-100 rounded-lg p-2 relative group-hover:bg-gray-200 transition-all">
-                                                    <span className="text-xs text-gray-600">
+                                                {/* Feature Card */}
+                                                <div className="bg-gradient-to-r from-indigo-50 to-white border border-gray-200 shadow-sm rounded-xl px-3 py-2 transition-all group-hover:shadow-md group-hover:border-indigo-200">
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">
                                                         {feature.name}
                                                     </span>
                                                 </div>
 
-                                                <button
+                                                {/* Delete button (X) */}
+                                                <motion.button
                                                     onClick={() => handleDeleteFeature(feature.id)}
-                                                    className="absolute top-1 right-1 p-1 text-gray-500 group-hover:text-red-500 focus:outline-none hidden group-hover:block"
+                                                    className="absolute -top-2 -right-2 p-1 bg-white rounded-full shadow-md text-gray-400 hover:text-red-500 transition"
+                                                    initial={{ opacity: 0, scale: 0 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    transition={{ type: "spring", stiffness: 300 }}
                                                 >
-                                                    <FontAwesomeIcon icon={faTimes} />
-                                                </button>
-                                            </div>
+                                                    <FontAwesomeIcon icon={faTimes} className="h-3 w-3" />
+                                                </motion.button>
+                                            </motion.div>
                                         ))}
-                                    </div>
+                                    </motion.div>
                                 ) : (
-                                    <p className=" text-gray-500 py-4">No features</p>
+                                    <motion.p
+                                        className="text-gray-500 py-6 text-center text-sm"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                    >
+                                        No features added yet ✨
+                                    </motion.p>
                                 )}
                             </div>
+
+
                             {/* Rules And Regulations */}
                             <RulesAndRegulation buildingId={building.id} />
                         </>
@@ -746,7 +794,7 @@ export default function Building({ building }) {
                             <button
                                 type="button"
                                 className="text-gray-500 hover:text-gray-600 focus:outline-none"
-                                onClick={() => setIsEditing(false)}
+                                onClick={() => setShowEditBuildingDetails(false)}
                             >
                                 <FontAwesomeIcon icon={faClose} />
                             </button>
@@ -895,7 +943,7 @@ export default function Building({ building }) {
                             <input
                                 type="file"
                                 accept="image/*,application/pdf"
-                                onChange={(e) => handleFileChange(e, "bir")}
+                                onChange={(e) => handleUpdateFileChange(e, "bir")}
                                 className="mt-1 block w-full border rounded-lg p-2"
                             />
                             {buildingData.bir && (
@@ -919,7 +967,7 @@ export default function Building({ building }) {
                             <input
                                 type="file"
                                 accept="image/*,application/pdf"
-                                onChange={(e) => handleFileChange(e, "business_permit")}
+                                onChange={(e) => handleUpdateFileChange(e, "business_permit")}
                                 className="mt-1 block w-full border rounded-lg p-2"
                             />
                             {buildingData.business_permit && (
@@ -962,6 +1010,7 @@ export default function Building({ building }) {
                 </div>
 
             </Modal>
+
         </SellerLayout >
     );
 

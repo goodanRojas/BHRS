@@ -24,16 +24,21 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <div className='flex flex-col items-center justify-center min-h-screen'>
-                <Head title="Register" />
-                <nav className='flex justify-between items-center px-5'>
-                    <div className="mb-6">
-                        <Link href="/">
-                            <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                        </Link>
-                    </div>
+            <Head title="Register" />
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
+                <Link
+                    href="/"
+                    className="pointer-events-auto"
+                >
+                    <img
+                        src="/storage/system/logo/logo-no-bg.png"
+                        alt="BH Reservation Logo"
+                        className="h-20 w-auto"
+                    />
+                </Link>
+            </nav>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
 
-                </nav>
                 <form onSubmit={submit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md space-y-6">
                     <div>
                         <InputLabel htmlFor="name" value="Name" />

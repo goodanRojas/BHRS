@@ -21,6 +21,10 @@ class Subscription extends Model
         'admin_remarks',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
     public function seller()
     {
         return $this->belongsTo(Seller::class);

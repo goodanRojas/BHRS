@@ -1,24 +1,21 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useFavorite } from '@/Contexts/FavoriteContext'; // 👈 Add this line
-
+import { useFavorite } from '@/Contexts/FavoriteContext';
 import { Head, Link } from "@inertiajs/react";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-
+import { motion } from "framer-motion";
 
 export default function Favorites({ favorites }) {
     const [favoriteItems, setFavoriteItems] = useState(favorites);
-
-    const [isFavorite, setIsFavorite] = useState(false);
     const { updateFavoritesCount } = useFavorite();
 
     const toggleFavorite = async (id, type) => {
         try {
             await axios.post(`/beds/${id}/favorite`);
 
-            // Remove the item from the UI by filtering it out
+            // remove from UI
             setFavoriteItems((prev) =>
                 prev.filter((item) => {
                     const itemId = item.type === "bed" ? item.bed.id : item.room.id;
@@ -31,94 +28,109 @@ export default function Favorites({ favorites }) {
         }
     };
 
-
     return (
         <>
             <Head title="Favorites" />
-            <div className="p-4 flex flex-col min-h-full ">
-                <h1 className=" text-2xl font-bold mb-6">Favorites</h1>
+            <div className="p-6 min-h-screen bg-gray-50">
+                <h1 className="text-3xl font-bold mb-8 text-indigo-800">Favorites</h1>
 
                 {favoriteItems.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full border-collapse">
-                            <thead>
-                                <tr className="border-b border-gray-300 bg-gray-50">
-                                    <th className="px-4 py-2 text-left text-gray-600">Image</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Name</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Room</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Building</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Price</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Status</th>
-                                    <th className="px-4 py-2 text-left text-gray-600">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {favoriteItems.map((item, index) => {
-                                    const isBed = item.type === "bed";
-                                    const image = isBed
-                                        ? item.bed.image.startsWith('http')
-                                            ? item.bed.image
-                                            : `/storage/${item.bed.image}`
-                                        : item.room.image.startsWith('http')
-                                            ? item.room.image
-                                            : `/storage/${item.room.image}`;
-                                    const name = isBed ? item.bed.name : item.room.name;
-                                    const price = isBed ? (item.bed.sale_price || item.bed.price) : item.room.price;
-                                    const occupied = isBed ? item.bed.is_occupied : null;
-                                    const roomName = isBed ? item.room?.name : item.room?.name;
-                                    const buildingName = item.building?.name || "Unknown Building";
+                    <motion.div
+                        initial="hidden"
+                        animate="show"
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            show: {
+                                opacity: 1,
+                                y: 0,
+                                transition: { staggerChildren: 0.1 },
+                            },
+                        }}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {favoriteItems.map((item, index) => {
+                            const isBed = item.type === "bed";
+                            const image =
+                                item.bed.image
+                                    ? `/storage/${item.bed.image}`
+                                    : `/storage/bed/default_bed.svg`;
 
-                                    return (
-                                        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                                            <td className="px-4 py-3">
-                                                <img
-                                                    src={image}
-                                                    alt={name}
-                                                    className="w-24 h-16 object-cover rounded"
-                                                />
-                                            </td>
-                                            <td className="px-4 py-3 text-blue-600 hover:underline">
-                                                <Link href={isBed ? `/home/bed/${item.bed.id}` : `/home/room/${item.room.id}`}>
-                                                    {name}
-                                                </Link>
-                                            </td>
-                                            <td className="px-4 py-3">{roomName}</td>
-                                            <td className="px-4 py-3">{buildingName}</td>
-                                            <td className="px-4 py-3 font-semibold">₱{price}</td>
-                                            <td className={`px-4 py-3 font-medium ${occupied ? "text-red-500" : "text-green-500"}`}>
-                                                {isBed ? (occupied ? "Occupied" : "Available") : "-"}
-                                            </td>
-                                            <td className="px-4 py-3 text-center">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        toggleFavorite(isBed ? item.bed.id : item.room.id, item.type);
-                                                    }}
-                                                    className="text-red-500 hover:text-red-700"
-                                                    title="Remove from favorites"
+                            const name = isBed ? item.bed.name : item.room.name;
+                            const price = isBed ? (item.bed.sale_price || item.bed.price) : item.room.price;
+                            const occupied = isBed ? item.bed.is_occupied : null;
+                            const roomName = isBed ? item.room?.name : item.room?.name;
+                            const buildingName = item.building?.name || "Unknown Building";
+
+                            return (
+                                <motion.div
+                                    key={index}
+                                    variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
+                                    whileHover={{ scale: 1.02 }}
+                                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-4 flex flex-col relative 
+               w-64" // 👈 make card narrower
+                                >
+                                    {/* Image */}
+                                    <div className="relative">
+                                        <img
+                                            src={image}
+                                            alt={name}
+                                            className="w-full h-32 object-cover rounded-xl" // 👈 slightly smaller height
+                                        />
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toggleFavorite(isBed ? item.bed.id : item.room.id, item.type);
+                                            }}
+                                            className="absolute top-3 right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white transition"
+                                            title="Remove from favorites"
+                                        >
+                                            <FontAwesomeIcon icon={faHeart} className="text-red-500" />
+                                        </button>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="mt-4 flex-1 flex flex-col">
+                                        <Link
+                                            href={isBed ? `/home/bed/${item.bed.id}` : `/home/room/${item.room.id}`}
+                                            className="text-lg font-semibold text-indigo-700 hover:underline"
+                                        >
+                                            {name}
+                                        </Link>
+                                        <p className="text-sm text-gray-500">{roomName} • {buildingName}</p>
+
+                                        <div className="mt-3 flex items-center justify-between">
+                                            <p className="text-xl font-bold text-indigo-800">₱{price}</p>
+                                            {isBed && (
+                                                <span
+                                                    className={`px-3 py-1 text-xs font-medium rounded-full ${occupied
+                                                            ? "bg-red-100 text-red-600"
+                                                            : "bg-green-100 text-green-600"
+                                                        }`}
                                                 >
-                                                    <FontAwesomeIcon icon={faHeart} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                                    {occupied ? "Occupied" : "Available"}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+
+                            );
+                        })}
+                    </motion.div>
+                ) : (
+                    <div className="min-h-[60vh] flex items-center justify-center">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-gray-500 text-center bg-white p-8 rounded-2xl shadow-md"
+                        >
+                            <p className="text-lg">No favorites found.</p>
+                        </motion.div>
                     </div>
-                )
-                    : (
-                        <div className="min-h-full flex-1 flex items-center justify-center">
-                            <div className="text-gray-600 text-center">
-                                No favorites found.
-                            </div>
-                        </div>
-                    )}
+                )}
             </div>
         </>
     );
 }
-
-
 
 Favorites.layout = (page) => <AuthenticatedLayout children={page} />;

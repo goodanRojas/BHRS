@@ -6,9 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faStar, faBed, faMapMarkerAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
-    const [showRules, setShowRules] = useState(false);
+    const [showRules, setShowRules] = useState(true);
     const [images, setImages] = useState(building.images);
     const [currentIndex, setCurrentIndex] = useState(0);
+    console.log(building);
 
     const handleNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1 === building.images.length ? 0 : prevIndex + 1));
@@ -41,7 +42,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                 src={
                                     currentIndex === -1
                                         ? `/storage/${building.image}`
-                                        : `/storage/${images[currentIndex].file_path}`
+                                        : `/storage/${images[currentIndex]?.file_path}`
                                 }
                                 alt={building.name}
                                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -119,7 +120,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                     {building.address ? (
                                         building.address.address ? (
                                             <span>
-                                                {[building.address.barangay, building.address.municipality, building.address.province]
+                                                {[building.address.address.barangay, building.address.address.municipality, building.address.address.province]
                                                     .filter(Boolean)
                                                     .join(", ")}
                                             </span>
@@ -180,7 +181,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                 </div>
 
                 {/* Rooms Section */}
-                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-white">Rooms</h3>
+                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-gray-900">Rooms</h3>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {building.rooms.map((room) => (
@@ -211,7 +212,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
 
                                 <div className="flex items-center space-x-1">
                                     <FontAwesomeIcon icon={faStar} className="text-yellow-400 text-xs" />
-                                    <span className="text-xs text-gray-600">4.5 (12 reviews)</span>
+                                    <span className="text-xs text-gray-600">{room.avg_rating ? Number(room.avg_rating).toFixed(1) : "0.0"} ({room.rating_count} {room.rating_count === 1 ? "review" : "reviews"})</span>
                                 </div>
                             </div>
                         </Link>

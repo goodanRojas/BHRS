@@ -27,8 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => SellerMiddleware::class,
             'admin' => AdminMiddleware::class,
             'guest' => RedirectIfAuthenticated::class,
-            'check.subscription' => CheckSubscriptionFeature::class,
-            'check.pending.subscription' => CheckPendingSubscription::class,
+            'check.has.subscription' => CheckSubscriptionFeature::class,
+            'check.subscription' => CheckPendingSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

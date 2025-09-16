@@ -16,13 +16,20 @@ class RoomController extends Controller
         $room->load([
             'building',
             'images',
-            'beds.bookings' => function ($query) {
-                $query->where('status', 'completed');
-            },
-            'bookings',
+            'beds.bookings.ratings',
             'features',
             'favorites'
         ]);
+
+        foreach( $room->beds as $bed){
+            $ratings = collect();
+            foreach($bed->bookings as $booking)
+            {
+                $ratings = $ratings->merge($booking->ratings);
+            }
+            $bed->rating_count = $ratings->count();
+            $bed->avg_rating = $ratings->avg('stars');
+        }
 
         $roomId = $room->id;
 
@@ -46,6 +53,17 @@ class RoomController extends Controller
             ->where('bookable_type', Bed::class)
             ->whereIn('bookable_id', $bedIds)
             ->count();
+
+        foreach ($room->beds as $bed) {
+            $ratings = collect();
+            foreach ($bed->bookings as $booking) {
+                $ratings = $ratings->merge($booking->ratings);
+            }
+            $bed->rating_count = $ratings->count();
+            $bed->avg_rating = $ratings->avg('stars');
+        }
+
+        Log::info($room);
         return Inertia::render('Home/Room', [
             'room' => $room,
             'totalCompletedBookings' => $totalCompletedBookings,

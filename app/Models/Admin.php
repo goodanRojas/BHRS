@@ -40,6 +40,10 @@ class Admin extends Authenticatable
         ];
     }
 
+    public function defaultMessages()
+    {
+        return $this->morphToMany(DefaultMessage::class, 'owner');
+    }
     public function paymentInfo()
     {
         return $this->hasOne(AdminPaymentInfo::class);

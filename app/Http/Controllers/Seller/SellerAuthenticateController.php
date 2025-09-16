@@ -9,10 +9,25 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Subscription;
 class SellerAuthenticateController
 {
 
+    public function currentSubscription()
+    {
+        $owner = auth()->guard('seller')->user();
+
+        $subscription = Subscription::where('seller_id', $owner->id)
+            ->latest('created_at')
+            ->with('plan')
+            ->first();
+
+        if (!$subscription || $subscription->status !== 'active' || ($subscription->end_date && $subscription->end_date->isPast())) {
+            return response()->json(['subscription' => null]);
+        }
+
+        return response()->json(['subscription' => $subscription]);
+    }
 
     public function store(Request $request)
     {
@@ -26,7 +41,7 @@ class SellerAuthenticateController
             return redirect()->intended(route('seller.dashboard.index', absolute: false));
         } else {
             Log::info("Seller is not authenticated");
-            return back()->withErrors(['email' =>'Invalid Credentials']);
+            return back()->withErrors(['email' => 'Invalid Credentials']);
         }
     }
 

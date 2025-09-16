@@ -80,217 +80,139 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                     ]}
                 />
 
-                <div className="bg-white shadow-lg rounded-xl overflow-hidden">
-                    {/* 📸 Bed Image Section */}
-                    <div className="relative group">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Left: Main Image (spans 2 rows on desktop) */}
-                            <div className="relative md:row-span-2 overflow-hidden rounded-2xl shadow-md h-[300px]">
+                <div className="bg-white shadow-lg rounded-xl px-4 overflow-hidden">
+
+                    {/* Top Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
+                        {/* Left Section: Image + Thumbnails */}
+                        <div className="flex flex-col items-start gap-5">
+                            {/* Main Image */}
+                            <div className="relative overflow-hidden rounded-2xl shadow-lg h-[320px] w-full max-w-[550px] bg-white">
                                 <img
                                     src={
                                         currentIndex === -1
-                                            ? (BedGuests.image ? `/storage/${room.image}` : "/storage/room/default_room.svg")
-                                            : (images[currentIndex]?.file_path ? `/storage/${images[currentIndex].file_path}` : "/storage/room/default_room.svg")
+                                            ? (bed.image ? `/storage/${bed.image}` : "/storage/bed/default_bed.svg")
+                                            : (images[currentIndex]?.file_path
+                                                ? `/storage/${images[currentIndex].file_path}`
+                                                : "/storage/bed/default_bed.svg")
                                     }
-                                    alt={bed.name}
-                                    className="w-full h-72 md:h-full object-cover transition-transform duration-500 hover:scale-105"
+                                    alt={bed.name || "Bed"}
+                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                 />
+
+                                {/* ❤️ Favorite Icon – Top Left */}
+                                <div className="absolute top-3 left-3 group">
+                                    <div className="relative">
+                                        <FontAwesomeIcon
+                                            icon={faHeart}
+                                            className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
+                                                ? 'text-red-500 hover:text-red-600'
+                                                : 'text-red-100 hover:text-red-200 hover:border-red-500'
+                                                } drop-shadow-md`}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toggleFavorite(bed.id);
+                                            }}
+                                        />
+                                        <span className="w-[130px] text-center absolute  left-[100px] -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
+                                            Add to favorites
+                                        </span>
+                                    </div>
+                                </div>
 
                             </div>
 
-                            {/* Top Right: bed Name */}
-                            <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-200">
-                                <h2 className="text-xl md:text-2xl font-semibold text-gray-800 p-4 text-center">
+                            {/* Thumbnails */}
+                            <div className="flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                                {images &&
+                                    images.length > 0 &&
+                                    images.map((image, index) => (
+                                        <img
+                                            key={index}
+                                            src={`/storage/${image.file_path}`}
+                                            alt={`${bed.name} ${index + 1}`}
+                                            className={`w-20 h-20 object-cover rounded-xl shadow-md flex-shrink-0 cursor-pointer border-2 transition 
+                               ${currentIndex === index
+                                                    ? "border-blue-500"
+                                                    : "border-transparent hover:border-blue-300"
+                                                }`}
+                                            onClick={() => setCurrentIndex(index)}
+                                        />
+                                    ))}
+                            </div>
+                        </div>
+
+                        {/* Right Section: Info */}
+                        <div className=" relative flex flex-col items-center md:items-start gap-5">
+                            {/* Building Name */}
+                            <div className="w-full bg-white rounded-2xl shadow-md p-5">
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
                                     {bed.name}
                                 </h2>
                             </div>
 
-                            {/* Bottom Right: Mini Carousel */}
-                            <div className="relative bg-white rounded-2xl shadow-sm border border-gray-200 p-2 flex flex-col items-center">
-                                {images && images.length > 0 && (
-                                    <>
-                                        {/* Small Preview Image */}
-                                        <div className="w-full">
-                                            <img
-                                                src={`/storage/${images[currentIndex === -1 ? 0 : currentIndex].file_path
-                                                    }`}
-                                                alt={bed.name}
-                                                className="w-full h-28 object-cover rounded-lg"
-                                            />
-                                        </div>
+                            {/* Details */}
+                            <div className="w-full bg-white rounded-2xl shadow-md p-5 space-y-4">
 
-                                        {/* Arrows */}
-                                        <div className="flex justify-between w-full mt-2 px-2">
-                                            <button
-                                                onClick={handlePrev}
-                                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
-                                            >
-                                                &#10094;
-                                            </button>
-                                            <button
-                                                onClick={handleNext}
-                                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-sm shadow-sm"
-                                            >
-                                                &#10095;
-                                            </button>
-                                        </div>
-
-                                        {/* Dots */}
-                                        <div className="flex gap-1 mt-2">
-                                            {/* Main Image Dot */}
-                                            <button
-                                                onClick={() => setCurrentIndex(-1)}
-                                                className={`h-2 w-2 rounded-full ${currentIndex === -1 ? "bg-blue-600" : "bg-gray-400"
-                                                    }`}
-                                            ></button>
-
-                                            {/* Extra Images Dots */}
-                                            {images.map((_, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => setCurrentIndex(index)}
-                                                    className={`h-2 w-2 rounded-full ${currentIndex === index ? "bg-blue-600" : "bg-gray-400"
-                                                        }`}
-                                                ></button>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-
-                        {/* ❤️ Favorite Icon – Top Left */}
-                        <div className="absolute top-3 left-3 group">
-                            <div className="relative">
-                                <FontAwesomeIcon
-                                    icon={faHeart}
-                                    className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
-                                        ? 'text-red-500 hover:text-red-600'
-                                        : 'text-white hover:text-gray-200 hover:border-red-500'
-                                        } drop-shadow-md`}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        toggleFavorite(bed.id);
-                                    }}
-                                />
-                                <span className="w-[130px] text-center absolute  left-[100px] -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded-md py-1 px-2 shadow-md">
-                                    Add to favorites
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* 📦 Book Now – Bottom Right */}
-                        {bed.bookings.some(booking => booking.status === 'completed') ? (
-                            null
-                        ) : (
-                            <button
-                                onClick={() => redirectToBook(bed.id)}
-                                className="absolute bottom-3 right-3 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
-                            >
-                                Book now!
-                            </button>
-                        )}
-
-                    </div>
-
-                    {/* 🛏️ Bed Details Section */}
-                    <div className="p-6 space-y-4">
-                        {/* Name and Rating */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <h4 className="text-2xl font-bold text-gray-800">{bed.name}</h4>
-
-                                {average_rating > 0 ? (
-                                    <div className="flex items-center gap-2 text-sm">
-                                        {/* Star Icon */}
+                                {/* Stats */}
+                                <div className="flex flex-wrap gap-6 text-sm text-gray-700">
+                                    <div className="flex items-center gap-2">
                                         <FontAwesomeIcon icon={faStar} className="text-yellow-500" />
-
-                                        {/* Rating Value */}
                                         <span className="font-semibold text-gray-800">
-                                            {average_rating.toFixed(1)}
+                                            {average_rating ? Number(average_rating).toFixed(1) : "0.0"}
                                         </span>
-
-                                        {/* Rating Count */}
                                         <span className="text-gray-500">
                                             ({rating_count} {rating_count === 1 ? "review" : "reviews"})
                                         </span>
                                     </div>
-                                ) : (
-                                    <span className="text-sm text-gray-500 italic">No ratings yet</span>
-                                )}
 
-                            </div>
-                            {/*  Price Section */}
-                            <div className="flex items-center justify-between rounded-md p-4">
-                                <div>
-                                    <p className="text-lg font-bold text-gray-700">&#8369; {bed.price}</p>
-                                    {bed.sale_price && (
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <img
-                                                src="/storage/system/sale-icon.png"
-                                                alt="Sale"
-                                                className="h-5 w-5"
-                                            />
-                                            <p className="text-sm text-red-500 font-medium">
-                                                Sale: &#8369; {bed.sale_price}
-                                            </p>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-green-600">
+                                            {completed_bookings || 0}
+                                        </span>
+                                        <span className="text-gray-500">
+                                            {completed_bookings === 1
+                                                ? "completed booking"
+                                                : "completed bookings"}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
 
 
-
-                        {/* 🏢 Room and Building */}
-                        <div>
-                            <p className="text-md font-semibold text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faDoorOpen} /> {bed.room.name}</p>
-                            <p className="text-sm text-gray-700"><FontAwesomeIcon className='text-indigo-500' icon={faBuilding} /> {bed.room.building.name}</p>
-                        </div>
-                        {/* Contact Seller */}
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                            <Link href={`/home/building/${bed.room.building.id}`} className="flex items-center gap-1 hover:underline">
-                                {bed.room.building.seller.avatar ? (
-                                    <img src={`/storage/${bed.room.building.seller.avatar}`} alt={bed.room.building.name} className="h-6 w-6 rounded-full" />
-                                ) : (
-                                    <FontAwesomeIcon icon={faUserTie} className="h-6 w-6 rounded-full" />
-                                )}
-                                {bed.room.building.seller.name}
-                            </Link>
-                            <button onClick={() => chatWithSeller(bed.room.building.seller.id, bed.id)} className="text-gray-500 hover:text-blue-600">
-                                <FontAwesomeIcon icon={faMessage} />
-                            </button>
-                        </div>
-
-
-
-                        {/* 📃 Description */}
-                        <div>
-                            <h5 className="text-sm font-semibold text-gray-700 mb-1">Description</h5>
-                            {bed.description ? <pre className="text-sm text-gray-600 whitespace-pre-wrap">{bed.description}</pre> : <p className="text-sm text-gray-500 italic">No description provided.</p>}
-                            <div>
-                                <h3 className='text-sm font-semibold text-gray-700 mb-1'>Features</h3>
-                                {bed.features?.length > 0 ? (
-                                    <>
-                                        {bed.features.map((feature) => (
-                                            <div
-                                                key={feature.id}
-                                                className="relative inline-block p-1 mb-2 mr-4 hover:bg-gray-100 rounded-md group"
-                                            >
-                                                {/* Feature name container with hover effect */}
-                                                {/* Changes this into a pill shape */}
-                                                <span className="text-xs text-gray-600 rounded-full px-2 py-1 bg-gray-100">{feature.name}</span>
-                                            </div>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-gray-500 italic">No features provided.</p>
+                                {/* Features */}
+                                {bed.features && bed.features.length > 0 && (
+                                    <div>
+                                        <h2 className='text-md sm:text-lg font-semibold mb-2'>Features</h2>
+                                        <div className="flex flex-wrap gap-2">
+                                            {bed.features.map((feature) => (
+                                                <span
+                                                    key={feature.id}
+                                                    className="bg-indigo-50 text-indigo-800 text-xs sm:text-sm px-3 py-1 rounded-full border border-indigo-200"
+                                                >
+                                                    {feature.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
                             </div>
+                            {/* 📦 Book Now – Bottom Right */}
+                            {bed.bookings.some(booking => booking.status === 'completed') ? (
+                                null
+                            ) : (
+                                <button
+                                    onClick={() => redirectToBook(bed.id)}
+                                    className="absolute bottom-10 right-5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
+                                >
+                                    Book now!
+                                </button>
+                            )}
+
+
+
                         </div>
-                    </div>{/* 💬 Feedback Section */}
+                    </div>
                     {/* 💬 Feedback Section */}
                     <div className="px-6 pb-6 space-y-6">
                         <h4 className="text-xl font-semibold text-gray-800">

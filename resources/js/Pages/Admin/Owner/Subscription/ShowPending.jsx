@@ -1,17 +1,42 @@
 import AuthenticatedLayout from "../../AuthenticatedLayout";
 import { motion } from "framer-motion";
 import Modal from "@/Components/Modal";
-import { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
+import { useState, useEffect } from "react";
+import { useForm } from "@inertiajs/react";
 
 export default function ShowPending({ subscription }) {
 
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    const handleConfirm = () => {
-        Inertia.post(route('admin.subscriptions.confirm', subscription.id));
-        setShowConfirmModal(false);
+    const { data, setData, post, processing, errors } = useForm({
+        subscription_id: subscription.id,
+        receipt: null,
+        reference_number: "",
+        remarks: "",
+    });
+
+    const [preview, setPreview] = useState(null);
+
+    useEffect(() => {
+        const file = data.receipt;
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }, [data.receipt]);
+
+    const handleConfirm = (e) => {
+        e.preventDefault();
+
+        post(route("admin.subscriptions.confirm"), {
+            forceFormData: true,
+            onSuccess: () => setShowConfirmModal(false),
+        });
     };
 
     const handleReject = () => {
@@ -146,10 +171,101 @@ export default function ShowPending({ subscription }) {
             <Modal show={showConfirmModal} onClose={() => setShowConfirmModal(false)}>
                 <h2 className="text-xl font-bold mb-4">Confirm Subscription</h2>
                 <p className="mb-4">Are you sure you want to confirm this subscription?</p>
-                <div className="flex justify-end gap-4">
-                    <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
-                    <button onClick={handleConfirm} className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700">Confirm</button>
-                </div>
+
+                <p>Please provide your receipt detail.</p>
+                <form onSubmit={handleConfirm} encType="multipart/form-data">
+
+                    {/* Receipt Upload */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Upload Receipt (image)
+                        </label>
+                        <div className="flex items-center justify-center w-full">
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-white hover:bg-gray-50 transition">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg
+                                        className="w-8 h-8 mb-2 text-indigo-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 0v4m0 0H9m4 0h4"
+                                        />
+                                    </svg>
+                                    <p className="text-sm text-gray-500">Click to upload or drag & drop</p>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setData("receipt", e.target.files[0])}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+                        {errors.receipt && (
+                            <p className="text-red-500 text-sm mt-1">{errors.receipt}</p>
+                        )}
+                        {/* ✅ Preview */}
+                        {preview && (
+                            <motion.div
+                                className="mt-4"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <img
+                                    src={preview}
+                                    alt="Receipt Preview"
+                                    className="rounded-lg shadow-md border w-full max-h-64 object-contain"
+                                />
+                            </motion.div>
+                        )}
+                    </div>
+
+                    {/* Remarks */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Remarks (optional)
+                        </label>
+                        <textarea
+                            value={data.remarks}
+                            onChange={(e) => setData("remarks", e.target.value)}
+                            rows="4"
+                            className="w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700"
+                            placeholder="Add any additional notes about your payment..."
+                        ></textarea>
+                        {errors.remarks && (
+                            <p className="text-red-500 text-sm mt-1">{errors.remarks}</p>
+                        )}
+                    </div>
+
+                    {/* Reference Number */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Reference Number (optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={data.reference_number}
+                            onChange={(e) => setData("reference_number", e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-700"
+                            placeholder="Enter your reference number..."
+                        />
+                        {errors.reference_number && (
+                            <p className="text-red-500 text-sm mt-1">{errors.reference_number}</p>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end gap-4">
+                        <button type="button" onClick={() => setShowConfirmModal(false)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
+                        <button type="submit" className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700">Confirm</button>
+                    </div>
+                </form>
+
             </Modal>
         </AuthenticatedLayout>
     );

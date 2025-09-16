@@ -26,7 +26,15 @@ export default function landowner({ sentMessages, receivedMessages }) {
 
     const user = usePage().props.auth.user; // Get the authenticated user
 
-
+    const messsagesEndRef = useRef(null);
+    const scrollToBottom = () => {
+        messsagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    useEffect(() => {
+        if (messages.length > 0) {
+            scrollToBottom();
+        }
+    }, [messages]);
     const selectedOwnerToSessionStorage = (owner) => {
         sessionStorage.setItem('selectedOwner', JSON.stringify(owner));
     };
@@ -441,6 +449,7 @@ export default function landowner({ sentMessages, receivedMessages }) {
                                         )}
                                     </div>
                                 )}
+                                <div ref={messsagesEndRef} />
                             </div>
 
 

@@ -104,10 +104,11 @@ class BuildingController extends Controller
 
     public function update(Request $request, Building $building)
     {
+        // dd($request);
+        Log::info('Building Update data');
         Log::info($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|string', // adjust if it's an upload
             'address' => 'required|array',
             'address.region' => 'nullable|string',
             'address.province' => 'nullable|string',
@@ -115,13 +116,32 @@ class BuildingController extends Controller
             'address.barangay' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'bir' => 'nullable|file|mimes:pdf|max:5120', // optional PDF
+            'business_permit' => 'nullable|file|mimes:pdf|max:5120', // optional PDF
+
         ]);
 
+      
+        if ($request->hasFile('bir')) {
+            $validated['bir'] = $request->file('bir')->store('buildings/bir', 'public');
+        } else {
+            $validated['bir'] = $building->bir;
+        }
+
+        if ($request->hasFile('business_permit')) {
+            $validated['business_permit'] = $request->file('business_permit')->store('buildings/permits', 'public');
+        } else {
+            $validated['business_permit'] = $building->business_permit;
+        }
+
+
         $building->update([
-            'name' => $validated['name'],
+            'name' => $validated['name'] ?? $building->name,
             'image' => $validated['image'] ?? $building->image,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
+            'bir' => $validated['bir'],
+            'business_permit' => $validated['business_permit'],
         ]);
         $address = Address::where('addressable_id', $building->id)
             ->where('addressable_type', Building::class)
