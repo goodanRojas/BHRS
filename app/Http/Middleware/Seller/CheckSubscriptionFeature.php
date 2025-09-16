@@ -22,16 +22,17 @@ class CheckSubscriptionFeature
             return redirect()->route('seller.login.index');
         }
 
-        // Get the latest valid subscription (adjust sorting logic if needed)
+        // Get the latest subscription
         $subscription = $owner->subscriptions()
-            ->latest('created_at') // or maybe order by end_date
+            ->latest('created_at')
             ->first();
-        Log::info($subscription);
 
+        Log::info($subscription);
 
         // Case 1: No subscription at all (new seller)
         if (!$subscription) {
-            return redirect()->route('seller.subscription.landing');
+            return redirect()->route('seller.subscription.landing')
+                ->with('message', 'You do not have a subscription yet.');
         }
 
         // Case 2: Subscription pending approval
@@ -41,7 +42,7 @@ class CheckSubscriptionFeature
         }
 
         // Case 3: Subscription canceled or paused
-        if (in_array($subscription->status, ['canceled', 'paused']) /* || !$subscription->active */) {
+        if (in_array($subscription->status, ['canceled', 'paused'])) {
             return redirect()->route('seller.subscription.landing')
                 ->with('message', 'Your subscription is not active. Please renew or contact admin.');
         }
@@ -53,15 +54,14 @@ class CheckSubscriptionFeature
         }
 
         // Case 5: Feature not included in plan
-        if (!$owner->hasPlan($plan)) {
+        if (!empty($plan) && !$owner->hasPlan($plan)) {
             return redirect()->route('seller.subscription.upgrade')
                 ->with('message', 'Your current plan does not support this feature. Please upgrade.');
-
         }
 
-        // Case 6: Feature not included in plan
-
+        // All checks passed, continue request
         return $next($request);
     }
+
 
 }
