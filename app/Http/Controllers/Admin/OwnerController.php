@@ -50,17 +50,19 @@ class OwnerController extends Controller
         Log::info($seller->toArray());
         if ($seller) {
             $address = Address::create([
-                'addressable_id'   => $seller->id,
+                'addressable_id' => $seller->id,
                 'addressable_type' => Seller::class,
                 'address' => [
                     'barangay' => $validated['address']['barangay'],
-                    'city'     => $validated['address']['city'],
+                    'city' => $validated['address']['city'],
                     'province' => $validated['address']['province'],
-                    'region'   => $validated['address']['region'],
+                    'region' => $validated['address']['region'],
                 ],
             ]);
-        }
-        return redirect()->route('admin.owners');
+        }    // Return JSON response with the newly created owner
+        return response()->json([
+            'owners' => [$seller->load('address')] // wrap in array to match your React code
+        ]);
     }
 
 

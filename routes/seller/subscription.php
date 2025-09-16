@@ -2,7 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Seller\Subscription\SubscriptionController;
 Route::prefix('seller/subscription')->name('seller.subscription.')->middleware('seller')->group(function () {
-    Route::middleware('check.subscription')->group(function () {
+    Route::middleware('check.has.subscription')->group(function () {
         Route::get('/plan/{plan}', [SubscriptionController::class, 'choose'])->name('choose');
         Route::post('/store', [SubscriptionController::class, 'store'])->name('store');
     });
