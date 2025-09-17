@@ -4,36 +4,16 @@ import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 
-export default function Sidebar({ className }) {
-    const [isOpen, setIsOpen] = useState(false);
+export default function Sidebar({ className, isOpen, onToggle }) {
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false);
 
     const { post } = useForm();
-    useEffect(() => {
-        const savedSidebarState = sessionStorage.getItem('sidebarState');
-
-        if (savedSidebarState) {
-            const state = JSON.parse(savedSidebarState);
-            setIsOpen(state.isOpen);
-            setOwnerDropdownOpen(state.ownerDropdownOpen);
-            setBuildingDropdownOpen(state.buildingDropdownOpen);
-        }
-    }, []);
-
-    useEffect(() => {
-        sessionStorage.setItem('sidebarState', JSON.stringify({
-            isOpen,
-            ownerDropdownOpen,
-            buildingDropdownOpen
-        }));
-    }, [isOpen, ownerDropdownOpen, buildingDropdownOpen]);
-    const toggleSidebar = () => setIsOpen(!isOpen);
 
     return (
         <aside
-            onClick={toggleSidebar}
-            className={`bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} ${className}`}>
+            onClick={onToggle}
+            className={`fixed top-0 left-0 h-screen bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} ${className}`}>
             <div className="h-full flex flex-col">
                 {/* Header */}
                 <div className="relative h-16  flex items-center justify-center">
@@ -146,7 +126,7 @@ export default function Sidebar({ className }) {
                                     e.preventDefault();
                                     post(route('admin.logout.post')); // send POST request
                                 }}
-                                className="px-4 py-2 text-red-600 hover:text-red-800"
+                                className="absolute bottom-10 right-7 w-[200px] px-4 py-2 bg-red-100 hover:bg-red-200 rounded-full text-gray-800 hover:text-gray-900 transition-all duration-300"
                             >
                                 Logout
                             </button>

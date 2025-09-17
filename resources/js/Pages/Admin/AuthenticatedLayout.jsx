@@ -19,8 +19,21 @@ export default function AuthenticatedLayout({ children }) {
                 setNotificationsCount(notificationsCount + 1);
             });
 
-       
+
     }, [user?.id]);
+    // Load from sessionStorage on first render
+    useEffect(() => {
+        const savedSidebarState = sessionStorage.getItem("sidebarState");
+        if (savedSidebarState) {
+            const state = JSON.parse(savedSidebarState);
+            setIsSidebarOpen(state.isOpen);
+        }
+    }, []);
+
+    // Save when sidebar changes
+    useEffect(() => {
+        sessionStorage.setItem("sidebarState", JSON.stringify({ isOpen: isSidebarOpen }));
+    }, [isSidebarOpen]);
     return (
         <div className="flex min-h-screen w-full ">
             <NotifPopUp notification={notifVisible} onClose={() => setNotifVisible(null)} />
@@ -32,10 +45,10 @@ export default function AuthenticatedLayout({ children }) {
             ></div>
 
             {/* Sidebar */}
-            <Sidebar className={"flex-shrink-0"} isOpen={isSidebarOpen} />
+            <Sidebar className={"flex-shrink-0"} isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col">
+            <div className={`${isSidebarOpen ? "ml-64" : "ml-12"} flex-grow flex flex-col`}>
                 {/* Top Navbar */}
                 <header className="bg-indigo-500 flex items-center justify-between shadow px-6 h-16">
 

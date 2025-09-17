@@ -60,42 +60,50 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
             Please send your payment manually using the details below.
           </p>
 
-          {/* Owner Name */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-3"
-          >
-            <FontAwesomeIcon icon={faUser} className="text-blue-500" />
-            <span className="font-semibold text-gray-800">{paymentInfo.gcash_name}</span>
-          </motion.div>
+          {paymentInfo === null ? (
+            <div>
+              {/* Owner Name */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-3"
+              >
+                <FontAwesomeIcon icon={faUser} className="text-blue-500" />
+                <span className="font-semibold text-gray-800">{paymentInfo.gcash_name}</span>
+              </motion.div>
 
-          {/* GCash Number */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-4"
-          >
-            <FontAwesomeIcon icon={faMobileScreen} className="text-green-500" />
-            <span className="font-semibold text-gray-800">{paymentInfo.gcash_number}</span>
-          </motion.div>
+              {/* GCash Number */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center justify-center gap-2 bg-blue-50 py-2 px-4 rounded-lg mb-4"
+              >
+                <FontAwesomeIcon icon={faMobileScreen} className="text-green-500" />
+                <span className="font-semibold text-gray-800">{paymentInfo.gcash_number}</span>
+              </motion.div>
 
-          {/* QR Code */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mb-4"
-          >
-            <FontAwesomeIcon icon={faQrcode} className="text-gray-500 mb-2 text-xl" />
-            <img
-              src={`/storage/${paymentInfo.qr_code}`}
-              alt="GCash QR Code"
-              className="mx-auto w-48 h-48 object-cover border rounded-lg shadow-md"
-            />
-          </motion.div>
+              {/* QR Code */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mb-4"
+              >
+                <FontAwesomeIcon icon={faQrcode} className="text-gray-500 mb-2 text-xl" />
+                <img
+                  src={`/storage/${paymentInfo.qr_code}`}
+                  alt="GCash QR Code"
+                  className="mx-auto w-48 h-48 object-cover border rounded-lg shadow-md"
+                />
+              </motion.div>
+            </div>
+          ): (
+            <div>
+              <p className="text-lg font-semibold text-gray-700 mb-6">The owner payment information is not available.</p>
+            </div>
+          )}
 
           {/* Amount Notice */}
           <p className="text-lg font-semibold text-gray-700 mb-6">
