@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage, Auth};
+use Illuminate\Validation\Rule;
 use App\Models\{Building, Feature, Room, Address, Bed, Media};
 
 class BuildingController extends Controller
@@ -83,7 +84,13 @@ class BuildingController extends Controller
     public function addRoom(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                // Unique per building
+                Rule::unique('rooms')->where(fn($query) => $query->where('building_id', $request->building_id)),
+            ],
             'image' => 'required|image|',
         ]);
 
@@ -121,7 +128,7 @@ class BuildingController extends Controller
 
         ]);
 
-      
+
         if ($request->hasFile('bir')) {
             $validated['bir'] = $request->file('bir')->store('buildings/bir', 'public');
         } else {

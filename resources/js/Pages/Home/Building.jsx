@@ -149,6 +149,14 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                     </div>
                                 </div>
                             )}
+
+                            {/*Description */}
+                            {building.description && (
+                                <div className="flex flex-col gap-4">
+                                    <h2 className="text-md sm:text-lg font-semibold mb-2">Description</h2>
+                                    <pre className="text-sm sm:text-base text-gray-700">{building.description}</pre>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

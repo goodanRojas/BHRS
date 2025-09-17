@@ -8,8 +8,11 @@
 /storage/pail
 /vendor
 .env
-# config/*.php
-# resources/js/echo.js
+config/reverb.php
+config/mail.php
+config/queue.php
+config/broacasting.php
+resources/js/echo.js
 .env.backup
 .env.production
 .phpactor.json

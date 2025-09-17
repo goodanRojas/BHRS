@@ -254,6 +254,7 @@ export default function Room({ room }) {
                 description,
                 id: room.id,
             });
+            setIsEditingDescription(false);
             setDescription(response.data.description);
         } catch (error) {
             console.error('Error:', error);

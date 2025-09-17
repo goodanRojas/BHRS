@@ -20,7 +20,7 @@ export default function Building({ building }) {
     const [addRoomModalOpen, setAddRoomModalOpen] = useState(false);
     const [features, setFeatures] = useState(building?.features || []);
     const [rooms, setRooms] = useState(building?.rooms || []);
-    const [images, setImages] = useState( building?.images || []);
+    const [images, setImages] = useState(building?.images || []);
     const [roomPreview, setRoomPreview] = useState(null);
     const [toastMessage, setToastMessage] = useState({
         'message': '',
@@ -32,6 +32,7 @@ export default function Building({ building }) {
     const optionButtonRef = useRef(null);
     const optionPopupRef = useRef(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [duplicateError, setDuplicateError] = useState('');
 
     const fileInputRef = useRef(null);
     const { data: buildingData, setData: setBuildingData, post: postBuilding, processing: buildingProcessing, errors: buildingErrors, reset: resetBuilding } = useForm({
@@ -177,6 +178,7 @@ export default function Building({ building }) {
 
             // Close the modal and reset the form
             setAddRoomModalOpen(false);
+            setRoomPreview(null);
             reset();
         } catch (error) {
             console.error('Error creating room:', error);
@@ -756,9 +758,17 @@ export default function Building({ building }) {
                                 className="w-full border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 autoComplete="name"
                                 isFocused={true}
-                                onChange={(e) => setData("name", e.target.value)}
+                                onChange={(e) => {
+                                    setData("name", e.target.value);
+
+                                    // check for duplicate
+                                    const isDuplicate = rooms.some(
+                                        (room) => room.name.toLowerCase() === e.target.value.toLowerCase()
+                                    );
+                                    setDuplicateError(isDuplicate ? 'Room name must be unique.' : '');
+                                }}
                             />
-                            <InputError message={errors.name} className="mt-1 text-sm text-red-500" />
+                            <InputError message={duplicateError || errors.name} className="mt-1 text-sm text-red-500" />
                         </div>
 
                         {/* Actions */}

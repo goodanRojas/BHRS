@@ -196,6 +196,11 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Description */}
+                                {bed.description && (
+                                    <pre className="mt-4 text-sm text-gray-500">{bed.description}</pre>
+                                )}
                             </div>
                             {/* 📦 Book Now – Bottom Right */}
                             {bed.bookings.some(booking => booking.status === 'completed') ? (
