@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Events\UserStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,15 +29,30 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        // Validate input
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
 
+        // Attempt login
+        if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'), // Invalid credentials
+            ]);
+        }
+
+        // Regenerate session
         $request->session()->regenerate();
 
-        auth()->user()->update(['is_online' => true]);
-        event(new UserStatusUpdated(auth()->user()->id, true));
+        // Set user online status
+        $user = Auth::user();
+        $user->update(['is_online' => true]);
+        event(new UserStatusUpdated($user->id, true));
 
+        // Redirect to intended page
         return redirect()->intended(route('to.user.buildings', absolute: false));
     }
 
