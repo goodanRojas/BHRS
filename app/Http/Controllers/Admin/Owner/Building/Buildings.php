@@ -27,71 +27,59 @@ class Buildings extends Controller
 
     public function store(Request $request)
     {
+        // Handle file uploads
+        $imagePath = $request->hasFile('image')
+            ? $request->file('image')->storeAs('images', $request->file('image')->hashName(), 'public')
+            : null;
 
-        // Validate the data
-        /*  $validate = $request->validate([
-            'seller_id' => 'required|exists:sellers,id',
-            'image' => 'required|image|max:2048',
-            'bir' => 'required|file|max:2048',
-            'business_permit' => 'required|file|max:2048',
-            'name' => 'required|string|max:255',
-            'long' => 'required|numeric',
-            'lat' => 'required|numeric',
-            'number_of_floors' => 'required|numeric',
-        ]); */
-        Log::info("Hello 1");
+        $birPath = $request->hasFile('bir')
+            ? $request->file('bir')->storeAs('pdfs', $request->file('bir')->hashName(), 'public')
+            : null;
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imagePath = $image->storeAs('images', $image->hashName(), 'public');
-        }
-        if ($request->hasFile('bir')) {
-            $bir = $request->file('bir');
-            $birPath = $bir->storeAs('pdfs', $bir->hashName(), 'public');
-        }
-        if ($request->hasFile('business_permit')) {
-            $businessPermit = $request->file('business_permit');
-            $businessPermitPath = $businessPermit->storeAs('pdfs', $businessPermit->hashName(), 'public');
-        }
+        $fireSafetyCertificatePath = $request->hasFile('fireSafetyCertificate')
+            ? $request->file('fireSafetyCertificate')->storeAs('pdfs', $request->file('fireSafetyCertificate')->hashName(), 'public')
+            : null;
 
-        Log::info("Hello 1");
+        // Create building
         $building = Building::create([
             'seller_id' => $request->owner_id,
-            'image' => $imagePath ?? null,
-            'name' => $request->name,
-            'longitude' => $request->long,
-            'latitude' => $request->lat,
-            'number_of_floors' => $request->number_of_floors,
-            'bir' => $birPath ?? null,
-            'business_permit' => $businessPermitPath ?? null, // Use null coalescing operator to handle optional files
-            'status' => 1
+            'image' => $imagePath,
+            'name' => $request->buildingName,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
+            'number_of_floors' => $request->numberOfFloors,
+            'bir' => $birPath,
+            'business_permit' => $fireSafetyCertificatePath,
+            'number_of_rooms' => $request->numberOfRooms,
+            'status' => 1,
         ]);
-        Log::info($building);
+
         if ($building) {
-            Log::info("Building created successfully");
+            // Create address (nested JSON from form)
             $address = Address::create([
                 'addressable_id' => $building->id,
                 'addressable_type' => Building::class,
-                'street' => $request->street,  // Assuming street is passed in the request
-                'barangay' => $request->barangay,  // Assuming barangay is passed in the request
-                'city' => $request->city,  // Assuming city is passed in the request
-                'province' => $request->province,  // Assuming province is passed in the request
-                'postal_code' => $request->postal_code,  // Assuming postal_code is passed in the request
-                'country' => $request->country,  // Assuming country is passed in the request
-                'latitude' => $request->lat,  // Latitude passed in the request
-                'longitude' => $request->long,  // Longitude passed in the request
+                'address' => $request->address, // will be JSON
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
             ]);
-            if ($address) {
-                return response()->json([
-                    'message' => 'Building successfully created'
-                ]);
-            }
-        }
 
-        return response()->json([
-            'message' => 'An error occurred while creating the building'
-        ], 500);
+            // Optional: save amenities if needed
+            if ($request->filled('aminities')) {
+                foreach ($request->aminities as $amenity) {
+                    Feature::create([
+                        'featureable_id' => $building->id,
+                        'featureable_type' => Building::class,
+                        'name' => $amenity,
+                    ]);
+                }
+            }
+
+            return back()->with('message', 'Building successfully created');
+        }
+        return back()->with('message', 'An error occurred while creating the building');
     }
+
 
     public function show($id)
     {
@@ -135,5 +123,5 @@ class Buildings extends Controller
         ], 200);
     }
 
-   
+
 }

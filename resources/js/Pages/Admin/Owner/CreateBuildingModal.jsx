@@ -1,34 +1,75 @@
-import AdminLayout from "../AuthenticatedLayout";
-import { Head, useForm, usePage } from "@inertiajs/react";
-import { useState, useEffect } from "react";
-import axios from 'axios';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import Toast from "@/Components/Toast";
-import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
-import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
-import TextInput from "@/Components/TextInput";
-export default function CreateBuildingModal({ owner, isOpen, onClose }) {
-    // console.log(owners);
-    const [step, setStep] = useState(1);
 
+import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
+import Toast from '@/Components/Toast';
+import SecondaryButton from '@/Components/SecondaryButton';
+import PrimaryButton from '@/Components/PrimaryButton';
+import AuthenticatedLayout from '../AuthenticatedLayout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+export default function CreateBuildingModal({ owner, isOpen, onClose }) {
+
+    if (!isOpen) return null;
     const { data, setData, post, processing, errors, reset } = useForm({
         owner_id: owner.id || null,
+        buildingName: '',
         image: null,
+        numberOfFloors: '',
+        address: {
+            region: '',
+            province: '',
+            municipality: '',
+            barangay: '',
+        },
+        latitude: '',
+        longitude: '',
         bir: null,
-        business_permit: null,
-        name: "",
-        long: "",
-        lat: "",
-        number_of_floors: "",
-        street: "",
-        barangay: "",
-        city: "",
-        postal_code: "",
-        province: "",
-        country: "",
+        fireSafetyCertificate: null,
+        numberOfRooms: '',
+        aminities: [],
     });
+
+    const [step, setStep] = useState(1);
+    const [amenityInput, setAmenityInput] = useState('');
+
+    const [filePreviews, setFilePreviews] = useState({}); // preview state
+
+    // handle file inputs with preview
+
+    const handleFileChange = (e, field) => {
+        const file = e.target.files[0];
+        setData(field, file);
+
+        if (file) {
+            if (file.type.startsWith("image/")) {
+                setFilePreviews((prev) => ({
+                    ...prev,
+                    [field]: URL.createObjectURL(file),
+                }));
+            } else if (file.type === "application/pdf") {
+                setFilePreviews((prev) => ({
+                    ...prev,
+                    [field]: "pdf",
+                }));
+            }
+        }
+    };
+
+    // handle amenities
+    const handleAmenityKeyDown = (e) => {
+        if (e.key === 'Enter' && amenityInput.trim() !== '') {
+            e.preventDefault();
+            if (!data.aminities.includes(amenityInput.trim())) {
+                setData('aminities', [...data.aminities, amenityInput.trim()]);
+            }
+            setAmenityInput('');
+        }
+    };
+    const removeAmenity = (item) => {
+        setData('aminities', data.aminities.filter((a) => a !== item));
+    };
+
     // cascading locations
     const regions = Object.entries(ph);
     const provinces = data.address.region
@@ -54,374 +95,309 @@ export default function CreateBuildingModal({ owner, isOpen, onClose }) {
         return !isNaN(num) && num >= -180 && num <= 180;
     };
 
-    const nextStep = () => {
-        setStep(step + 1);
-    };
-    const prevStep = () => {
-        setStep(step - 1);
+    // step validation
+    const validateStep = () => {
+        switch (step) {
+            case 1: return data.buildingName && data.numberOfFloors;
+            case 2:
+                return (
+                    data.address.region &&
+                    data.address.province &&
+                    data.address.municipality &&
+                    data.address.barangay &&
+                    isValidLatitude(data.latitude) &&
+                    isValidLongitude(data.longitude)
+                );
+            case 3: return data.bir && data.fireSafetyCertificate;
+            case 4: return data.numberOfRooms;
+            default: return true;
+        }
     };
 
-    const handleFileChange = (e, fieldName) => {
-        const file = e.target.files[0];
-        setData(fieldName, file);
-    };
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (step < 5) return;
+
         post(route("admin.owner.buildings.store"), {
-            onFinish: () => {
-                // reset();
+            forceFormData: true,
+            onSuccess: () => {
+                reset();
+
                 setStep(1);
                 onClose(); // close modal
+                setToast({
+                    show: true,
+                    message: "Thanks for applying! Our staff will review your application.",
+                    type: "success",
+                });
             },
+            onError: () => {
+                setToast({
+                    show: true,
+                    message: "Sorry, there was an error submitting your application. Please try again later.",
+                    type: "error",
+                });
+            }
         });
     };
 
-    if (!isOpen) return null;
+    // --- Step Indicator UI ---
+    const StepIndicator = () => {
+        const steps = [
+            "Building Info",
+            "Address",
+            "Certificates",
+            "Rooms & Amenities",
+            "Review",
+        ];
+        return (
+            <div className="flex justify-between mb-6">
+                {steps.map((label, idx) => {
+                    const stepNum = idx + 1;
+                    return (
+                        <div key={idx} className="flex-1 flex flex-col items-center">
+                            <div
+                                className={`w-10 h-10 flex items-center justify-center rounded-full border-2 
+                                    ${step >= stepNum ? "bg-indigo-600 text-white border-indigo-600" : "bg-gray-100 border-gray-300 text-gray-500"}
+                                `}
+                            >
+                                {stepNum}
+                            </div>
+                            <span className="text-xs mt-2 text-center">{label}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
 
     const renderStep = () => {
         switch (step) {
             case 1:
                 return (
                     <div className="space-y-4">
-                        <div>
-                            <InputLabel htmlFor="name" value="Name" className="block text-lg font-medium text-gray-700" />
-                            <TextInput
-                                id="name"
-                                type="text"
-                                name="name"
-                                value={data.name || ""}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="name"
-                                isFocused={true}
-                                onChange={(e) => setData('name', e.target.value)}
-                            />
-                            <InputError message={errors.name} className="mt-2 text-sm text-red-600" />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="lat" value="Latitude" className="block text-lg font-medium text-gray-700" />
-                            <input
-                                id="lat"
-                                type="number"
-                                name="lat"
-                                value={data.lat || ""}
-                                placeholder="e.g 10.250228244691149"
-                                step="any"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="lat"
-                                onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    if (e.target.value === "" || (val >= -90 && val <= 90)) {
-                                        setData("lat", e.target.value);
-                                    }
-                                }}
-                            />
-                            <InputError message={errors.lat} className="mt-2 text-sm text-red-600" />
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="long" value="Longitude" className="block text-lg font-medium text-gray-700" />
-                            <input
-                                id="long"
-                                type="number"
-                                name="long"
-                                value={data.long || ""}
-                                placeholder="e.g 124.98430492779187"
-                                step="any"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="long"
-                                onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    if (e.target.value === "" || (val >= -180 && val <= 180)) {
-                                        setData("long", e.target.value);
-                                    }
-                                }}
-                            />
-                            <InputError message={errors.long} className="mt-2 text-sm text-red-600" />
-                        </div>
-
-
-                        <div>
-                            <InputLabel htmlFor="number_of_floors" value="Number of Floors" className="block text-lg font-medium text-gray-700" />
-                            <TextInput
-                                id="number_of_floors"
-                                type="number"
-                                name="number_of_floors"
-                                value={data.number_of_floors || ""}
-                                min="1"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                autoComplete="number_of_floors"
-                                isFocused={true}
-                                onChange={(e) => setData('number_of_floors', e.target.value)}
-                            />
-                            <InputError message={errors.number_of_floors} className="mt-2 text-sm text-red-600" />
-                        </div>
-
+                        <Input label="Building Name" value={data.buildingName} onChange={(e) => setData('buildingName', e.target.value)} error={errors.buildingName} />
+                        <Input label="Number of Floors" type="number" value={data.numberOfFloors} onChange={(e) => setData('numberOfFloors', e.target.value)} error={errors.numberOfFloors} />
+                        <FileInput label="Building Image" accept={"image/*"} field="image" error={errors.image} onFileChange={handleFileChange} />
+                        {filePreviews.image && <FilePreview src={filePreviews.image} />}
                     </div>
-                )
-            case 2: return (
-                <div className="space-y-4">
-                    <div>
-                        <InputLabel htmlFor="image" value="Image" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="image"
-                            type="file"
-                            accept="image/*"
-                            name="image"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            isFocused={true}
-                            onChange={(e) => handleFileChange(e, 'image')}
-                        />
-                        <InputError message={errors.image} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="bir" value="BIR" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="bir"
-                            type="file"
-                            name="bir"
-                            accept="application/pdf"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            onChange={(e) => handleFileChange(e, 'bir')}
-                        />
-                        <InputError message={errors.bir} className="mt-2 text-sm text-red-600" />
-                    </div>
-
-                    <div>
-                        <InputLabel htmlFor="business_permit" value="Business Permit" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="business_permit"
-                            type="file"
-                            name="business_permit"
-                            accept="application/pdf"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            onChange={(e) => handleFileChange(e, 'business_permit')}
-                        />
-                        <InputError message={errors.business_permit} className="mt-2 text-sm text-red-600" />
-                    </div>
-
-                </div>
-            )
-            case 3: return (
-                <div className="space-y-4">
-                    <div>
-                        <InputLabel htmlFor="street" value="Street" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="street"
-                            type="text"
-                            name="street"
-                            value={data.street || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="street"
-                            onChange={(e) => setData('street', e.target.value)}
-                        />
-                        <InputError message={errors.street} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="barangay" value="Barangay" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="barangay"
-                            type="text"
-                            name="barangay"
-                            value={data.barangay || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="barangay"
-                            onChange={(e) => setData('barangay', e.target.value)}
-                        />
-                        <InputError message={errors.barangay} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="city" value="City" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="city"
-                            type="text"
-                            name="city"
-                            value={data.city || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="city"
-                            onChange={(e) => setData('city', e.target.value)}
-                        />
-                        <InputError message={errors.city} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="province" value="Province" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="province"
-                            type="text"
-                            name="province"
-                            value={data.province || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="province"
-                            onChange={(e) => setData('province', e.target.value)}
-                        />
-                        <InputError message={errors.province} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="postal_code" value="Postal Code" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="postal_code"
-                            type="number"
-                            name="postal_code"
-                            value={data.postal_code || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="postal_code"
-                            onChange={(e) => setData('postal_code', e.target.value)}
-                        />
-                        <InputError message={errors.postal_code} className="mt-2 text-sm text-red-600" />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="country" value="Country" className="block text-lg font-medium text-gray-700" />
-                        <TextInput
-                            id="country"
-                            type="text"
-                            name="country"
-                            value={data.country || ""}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            autoComplete="country"
-                            onChange={(e) => setData('country', e.target.value)}
-                        />
-                        <InputError message={errors.country} className="mt-2 text-sm text-red-600" />
-                    </div>
-                </div>
-            )
-            case 4:
-                console.log(data);
+                );
+            case 2:
                 return (
-                    <div className="space-y-4 relative">
-                        <h3 className="text-lg font-semibold">Review Your Information</h3>
-                        <div className="bg-white shadow-lg rounded-lg p-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                {/* Name */}
-                                <div>
-                                    {/* Image Preview */}
-                                    {data.image ? (
-                                        <img
-                                            src={URL.createObjectURL(data.image)} // Create object URL for image preview
-                                            alt="Selected image"
-                                            className="w-32 h-32 object-cover rounded-full border border-gray-200"
-                                        />
-                                    ) : (
-                                        <span className="text-gray-500">No Image Selected</span>
-                                    )}
+                    <div className="space-y-4">
+                        {/* Region - Province - Municipality - Barangay */}
+                        <Select label="Region" value={data.address.region} onChange={(e) =>
+                            setData('address', { region: e.target.value, province: '', municipality: '', barangay: '' })
+                        }>
+                            <option value="">Select Region</option>
+                            {regions.map(([key, region]) => <option key={key} value={key}>{region.region_name}</option>)}
+                        </Select>
+                        <Select label="Province" value={data.address.province} onChange={(e) => setData('address', { ...data.address, province: e.target.value, municipality: '', barangay: '' })}>
+                            <option value="">Select Province</option>
+                            {provinces.map((prov) => <option key={prov} value={prov}>{prov}</option>)}
+                        </Select>
+                        <Select label="Municipality" value={data.address.municipality} onChange={(e) => setData('address', { ...data.address, municipality: e.target.value, barangay: '' })}>
+                            <option value="">Select Municipality</option>
+                            {municipalities.map((mun) => <option key={mun} value={mun}>{mun}</option>)}
+                        </Select>
+                        <Select label="Barangay" value={data.address.barangay} onChange={(e) => setData('address', { ...data.address, barangay: e.target.value })}>
+                            <option value="">Select Barangay</option>
+                            {barangays.map((brgy, idx) => <option key={idx} value={brgy}>{brgy}</option>)}
+                        </Select>
+                        <Input
+                            label="Latitude"
+                            placeholder="e.g. 14.5995"
+                            value={data.latitude}
+                            onChange={(e) => setData("latitude", e.target.value)}
+                            error={
+                                data.latitude && !isValidLatitude(data.latitude)
+                                    ? "Latitude must be between -90 and 90"
+                                    : errors.latitude
+                            }
+                        />
 
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-700">Name:</p>
-                                    <p className="text-gray-900">{data.name || '-'}</p>
-                                </div>
-
-                                {/* Latitude */}
-                                <div>
-                                    <p className="font-medium text-gray-700">Latitude:</p>
-                                    <p className="text-gray-900">{data.lat || '-'}</p>
-                                </div>
-
-                                {/* Longitude */}
-                                <div>
-                                    <p className="font-medium text-gray-700">Longitude:</p>
-                                    <p className="text-gray-900">{data.long || '-'}</p>
-                                </div>
-
-                                {/* Number of Floors */}
-                                <div>
-                                    <p className="font-medium text-gray-700">Number of Floors:</p>
-                                    <p className="text-gray-900">{data.number_of_floors || '-'}</p>
-                                </div>
-
-
-                                {/* BIR File Name */}
-                                <div>
-                                    <p className="font-medium text-gray-700">BIR:</p>
-                                    {data.bir ? (
-                                        <p className="text-gray-900">{data.bir.name}</p> // Display the file name
-                                    ) : (
-                                        <p className="text-gray-500">No BIR file selected</p>
-                                    )}
-                                </div>
-
-                                {/* Business Permit File Name */}
-                                <div>
-                                    <p className="font-medium text-gray-700">Business Permit:</p>
-                                    {data.business_permit ? (
-                                        <p className="text-gray-900">{data.business_permit.name}</p> // Display the file name
-                                    ) : (
-                                        <p className="text-gray-500">No Business Permit file selected</p>
-                                    )}
+                        <Input
+                            label="Longitude"
+                            placeholder="e.g. 120.9842"
+                            value={data.longitude}
+                            onChange={(e) => setData("longitude", e.target.value)}
+                            error={
+                                data.longitude && !isValidLongitude(data.longitude)
+                                    ? "Longitude must be between -180 and 180"
+                                    : errors.longitude
+                            }
+                        />
+                    </div>
+                );
+            case 3:
+                return (
+                    <div className="space-y-4">
+                        <FileInput label="BIR" field="bir" error={errors.bir} onFileChange={handleFileChange} />
+                        {filePreviews.bir && <FilePreview src={filePreviews.bir} />}
+                        <FileInput label="Fire Safety Certificate" field="fireSafetyCertificate" error={errors.fireSafetyCertificate} onFileChange={handleFileChange} />
+                        {filePreviews.fireSafetyCertificate && <FilePreview src={filePreviews.fireSafetyCertificate} />}
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className="space-y-4">
+                        <Input label="Number of Rooms" type="number" value={data.numberOfRooms} onChange={(e) => setData('numberOfRooms', e.target.value)} error={errors.numberOfRooms} />
+                        <div>
+                            <label className="block text-sm font-medium">Amenities</label>
+                            <input
+                                type="text"
+                                value={amenityInput}
+                                onChange={(e) => setAmenityInput(e.target.value)}
+                                onKeyDown={handleAmenityKeyDown}
+                                placeholder="Type and press Enter"
+                                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {data.aminities.map((item, idx) => (
+                                    <span key={idx} className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-sm flex items-center gap-1">
+                                        {item}
+                                        <button type="button" onClick={() => removeAmenity(item)} className="text-red-500">×</button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 5:
+                return (
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold mb-2">Confirm your info</h3>
+                        <div className="bg-gray-50 p-4 rounded-md shadow-sm space-y-2">
+                            <p><strong>Building:</strong> {data.buildingName} ({data.numberOfFloors} floors)</p>
+                            <p><strong>Address:</strong> {data.address.barangay}, {data.address.municipality}, {data.address.province} - {data.address.region}</p>
+                            <p><strong>Rooms:</strong> {data.numberOfRooms}</p>
+                            <p><strong>Amenities:</strong> {data.aminities.join(', ')}</p>
+                            <div>
+                                <strong>Files:</strong>
+                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                    {Object.entries(filePreviews).map(([field, src], idx) => (
+                                        <div key={idx} className="p-2 border rounded-md text-center">
+                                            <p className="text-sm font-medium mb-1">{field}</p>
+                                            {src === "pdf" ? (
+                                                <span className="text-red-600">📄 PDF Uploaded</span>
+                                            ) : (
+                                                <img src={src} alt={field} className="w-full h-32 object-cover rounded-md" />
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 );
-
-
+            default: return null;
         }
-    }
-    return (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center overflow-y-auto items-start">
+    };
 
+    return (
+        <>
+            <Head title="Application Form" />
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} />
+
+            {/* Backdrop */}
             <div
-                className="relative bg-white p-6 rounded-lg shadow w-full max-w-2xl my-10"
-                onClick={(e) => e.stopPropagation()} // prevent accidental outside click
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                onClick={onClose}
             >
-                {/* Close button */}
-                <div className=" absolute top-1 right-2 flex justify-end mt-4">
+                {/* Modal content */}
+                <div
+                    className="relative max-w-2xl w-full mx-4 bg-white rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]"
+                    onClick={(e) => e.stopPropagation()} // prevent backdrop click inside modal
+                >
+                    {/* Close button */}
                     <button
                         onClick={onClose}
-                        className="text-gray-600 text-sm hover:underline hover:text-black"
+                        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
                     >
-                        <FontAwesomeIcon icon={faTimes} className="mr-2 text-lg" />
+                        <FontAwesomeIcon icon={faTimes} className="text-lg" />
                     </button>
+
+                    <h2 className="text-xl font-bold mb-4 text-gray-800">Apply Building</h2>
+
+                    {/* Step Indicator */}
+                    <StepIndicator step={step} />
+
+                    {step < 5 ? (
+                        <div>
+                            {renderStep()}
+                            <div className="flex justify-between mt-6">
+                                {step > 1 && (
+                                    <SecondaryButton onClick={() => setStep(step - 1)}>
+                                        Previous
+                                    </SecondaryButton>
+                                )}
+                                <SecondaryButton onClick={() => validateStep() && setStep(step + 1)}>
+                                    Next
+                                </SecondaryButton>
+                            </div>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubmit}>
+                            {renderStep()}
+                            <div className="flex justify-between mt-6">
+                                <SecondaryButton onClick={() => setStep(step - 1)}>
+                                    Previous
+                                </SecondaryButton>
+                                <PrimaryButton type="submit" disabled={processing}>
+                                    {processing ? "Processing..." : "Submit"}
+                                </PrimaryButton>
+                            </div>
+                        </form>
+                    )}
                 </div>
-                <h2 className="text-lg font-semibold mb-4">Create Building</h2>
-                <div>
-                    <h3 className="text-lg font-semibold mb-4">Step {step}</h3>
-                </div>
-                <form
-                    onSubmit={handleSubmit}
-                /*   onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                          e.preventDefault();
-                      }
-                  }} */
-                >
-                    {renderStep()}
-                    <div className="flex justify-between mt-6">
-                        {/* Previous Button */}
-                        <button
-                            type="button"
-                            onClick={prevStep}
-                            disabled={step === 1}
-                            className={`px-4 py-2 rounded-md ${step === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                }`}
-                        >
-                            Previous
-                        </button>
-
-                        {/* Next Button */}
-                        <button
-                            type="button"
-                            onClick={nextStep}
-                            className={`px-4 py-2 rounded-md ${step === 4 ? 'hidden' : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                }`}
-                        >
-                            Next
-                        </button>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={processing || step !== 4}
-                            className={`px-4 py-2 rounded-md ${processing ? 'bg-green-400 text-gray-200' : ''}  ${step === 4 ? 'bg-green-600 text-white hover:bg-green-700' : 'hidden'
-                                }`}
-                        >
-                            Submit
-                        </button>
-                    </div>
-
-                </form>
-
-
             </div>
-        </div>
+        </>
     );
 }
+
+
+// Reusable Input
+const Input = ({ label, error, ...props }) => (
+    <label className="block">
+        <span className="block text-sm font-medium">{label}</span>
+        <input {...props} className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        {error && <span className="text-red-500 text-sm">{error}</span>}
+    </label>
+);
+
+// Reusable Select
+const Select = ({ label, children, ...props }) => (
+    <label className="block">
+        <span className="block text-sm font-medium">{label}</span>
+        <select {...props} className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            {children}
+        </select>
+    </label>
+);
+
+const FileInput = ({ label, accept, field, error, onFileChange }) => (
+    <label className="block">
+        <span className="block text-sm font-medium">{label}</span>
+        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md hover:border-indigo-400 transition cursor-pointer">
+            <input
+                type="file"
+                accept={accept || "application/pdf,image/*"}
+                onChange={(e) => onFileChange(e, field)}
+                className="sr-only"
+            />
+            <span className="text-gray-500 text-sm">Click to upload or drag and drop</span>
+        </div>
+        {error && <span className="text-red-500 text-sm">{error}</span>}
+    </label>
+);
+
+// File Preview
+const FilePreview = ({ src }) => (
+    src === "pdf" ? (
+        <span className="text-red-600">📄 PDF Uploaded</span>
+    ) : (
+        <img src={src} alt="Preview" className="w-full h-32 object-cover rounded-md mt-2 shadow" />
+    )
+);
