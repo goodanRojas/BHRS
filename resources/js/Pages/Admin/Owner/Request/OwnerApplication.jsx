@@ -1,5 +1,5 @@
-import { Head, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { Head, Link, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 import AuthenticatedLayout from "../../AuthenticatedLayout";
 import Modal from "@/Components/Modal";
 import PrimaryButton from "@/Components/PrimaryButton";
@@ -7,6 +7,7 @@ import SecondaryButton from "@/Components/SecondaryButton";
 import Toast from "@/Components/Toast";
 
 export default function OwnerApplication({ application }) {
+    const admin = usePage().props.auth.admin;
     const { id, fullname, email, phone, status, created_at, updated_at, bir, landOwnerPaper, address, user } = application;
     const [showAcceptModal, setShowAcceptModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
@@ -36,7 +37,6 @@ export default function OwnerApplication({ application }) {
         }
         setProcessing(false);
     };
-
 
     return (
         <AuthenticatedLayout>

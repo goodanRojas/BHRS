@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{Subscription, SubscriptionPlan};
 use Illuminate\Support\Facades\Log;
+use App\Events\Seller\SubscriptionConfirmedEvent;
+use App\Notifications\Seller\SubscriptionConfirmedNotif;
 class SubscriptionController extends Controller
 {
     public function index()
@@ -67,7 +69,6 @@ class SubscriptionController extends Controller
         ]);
 
         $subscription = Subscription::findOrFail($validated['subscription_id']);
-        Log::info($subscription);
         // Update subscription fields
         $subscription->status = 'active';
         $subscription->admin_ref_num = $validated['reference_number'] ?? null;
@@ -80,7 +81,9 @@ class SubscriptionController extends Controller
         }
 
         $subscription->save();
-
+        $seller = $subscription->seller;
+        $seller->notify(new SubscriptionConfirmedNotif($subscription));
+        event(new SubscriptionConfirmedEvent($subscription));
         return redirect()->route('admin.subscriptions.index')
             ->with('success', 'Subscription has been confirmed successfully!');
     }

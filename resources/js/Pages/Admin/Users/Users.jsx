@@ -13,18 +13,8 @@ export default function Users({ users }) {
     const { data: ownerList = [], links = [], meta = {} } = users || {};
     const [moreUsers, setMoreUsers] = useState(ownerList);
     const { flash } = usePage().props;
+    const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-    useEffect(() => {
-        axios.get('/admin/users/users')
-            .then(({ data }) => {
-                if (Array.isArray(data.users)) {
-                    setMoreUsers((prevUsers) => [...prevUsers, ...data.users]);
-                } else {
-                    console.error("Expected data.users to be an array", data.users);
-                }
-            })
-            .catch((err) => console.error("Error fetching users:", err));
-    }, []);
 
     const {
         data: createData,
@@ -32,6 +22,7 @@ export default function Users({ users }) {
         post: createPost,
         processing: createProcessing,
         reset: createReset,
+        errors: createErrors,
     } = useForm({
         name: "",
         email: "",
@@ -72,17 +63,21 @@ export default function Users({ users }) {
         editReset();
         setShowEditModal(false);
     };
-
     const handleCreateSubmit = (e) => {
         e.preventDefault();
-        createPost(route("admin.user.create"), {
-            onSuccess: () => {
 
-                setMoreUsers((prevUsers) => [data.user, ...prevUsers]);
+        createPost(route("admin.users.create"), {
+            onSuccess: (page) => {
+                setToast({
+                    show: true,
+                    message: "User created successfully",
+                    type: "success",
+                });
                 closeCreateModal();
             },
         });
     };
+
 
     const handleEditSubmit = (e) => {
         e.preventDefault();
@@ -135,7 +130,7 @@ export default function Users({ users }) {
         <AuthenticatedLayout>
             <Head title="user" />
             {flash.success && <Toast message={flash.success} />}
-
+            <Toast isTrue={toast.show} isType={toast.type} message={toast.message} id={Date.now()} />
             <div className="">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-800 mb-6">Users</h1>
@@ -245,6 +240,7 @@ export default function Users({ users }) {
                                 onChange={(e) => setCreateData("name", e.target.value)}
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                             />
+                            {createErrors.name && <span className="text-red-500">{createErrors.name}</span>}
                         </div>
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -254,6 +250,7 @@ export default function Users({ users }) {
                                 onChange={(e) => setCreateData("email", e.target.value)}
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                             />
+                            {createErrors.email && <span className="text-red-500">{createErrors.email}</span>}
                         </div>
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700">Password</label>
@@ -263,6 +260,7 @@ export default function Users({ users }) {
                                 onChange={(e) => setCreateData("password", e.target.value)}
                                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                             />
+                            {createErrors.password && <span className="text-red-500">{createErrors.password}</span>}
                         </div>
                         <div className="flex justify-end space-x-2">
                             <button

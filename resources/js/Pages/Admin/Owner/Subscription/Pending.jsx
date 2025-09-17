@@ -1,6 +1,27 @@
+import { useEffect, useState } from "react";
+import { usePage, } from "@inertiajs/react";
 import Layout from "./Layout";
-import {motion} from "framer-motion";
-export default function Pending({ subscriptions }) {
+import { motion } from "framer-motion";
+export default function Pending({ subscriptions: initialSubscriptions }) {
+    const admin = usePage().props.auth.user;
+    const [subscriptions, setSubscriptions] = useState(initialSubscriptions);
+    useEffect(() => {
+        const channel = window.Echo.private(`admin-new-seller-subscription.${admin?.id}`)
+            .listen('.AdminNewSellerSubscriptionEvent', (e) => {
+                console.log('🔔 New subscription received!', e);
+                setSubscriptions((prev) => [...prev, e.subscription]);
+            });
+        const channel2 = window.Echo.private(`admin-new-seller-upgrade-subscription.${admin?.id}`)
+            .listen('.AdminNewSellerUpgradeSubscriptionEvent', (e) => {
+                console.log('🔔 New subscription received!', e);
+                setSubscriptions((prev) => [...prev, e.subscription]);
+            });
+
+        return () => {
+            channel.stopListening('.AdminNewSellerSubscriptionEvent');
+            channel2.stopListening('.AdminNewSellerUpgradeSubscriptionEvent');
+        };
+    }, [admin?.id]);
     const container = {
         hidden: { opacity: 0 },
         show: {
@@ -17,7 +38,7 @@ export default function Pending({ subscriptions }) {
     return (
         <Layout>
             <div className="p-6">
-          
+
 
                 <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
                     <motion.table
@@ -40,7 +61,7 @@ export default function Pending({ subscriptions }) {
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                     Status
                                 </th>
-                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                     Start Date
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -66,7 +87,7 @@ export default function Pending({ subscriptions }) {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sub.seller.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sub.plan.plan}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">{sub.status}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{new Date(sub.start_date).toLocaleDateString("en-PH", { weekday:"short", year:"numeric", month:"short", day:"numeric" })}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{new Date(sub.start_date).toLocaleDateString("en-PH", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sub.end_date}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         {sub.seller_receipt_path ? (

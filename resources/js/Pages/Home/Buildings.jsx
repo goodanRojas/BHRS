@@ -11,9 +11,11 @@ import Dropdown from '@/Components/Dropdown';
 export default function Buildings({ initialBuildings }) {
     // console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
+    const [keywords, setKeywords] = useState([]);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
 
+    // debounce search
     useEffect(() => {
         const timeout = setTimeout(() => {
             setDebouncedSearch(search);
@@ -25,7 +27,10 @@ export default function Buildings({ initialBuildings }) {
         const fetchBuildings = async () => {
             try {
                 const response = await axios.get('/home/buildings/search', {
-                    params: { search: debouncedSearch },
+                    params: {
+                        search: debouncedSearch,
+                        keywords: keywords,
+                    },
 
                 });
                 console.log(response.data);
@@ -35,7 +40,7 @@ export default function Buildings({ initialBuildings }) {
             }
         };
         fetchBuildings();
-    }, [debouncedSearch]);
+    }, [debouncedSearch, keywords]);
 
     return (
         <AuthenticatedLayout>
@@ -44,15 +49,18 @@ export default function Buildings({ initialBuildings }) {
             <div className="p-6">
 
                 {/* Page Title */}
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold tracking-tight text-white italic [text-shadow:2px_2px_4px_rgba(0,0,0,0.6)]">
-                        Boarding House Reservation
+                <div className="mb-8 text-left">
+                    <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight text-gray-900 italic">
+                        <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+                            Boarding House Reservation
+                        </span>
                     </h1>
 
-                    <p className="text-slate-100 text-sm">
+                    <p className="mt-2 text-gray-600 text-base md:text-lg font-light tracking-wide">
                         Find the perfect place that suits your needs
                     </p>
                 </div>
+
                 {/* Keywords */}
                 <div className="mb-6">
                     <h3 className="py-2 font-bold tracking-tight text-gray-800 uppercase">
@@ -63,6 +71,7 @@ export default function Buildings({ initialBuildings }) {
                         size="md"
                         variant="light"
                         max={5}
+                        onSelectionChange={(selectedKeywords) => setKeywords(selectedKeywords)}
                     />
                 </div>
                 {/* Recommendations */}

@@ -12,7 +12,7 @@ class BuildingRequestController extends Controller
     public function index()
     {
         $owner = auth()->guard('seller')->user();
-        $applications = BuildingApplication::where('seller_id', $owner->id)->get();
+        $applications = BuildingApplication::where('seller_id', $owner->id)->orderBy('created_at', 'desc')->get();
 
         return Inertia::render('Seller/Application/Requests', [
             'requests' => $applications

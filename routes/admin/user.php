@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->name('admin.')->middleware('admin')->group(function() {
-    Route::get('/users', [UserController::class, 'index'])->name('users');
+Route::prefix('admin/users')->name('admin.users.')->middleware('admin')->group(function() {
+    Route::get('/', [UserController::class, 'index'])->name('index');
+    Route::post('/create', [UserController::class, 'create'])->name('create');
 });

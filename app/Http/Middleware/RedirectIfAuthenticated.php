@@ -25,7 +25,7 @@ class RedirectIfAuthenticated
                     case 'admin':
                         return redirect()->route('admin.dashboard');  // 👈 your admin homepage
                     default:
-                        return redirect()->route('home');         // 👈 default user dashboard
+                        return redirect()->route('to.user.buildings');         // 👈 default user dashboard
                 }
             }
         }

@@ -3,33 +3,33 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 export default function BookingNotif({ notification, onClose }) {
-    let type;
     if (!notification) return null;
 
-    switch (notification.type) {
-        case "App\\Notifications\\User\\NewBookingNotification":
-            type = "New Booking";
-            break;
-        case "App\\Notifications\\User\\BookingApprovedNotif":
-            type = "Booking Approved";
-            break;
-        case "App\\Notifications\\User\\BookingSetupCompleted":
-            type = "Booking Setup Completed";
-            break;
-        case "App\\Notifications\\User\\BookingExpiredNotify":
-            type = "Booking Expired";
-            break;
-        case "App\\Notifications\\User\\UserBookingRejected":
-        default:
-            type = "Unknown";
-            break;
+    const typeMap = {
+        "App\\Notifications\\User\\NewBookingNotification": "New Booking",
+        "App\\Notifications\\User\\BookingApprovedNotif": "Booking Approved",
+        "App\\Notifications\\User\\BookingSetupCompleted": "Booking Setup Completed",
+        "App\\Notifications\\User\\BookingExpiredNotify": "Booking Expired",
+        "App\\Notifications\\User\\UserBookingRejected": "Booking Rejected",
+        "App\\Notifications\\User\\SellerApplicationApproved": "Seller Application Approved",
+    };
+
+    const type = typeMap[notification.type] || "Unknown";
+
+    let formattedDate = null;
+    if (notification.start_date) {
+        try {
+            formattedDate = new Intl.DateTimeFormat("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+            }).format(new Date(notification.start_date));
+        } catch {
+            formattedDate = null;
+        }
     }
-    
-    const formattedDate = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    }).format(new Date(notification.start_date));
+
+
     return (
         <AnimatePresence>
             {notification && (
@@ -54,17 +54,22 @@ export default function BookingNotif({ notification, onClose }) {
                     <div className="flex items-center gap-3">
                         <FontAwesomeIcon icon={faBell} className="text-gray-500 h-6 w-6" />
                         <div>
-                            <p className="text-sm text-gray-600">
-                                 {notification.bed_name} in{" "}
-                                {notification.room_name}, {notification.building_name}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                                Start: {formattedDate} • {notification.month_count} month{notification.month_count > 1 ? "s" : ""}
-                            </p>
-                            <p className={`text-sm mt-1`}>
-                                {notification.status}
-                            </p>
-
+                            {notification.type.startsWith("App\\Notifications\\User\\Booking") ? (
+                                <>
+                                    <p className="text-sm text-gray-600">
+                                        {notification.bed_name} in {notification.room_name}, {notification.building_name}
+                                    </p>
+                                    {formattedDate && (
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            Start: {formattedDate} • {notification.month_count} month
+                                            {notification.month_count > 1 ? "s" : ""}
+                                        </p>
+                                    )}
+                                    <p className="text-sm mt-1">{notification.status}</p>
+                                </>
+                            ) : (
+                                <p className="text-sm text-gray-600">{notification.message}</p>
+                            )}
                         </div>
                     </div>
                 </motion.div>
@@ -72,3 +77,4 @@ export default function BookingNotif({ notification, onClose }) {
         </AnimatePresence>
     );
 }
+

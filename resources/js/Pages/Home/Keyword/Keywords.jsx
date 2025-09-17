@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
+import { usePage } from "@inertiajs/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faWifi,
@@ -23,9 +24,7 @@ import {
   faDumbbell,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
-
 export default function Keywords({
-  keywords = [],
   className = "",
   size = "md",
   variant = "soft",
@@ -34,9 +33,11 @@ export default function Keywords({
   showIcons = true,
   onKeywordClick,
   dedupe = true,
+  onSelectionChange
 }) {
   const [expanded, setExpanded] = useState(false);
-
+  const [keywords, setKeywords] = useState([]);
+  const [selected, setSelected] = useState([]);
   const items = useMemo(() => {
     const arr = Array.isArray(keywords) ? keywords.filter(Boolean) : [];
     if (!dedupe) return arr;
@@ -48,6 +49,21 @@ export default function Keywords({
       return true;
     });
   }, [keywords, dedupe]);
+  const toggleKeyword = (keyword) => {
+    let newSelected;
+    if (selected.includes(keyword)) {
+      newSelected = selected.filter(k => k !== keyword);
+    } else {
+      newSelected = [...selected, keyword];
+    }
+    setSelected(newSelected);
+    onSelectionChange?.(newSelected); // pass selected keywords to parent
+  };
+  useEffect(() => {
+    axios.get(route('user.keyword.get.user.preferences')).then((response) => {
+      setKeywords(response.data.preferences);
+    });
+  }, []);
 
   const sizes = {
     sm: "text-[11px] px-2 py-1 gap-1",
@@ -102,6 +118,13 @@ export default function Keywords({
     elevator: faElevator,
     gym: faDumbbell,
   };
+  const getVariantClasses = (label) => {
+    if (selected.includes(label)) {
+      // selected state overrides normal variant
+      return "bg-indigo-200 text-indigo-900 dark:bg-indigo-700 dark:text-white";
+    }
+    return variants[variant];
+  };
 
   const renderIcon = (label) => {
     if (!showIcons) return null;
@@ -133,19 +156,17 @@ export default function Keywords({
       {visible.map((label, i) => (
         <span
           key={`${label}-${i}`}
-          className={`inline-flex items-center ${sizes[size]} ${radii[rounded]} ${variants[variant]} ${clickableBase}`}
-          role={onKeywordClick ? "button" : undefined}
-          tabIndex={onKeywordClick ? 0 : undefined}
-          onClick={() => onKeywordClick?.(String(label))}
+          className={`inline-flex items-center ${sizes[size]} ${radii[rounded]} ${clickableBase} ${getVariantClasses(label)}`}
+          role='button'
+          tabIndex={0}
+          onClick={() => toggleKeyword(label)} // ✅ use toggleKeyword here
           onKeyDown={(e) => {
-            if (!onKeywordClick) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              onKeywordClick(String(label));
+              toggleKeyword(label); // ✅ use toggleKeyword here
             }
           }}
-          aria-label={onKeywordClick ? `Keyword: ${label}` : undefined}
-        >
+          aria-label={`Keyword: ${label}`} >
           {renderIcon(label)}
           <span className="leading-none">{label}</span>
         </span>

@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{UserOnBoarding};
+use App\Models\{UserOnBoarding, Feature};
 class OnboardingController extends Controller
 {
     public function store(Request $request)
@@ -47,5 +47,15 @@ class OnboardingController extends Controller
         return Inertia::render('Home/Preferences/OnboardingPage', [
             'user' => auth()->user(),
         ]);
+    }
+
+    public function getPrefrences()
+    {
+        $features = Feature::select('name')->distinct()->pluck('name');
+
+        return response()->json([
+            'preferences' => $features->toArray(),
+        ]);
+
     }
 }

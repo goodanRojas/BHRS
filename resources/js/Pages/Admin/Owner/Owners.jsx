@@ -6,38 +6,16 @@ import Toast from "@/Components/Toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faPencil, faCheck, faBan, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "@inertiajs/inertia-react";
+import DefaultProfile from "@/Components/DefaultProfile";
 export default function Owner({ owners }) {
     console.log(owners);
     const [searchQuery, setSearchQuery] = useState("");
-    const { data: ownerList = [], links = [], meta = {} } = owners || {};
-    const [moreOwners, setMoreOwners] = useState(ownerList);
     const { flash } = usePage().props;
 
-    useEffect(() => {
-        axios.get('/admin/owners/owners')
-            .then(({ data }) => {
-                if (Array.isArray(data.owners)) {
-                    setMoreOwners((prevOwners) => [...prevOwners, ...data.owners]);
-                } else {
-                    console.error("Expected data.owners to be an array", data.owners);
-                }
-            })
-            .catch((err) => console.error("Error fetching owners:", err));
-    }, []);
-
-
-
-
-
-
-    const filteredOwners = moreOwners.filter((owner) =>
+    const filteredOwners = owners.data.filter((owner) =>
         owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         owner.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const openOwner = (id) => {
-        window.location.href = `/admin/owners/${id}`;
-    };
 
     return (
         <AuthenticatedLayout>
@@ -90,15 +68,20 @@ export default function Owner({ owners }) {
                                     {filteredOwners.map((owner) => (
                                         <tr
                                             key={owner.id}
-                                            onClick={() => openOwner(owner.id)}
+                                            onClick={() =>  window.location.href = `/admin/owners/${owner.id}`}
                                             className="hover:bg-gray-50 transition cursor-pointer"
                                         >
                                             <td className="px-6 py-3">
-                                                <img
-                                                    src={`/storage/${owner.avatar || 'profile/default-avatar.png'}`}
-                                                    alt="avatar"
-                                                    className="w-10 h-10 rounded-full"
-                                                />
+                                                {owner.avatar ? (
+                                                    <img
+                                                        src={`/storage/${owner.avatar}`}
+                                                        alt="avatar"
+                                                        className="w-10 h-10 rounded-full"
+                                                    />
+
+                                                ) : (
+                                                    <DefaultProfile />
+                                                )}
                                             </td>
                                             <td className="px-6 py-3 text-center">{owner.name}</td>
                                             <td className="px-6 py-3 text-center">{owner.email}</td>

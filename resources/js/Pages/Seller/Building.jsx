@@ -20,7 +20,7 @@ export default function Building({ building }) {
     const [addRoomModalOpen, setAddRoomModalOpen] = useState(false);
     const [features, setFeatures] = useState(building?.features || []);
     const [rooms, setRooms] = useState(building?.rooms || []);
-    const [images, setImages] = useState(building.images);
+    const [images, setImages] = useState( building?.images || []);
     const [roomPreview, setRoomPreview] = useState(null);
     const [toastMessage, setToastMessage] = useState({
         'message': '',
@@ -204,7 +204,7 @@ export default function Building({ building }) {
         for (let pair of formData.entries()) {
             console.log(pair[0], pair[1]);
         }
-        
+
         try {
             const response = await axios.post(`/seller/building/update/${building.id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },

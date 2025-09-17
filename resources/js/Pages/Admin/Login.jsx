@@ -30,16 +30,9 @@ export default function Login({ status, error }) {
         <GuestLayout>
             <Head title="Admin Login" />
             <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
-                <Link
-                    href="/"
-                    className="pointer-events-auto"
-                >
-                    <img
-                        src="/storage/system/logo/logo-no-bg.png"
-                        alt="BH Reservation Logo"
-                        className="h-20 w-auto"
-                    />
-                </Link>
+                <div className='flex items-center justify-center'>
+                    <ApplicationLogo relative={true} />
+                </div>
             </nav>
 
             {/* Centered Card */}

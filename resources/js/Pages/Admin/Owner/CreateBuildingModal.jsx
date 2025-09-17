@@ -5,6 +5,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import Toast from "@/Components/Toast";
+import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
@@ -28,6 +29,30 @@ export default function CreateBuildingModal({ owner, isOpen, onClose }) {
         province: "",
         country: "",
     });
+    // cascading locations
+    const regions = Object.entries(ph);
+    const provinces = data.address.region
+        ? Object.keys(ph[data.address.region].province_list)
+        : [];
+    const municipalities = data.address.province
+        ? Object.keys(
+            ph[data.address.region].province_list[data.address.province].municipality_list
+        )
+        : [];
+    const barangays = data.address.municipality
+        ? ph[data.address.region].province_list[data.address.province].municipality_list[
+            data.address.municipality
+        ].barangay_list
+        : [];
+    const isValidLatitude = (lat) => {
+        const num = parseFloat(lat);
+        return !isNaN(num) && num >= -90 && num <= 90;
+    };
+
+    const isValidLongitude = (lng) => {
+        const num = parseFloat(lng);
+        return !isNaN(num) && num >= -180 && num <= 180;
+    };
 
     const nextStep = () => {
         setStep(step + 1);

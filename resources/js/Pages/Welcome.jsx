@@ -15,7 +15,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     {/* Logo */}
                     <div>
                         <Link href="/">
-                            <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
+                            <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" variant='black' />
                         </Link>
                     </div>
 

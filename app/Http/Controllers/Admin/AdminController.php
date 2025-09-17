@@ -10,27 +10,6 @@ use Carbon\Carbon;
 use App\Models\{Admin, Booking, Building, Bed, Room, Feature, Receipt, Seller, Cancel, Rating, Comment, User};
 class AdminController extends Controller
 {
-    public function index(Request $request)
-    {
-        return Inertia::render('Admin/Login');
-    }
-
-    public function store(Request $request)
-    {
-        $validate = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-
-        if (Auth::guard('admin')->attempt(['email' => $validate['email'], 'password' => $validate['password']])) {
-            Log::info("Admin Is authenticated! ");
-            return redirect()->intended(route('admin.dashboard'));
-        } else {
-            Log::info("Admin is not authenticated");
-            return back()->withErrors(['email' => 'Invalid Credentials']);
-        }
-    }
     public function dashboard(Request $request)
     {
         // ✅ Stats
@@ -142,10 +121,5 @@ class AdminController extends Controller
                 'recentUsers' => $recentUsers,
             ],
         ]);
-    }
-    public function logout(Request $request)
-    {
-        auth('admin')->logout();
-        return redirect()->route('admin.login');
     }
 }

@@ -14,23 +14,6 @@ export default function Buildings({ buildings }) {
     const [moreBuildings, setMoreBuildings] = useState(buildingList);
     const { flash } = usePage().props;
 
-    useEffect(() => {
-        axios.get('/admin/buildings/buildings')
-            .then(({ data }) => {
-                if (Array.isArray(data.buildings)) {
-                    setMoreBuildings((prevBuildings) => [...prevBuildings, ...data.buildings]);
-                } else {
-                    console.error("Expected data.buildings to be an array", data.buildings);
-                }
-            })
-            .catch((err) => console.error("Error fetching buildings:", err));
-    }, []);
-
-    const openBuilding = (id) => {
-        window.location.href = `/admin/owner/buildings/${id}`;
-    };
-
-
 
     const {
         data: editData,
@@ -150,7 +133,7 @@ export default function Buildings({ buildings }) {
                         <tbody className="min-h-screen">
                             {filteredBuildings.map((building) => (
                                 <tr
-                                    onClick={() => openBuilding(building.id)}
+                                    onClick={() =>    window.location.href = `/admin/owner/buildings/${building.id}`}
                                     className="border cursor-pointer hover:bg-gray-50 transition-colors duration-200 group">
                                     <td className="px-6 py-2 text-center">{building.id}</td>
                                     <td className="px-6 py-2">

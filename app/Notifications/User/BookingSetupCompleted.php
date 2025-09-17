@@ -27,7 +27,7 @@ class BookingSetupCompleted extends Notification
     {
         return ['mail', 'database', 'broadcast'];
     }
-
+/* 
     public function toMail($notifiable)
     {
         return (new MailMessage)
@@ -35,7 +35,7 @@ class BookingSetupCompleted extends Notification
             ->line('A new tenant has booked one of your beds.')
             ->action('View Booking', url('/seller/bookings'));
     }
-
+ */
     public function toDatabase($notifiable)
     {
         return [

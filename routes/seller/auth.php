@@ -2,15 +2,25 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Seller\{SellerAuthenticateController, SellerRegisterController};
+use App\Http\Controllers\Seller\Auth\{PasswordResetLinkController, NewPasswordController};
 use Inertia\Inertia;
 
 Route::prefix('seller')->name('seller.')->group(function () {
     Route::middleware('guest:seller')->group(function () {
-        Route::get('/login', function () {
-            return Inertia::render('Seller/Auth/Login');
-        })->name('login.index');
+        Route::get('/login', [SellerAuthenticateController::class, 'create'])->name('login.index');
         Route::post('/login', [SellerAuthenticateController::class, 'store'])->name('login.store');
 
+        Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+            ->name('password.request');
+
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+            ->name('password.email');
+
+        Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+            ->name('password.reset');
+
+        Route::post('reset-password', [NewPasswordController::class, 'store'])
+            ->name('password.store');
     });
     Route::middleware('seller')->group(function () {
         Route::get('/current/subscription', [SellerAuthenticateController::class, 'currentSubscription'])->name('current.subscription');

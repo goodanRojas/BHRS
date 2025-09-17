@@ -7,13 +7,13 @@ export default function OnboardingModal() {
   const [step, setStep] = useState(1);
   const [selectedPreferences, setSelectedPreferences] = useState([]);
 
-  const preferenceOptions = [
-    'Air Conditioning',
-    'Near CR',
-    'Lower Bunk',
-    'Privacy Curtain',
-    'Fast WiFi',
-  ];
+ 
+  const [preferenceOptions, setPreferenceOptions] = useState([]);
+  useEffect(() => {
+    axios.get(route('user.onboarding.get.preferences')).then((response) => {
+      setPreferenceOptions(response.data.preferences);
+    });
+  })
 
   const { data, setData, post, processing, errors } = useForm({
     source: '',
@@ -23,7 +23,7 @@ export default function OnboardingModal() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post('/onboarding');
+    post('user/onboarding');
     console.log(errors);
   };
 

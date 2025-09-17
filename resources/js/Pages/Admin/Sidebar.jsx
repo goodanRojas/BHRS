@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useForm } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 export default function Sidebar({ className }) {
     const [isOpen, setIsOpen] = useState(false);
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
     const [buildingDropdownOpen, setBuildingDropdownOpen] = useState(false);
 
+    const { post } = useForm();
     useEffect(() => {
         const savedSidebarState = sessionStorage.getItem('sidebarState');
 
@@ -34,9 +37,8 @@ export default function Sidebar({ className }) {
             <div className="h-full flex flex-col">
                 {/* Header */}
                 <div className="relative h-16  flex items-center justify-center">
-                    <img
-                        src={`/storage/system/logo/logo-no-bg.png`}
-                        alt="BH Logo"
+                    <ApplicationLogo
+                        relative={true}
                         className={`cursor-pointer transition-all duration-300 ${isOpen ? 'h-20 w-20' : 'h-8 w-8'}`}
                     />
                 </div>
@@ -52,7 +54,7 @@ export default function Sidebar({ className }) {
                             >
                                 Dashboard
                             </NavLink>
-                            <NavLink href={route('admin.users')} active={route().current('admin.users')}>
+                            <NavLink href={route('admin.users.index')} active={route().current('admin.users.index')}>
                                 Users
                             </NavLink>
 
@@ -139,9 +141,15 @@ export default function Sidebar({ className }) {
                             <NavLink href={route('admin.payment.info.index')} active={route().current('admin.payment.info.index')}>
                                 Payment Info
                             </NavLink>
-                            <NavLink href={route('admin.logout.post')} active={route().current('admin.logout.post')}>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    post(route('admin.logout.post')); // send POST request
+                                }}
+                                className="px-4 py-2 text-red-600 hover:text-red-800"
+                            >
                                 Logout
-                            </NavLink>
+                            </button>
                         </div>
                     </nav>
                 )}

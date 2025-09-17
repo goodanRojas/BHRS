@@ -6,6 +6,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\Seller\SellerResetPassword;
 
 class Seller extends Authenticatable implements MustVerifyEmail
 {
@@ -35,7 +37,10 @@ class Seller extends Authenticatable implements MustVerifyEmail
     }
 
 
-
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new SellerResetPassword($token));
+    }
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

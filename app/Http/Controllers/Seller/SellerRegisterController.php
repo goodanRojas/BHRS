@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Hash, Storage};
 use App\Models\{SellerApplication, Address};
+use App\Events\Admin\SellerRegisteredEvent;
 class SellerRegisterController extends Controller
 {
     public function index()
@@ -23,7 +24,6 @@ class SellerRegisterController extends Controller
     public function store(Request $request)
     {
 
-        Log::info($request->all());
         $validated = $request->validate([
             'fullname' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
@@ -58,6 +58,9 @@ class SellerRegisterController extends Controller
             'addressable_type' => SellerApplication::class,
             'address' => $validated['address'],
         ]);
+
+        event(new SellerRegisteredEvent($application));
+
         return redirect()->back()->with('success', 'Application submitted successfully!');
 
     }

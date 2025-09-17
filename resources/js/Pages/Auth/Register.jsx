@@ -26,16 +26,9 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
             <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
-                <Link
-                    href="/"
-                    className="pointer-events-auto"
-                >
-                    <img
-                        src="/storage/system/logo/logo-no-bg.png"
-                        alt="BH Reservation Logo"
-                        className="h-20 w-auto"
-                    />
-                </Link>
+                <div className='flex items-center justify-center'>
+                    <ApplicationLogo relative={true} />
+                </div>
             </nav>
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4">
 

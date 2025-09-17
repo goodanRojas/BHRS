@@ -31,14 +31,14 @@ class BookingApprovedNotif extends Notification
         return ['mail', 'database', 'broadcast'];
     }
 
-    public function toMail($notifiable)
+    /* public function toMail($notifiable)
     {
         return (new MailMessage)
             ->subject('New Booking Received')
             ->line('A new tenant has booked one of your beds.')
             ->action('View Booking', url('/seller/bookings'));
     }
-
+ */
     public function toDatabase($notifiable)
     {
         return [

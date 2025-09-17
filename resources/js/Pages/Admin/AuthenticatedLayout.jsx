@@ -1,16 +1,30 @@
 import Sidebar from './Sidebar';
 import { usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import Footer from '@/Components/Footer';
+import NotifPopUp from '@/Components/Notifications/Admin/NotifPopUp';
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
     const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [notificationsCount, setNotificationsCount] = useState(0);
+    const [notifVisible, setNotifVisible] = useState(null);
+    useEffect(() => {
+        window.Echo.private(`App.Models.Admin.${user?.id}`)
+            .notification((notification) => {
+                setNotifVisible(notification);
+                setNotificationsCount(notificationsCount + 1);
+            });
+
+       
+    }, [user?.id]);
     return (
         <div className="flex min-h-screen w-full ">
+            <NotifPopUp notification={notifVisible} onClose={() => setNotifVisible(null)} />
+
             {/* Background Image */}
             <div
                 className="fixed top-0 left-0 w-full h-screen bg-cover bg-center bg-no-repeat -z-10"

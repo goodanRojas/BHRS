@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Owner\Building;
 
+use App\Events\Seller\BuildingApplicationApprovedEvent;
+use App\Notifications\Seller\BuildingApplicationApproved;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Auth};
@@ -35,9 +37,17 @@ class Application extends Controller
     public function store(Request $request)
     {
         $application = BuildingApplication::findOrFail($request->id);
+
+        $seller = $application->seller;
+        if($seller){
+            $seller->notify(new BuildingApplicationApproved($application));
+            event(new BuildingApplicationApprovedEvent($application));
+        }
+        
         $application->status = "approved";
         $application->save();
         // Handle image upload
+
 
 
 

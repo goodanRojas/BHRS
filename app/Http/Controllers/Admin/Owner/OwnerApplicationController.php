@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Owner;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{SellerApplication, Address, Seller};
+use App\Notifications\User\SellerApplicationApproved;
 class OwnerApplicationController extends Controller
 {
 
@@ -26,9 +27,11 @@ class OwnerApplicationController extends Controller
 
     public function approve(SellerApplication $application)
     {
+        if ($application->user) {
+            $application->user->notify(new SellerApplicationApproved($application)); // ✅ fixed class name + relation
+        }
         $application->status = 'approved';
         $application->save();
-
         Seller::create([
             'name' => $application->fullname,
             'email' => $application->email,

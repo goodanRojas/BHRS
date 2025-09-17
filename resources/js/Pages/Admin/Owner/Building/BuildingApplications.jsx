@@ -5,13 +5,12 @@ import Toast from "@/Components/Toast";
 export default function BuildingApplication({ applications: initialApplications }) {
 
     const { flash } = usePage().props;
-
+    const admin = usePage().props.auth.user;
     useEffect(() => {
         if (flash?.success) {
             setToast({ show: true, message: flash.success, type: 'success' });
         }
     }, [flash?.success]);
-    const admin = usePage().props.auth.user;
     const [applications, setApplications] = useState(initialApplications);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     useEffect(() => {
@@ -31,7 +30,7 @@ export default function BuildingApplication({ applications: initialApplications 
     return (
         <AuthenticatedLayout>
             <Head title="Building Applications" />
-            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} id={Date.now()}/>
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} id={Date.now()} />
             <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-6">
                     Building Applications

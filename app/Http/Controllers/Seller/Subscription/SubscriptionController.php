@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Seller\Subscription;
 
+use App\Events\Admin\SellerSubscriptionUpgradeEvent;
+use App\Notifications\Admin\NewSellerSubscriptionNotif;
+use App\Notifications\Admin\SellerSubscriptionUpgradeNotif;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use App\Models\{Subscription, SubscriptionPlan, Admin, AdminPaymentInfo};
-
+use App\Events\Admin\NewSellerSubscriptionEvent;
 class SubscriptionController extends Controller
 {
     public function landing()
@@ -61,6 +64,10 @@ class SubscriptionController extends Controller
             'seller_ref_num' => $request->reference_number,
             'seller_remarks' => $request->remarks,
         ]);
+        $admin = Admin::first();
+
+        $admin->notify(new NewSellerSubscriptionNotif($subscription));
+        event(new NewSellerSubscriptionEvent($subscription));
 
         return redirect()->route('seller.subscription.pending');
     }
@@ -124,11 +131,11 @@ class SubscriptionController extends Controller
             ->first();
         $currentSubscription->status = 'paused'; //if the user upgrades. Just pause the current subscription
         $currentSubscription->save();
-        if($request->hasFile('receipt'))
-        {
+        if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('receipts', 'public');
         }
-        Subscription::create([
+
+        $subscription = Subscription::create([
             'seller_id' => $owner->id,
             'plan_id' => $request->plan_id,
             'start_date' => now(),
@@ -139,11 +146,16 @@ class SubscriptionController extends Controller
             'seller_ref_num' => $request->reference_number,
             'seller_remarks' => $request->remarks,
         ]);
+        $admin = Admin::first();
 
-        return redirect()->route('seller.subscription.pending',[
+        $admin->notify(new SellerSubscriptionUpgradeNotif($subscription));
+        event(new SellerSubscriptionUpgradeEvent($subscription));
+
+
+        return redirect()->route('seller.subscription.pending', parameters: [
             'message' => 'Your subscription has been upgraded. Please wait for admin approval.',
             'type' => 'success'
         ]);
-        
+
     }
 }

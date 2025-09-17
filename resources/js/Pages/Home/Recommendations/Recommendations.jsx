@@ -3,82 +3,31 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import useMeasure from "react-use-measure";
-
-const beds = [
-    {
-        id: 1,
-        name: "Bed A1",
-        image: "/storage/bed/bed.png",
-        price: "₱2,500 / month",
-        rating: 4.5,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 2,
-        name: "Bed B2",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 3,
-        name: "Bed B3",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 4,
-        name: "Bed B4",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 5,
-        name: "Bed B5",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 6,
-        name: "Bed B6",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-    {
-        id: 7,
-        name: "Bed B7",
-        image: "/storage/bed/bed.png",
-        price: "₱3,000 / month",
-        rating: 4.7,
-        users: ["/storage/user/user.webp", "/storage/user/user.webp", "/storage/user/user.webp"],
-    },
-];
+import axios from "axios";
 
 export default function RecommendationsCarousel() {
+    const [buildings, setBuildings] = useState([]);
+
+    useEffect(() => {
+        axios.get(route('user.recommendation.get.user.preferred.buildings'))
+            .then((response) => {
+                setBuildings(response.data.buildings);
+            });
+    }, []);
 
     const FAST_DURATION = 25;
     const SLOW_DURATION = 75;
 
     const [duration, setDuration] = useState(FAST_DURATION);
     let [ref, { width }] = useMeasure();
-
     const xTranslation = useMotionValue(0);
-
     const [mustFinish, setMustFinish] = useState(false);
     const [rerender, setRerender] = useState(false);
+    const [showOverlay, setShowOverlay] = useState(null);
 
     useEffect(() => {
         let controls;
-        let finalPosition = -width / 2 - 8; //4 because we have 4 copies in the mapping.
+        let finalPosition = -width / 2 - 8;
 
         if (mustFinish) {
             controls = animate(xTranslation, [xTranslation.get(), finalPosition], {
@@ -88,10 +37,8 @@ export default function RecommendationsCarousel() {
                     setMustFinish(false);
                     setRerender(!rerender);
                 },
-
-            })
+            });
         } else {
-
             controls = animate(xTranslation, [0, finalPosition], {
                 ease: "linear",
                 duration: duration,
@@ -103,32 +50,31 @@ export default function RecommendationsCarousel() {
 
         return () => controls.stop();
     }, [xTranslation, width, duration, rerender]);
-    const [showOverlay, setShowOverlay] = useState(null);
 
     return (
         <motion.div className="overflow-hidden w-full relative py-4">
-            <h1
-                className=" font-bold text-gray-800 uppercase tracking-tight py-4"
-            >Recommendations</h1>
+            <h1 className="font-bold text-gray-800 uppercase tracking-tight py-4">
+                Recommendations
+            </h1>
             <motion.div
                 ref={ref}
-                className="flex gap-5"
+                className="flex gap-5 cursor-grab"
                 style={{ x: xTranslation }}
-                onHoverStart={() => {
-                    setMustFinish(true);
-                    setDuration(SLOW_DURATION);
-                }}
-                onHoverEnd={() => {
-                    setMustFinish(true);
-                    setDuration(FAST_DURATION)
-                }}
+                drag="x" // enable horizontal dragging
+                dragConstraints={{ left: -width, right: 0 }} // limit dragging boundaries
+                dragElastic={0.2} // optional, makes dragging feel natural
+                onDragStart={() => setMustFinish(true)} // pause auto-scroll when user drags
+                onDragEnd={() => setMustFinish(false)} // resume auto-scroll after drag
+                onHoverStart={() => { setMustFinish(true); setDuration(SLOW_DURATION); }}
+                onHoverEnd={() => { setMustFinish(true); setDuration(FAST_DURATION); }}
             >
-                {[...beds, ...beds,].map((bed, index) => (
+                {buildings.map((building, index) => (
                     <motion.div
                         onHoverStart={() => setShowOverlay(index)}
                         onHoverEnd={() => setShowOverlay(null)}
-                        key={index}
-                        className="relative overflow-hidden flex-none  w-[160px] bg-white rounded-lg shadow flex flex-col"
+                        key={building.id}
+                        onClick={() => window.location.href = `/home/building/${building.id}`}
+                        className="relative overflow-hidden flex-none w-[160px] bg-white rounded-lg shadow flex flex-col"
                     >
                         {/* Overlay */}
                         {showOverlay === index && (
@@ -151,38 +97,37 @@ export default function RecommendationsCarousel() {
                             </motion.div>
                         )}
 
-                        {/* Image */}
+                        {/* Building Image */}
                         <img
-                            src={bed.image}
-                            alt={bed.name}
+                            src={`/storage/${building.image ? building.image : 'building/building.png'}`}
+                            alt={building.name}
                             className="w-full h-24 object-cover rounded-t-lg"
                         />
 
                         {/* Content */}
                         <div className="p-2 flex flex-col gap-1 flex-1">
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-l from-indigo-500 to-transparent"></div>
-                          
-                            <h3 className="text-sm font-semibold truncate">{bed.name}</h3>
-                            <p className="text-xs text-gray-600">{bed.price}</p>
+                            <h3 className="text-sm font-semibold truncate">{building.name}</h3>
+                            <p className="text-xs text-gray-600">{building.address?.address?.municipality}, {building.address?.address?.province}</p>
                             <div className="flex items-center gap-1 text-yellow-500 text-xs">
                                 <FontAwesomeIcon icon={faStar} className="w-3 h-3" />
-                                <span className="text-gray-700">{bed.rating}</span>
+                                <span className="text-gray-700">{building.avg_rating ?? 0}</span>
                             </div>
 
-                            {/* Users */}
+                            {/* User avatars */}
                             <div className="flex -space-x-1 mt-1">
-                                {bed.users.map((user, idx) => (
+                                {building.user_images?.map((user, idx) => (
                                     <img
                                         key={idx}
-                                        src={user}
-                                        alt={`user-${idx}`}
+                                        src={user.avatar}
+                                        alt={user.name}
                                         className="w-6 h-6 rounded-full object-cover border border-white"
                                     />
                                 ))}
                             </div>
+
+
                         </div>
                     </motion.div>
-
                 ))}
             </motion.div>
         </motion.div>

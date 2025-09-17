@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faEdit, faTrash, faPhone, faMailBulk, faEnvelope, faAd, faAddressCard } from "@fortawesome/free-solid-svg-icons";
 import CreateBuildingModal from "./CreateBuildingModal";
 export default function Owner({ owner }) {
+    console.log(owner);
     const [showBuildingModal, setShowBuildingModal] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
     const showBuilding = (id) => {
@@ -29,7 +30,7 @@ export default function Owner({ owner }) {
                     <h2 className="text-xl font-semibold mb-2"> {owner.name}</h2>
                     <p className="text-gray-700"><FontAwesomeIcon icon={faEnvelope} /> : {owner.email}</p>
                     <p className="text-gray-700"><FontAwesomeIcon icon={faPhone} /> : {owner.phone}</p>
-                    <p><FontAwesomeIcon icon={faAddressCard} /> : {owner.address?.street}, {owner.address?.barangay}, {owner.address?.city}, {owner.address?.province}</p>
+                    <p><FontAwesomeIcon icon={faAddressCard} /> : {owner.address?.address.barangay}, {owner.address?.address.city}, {owner.address?.address.province}</p>
                 </section>
 
                 {/* Add Building Button */}

@@ -79,6 +79,7 @@ class BuildingController extends Controller
     public function searchBuildings(Request $request)
     {
         $search = $request->query('search');
+        $keywords = $request->query('keywords', []); // array of selected keywords
 
         $buildings = Building::with([
             'address',
@@ -87,6 +88,7 @@ class BuildingController extends Controller
                 $q->where('status', 'ended') // 👈 only ended bookings
                     ->with('ratings.user');
             },
+            'features',
         ])
             ->when(
                 $search,
@@ -98,6 +100,11 @@ class BuildingController extends Controller
                             ->orWhere('province', 'like', "%{$search}%");
                     })
             )
+            ->when(!empty($keywords), function ($query) use ($keywords) {
+                $query->whereHas('features', function ($q) use ($keywords) {
+                    $q->whereIn('name', $keywords); // OR logic: building has any selected feature
+                });
+            })
             ->get()
             ->map(function ($building) {
                 // Collect all ratings across rooms → beds → bookings
@@ -156,7 +163,7 @@ class BuildingController extends Controller
                 $ratings = collect();
 
                 foreach ($room->beds as $bed) {
-                    foreach($bed->bookings as $booking) {
+                    foreach ($bed->bookings as $booking) {
                         $ratings = $ratings->merge($booking->ratings);
                     }
                 }

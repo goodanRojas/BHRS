@@ -68,10 +68,10 @@ export default function AuthenticatedLayout({ header, children }) {
             <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
 
             <div className="min-h-screen ">
-            
-<div
-    className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
->
+
+                <div
+                    className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
+                >
 
 
                 </div>
@@ -79,24 +79,19 @@ export default function AuthenticatedLayout({ header, children }) {
                 <nav className="border-b border-gray-100 bg-gray-800 z-50 shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
-                            <div className="flex">
-                                {/* Logo */}
-                                <div className="flex shrink-0 items-center">
-                                    <Link href="/">
-                                        <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
-                                    </Link>
-                                </div>
+                            <div className="flex items-center h-16 space-x-6">
+                                <Link href="/">
+                                    <ApplicationLogo className=' h-10 w-auto ' relative={true}/>
+                                </Link>
 
-                                {/* Desktop Nav Links */}
                                 <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                    <NavLink
-                                        href={route('to.user.buildings')}
-                                        active={route().current('to.user.buildings')}
-                                    >
+                                    <NavLink href={route('to.user.buildings')} active={route().current('to.user.buildings')}>
                                         Home
                                     </NavLink>
                                 </div>
                             </div>
+
+
 
                             {/* Desktop Right Side */}
                             <div className="hidden sm:flex sm:items-center gap-x-4">

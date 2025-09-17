@@ -33,6 +33,7 @@ export default function SellerLayout({ header, children }) {
     useEffect(() => {
         window.Echo.private(`App.Models.Seller.${user.id}`)
             .notification((notification) => {
+
                 setNotifications((prev) => [notification, ...prev]);
                 setNotifVisible(notification);
                 setNotificationsCount(prevCount => prevCount + 1);
@@ -62,8 +63,8 @@ export default function SellerLayout({ header, children }) {
                         {/* Left Section */}
                         <div className="flex items-center">
                             {/* Logo */}
-                            <Link href="/" className="flex items-center">
-                                <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
+                            <Link href="/">
+                                <ApplicationLogo className=' h-10 w-auto ' relative={true} />
                             </Link>
 
                             {/* Desktop Nav Links */}

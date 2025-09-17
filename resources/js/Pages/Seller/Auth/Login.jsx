@@ -44,16 +44,9 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Seller Log in" />
             <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
-                <Link
-                    href="/"
-                    className="pointer-events-auto"
-                >
-                    <img
-                        src="/storage/system/logo/logo-no-bg.png"
-                        alt="BH Reservation Logo"
-                        className="h-20 w-auto"
-                    />
-                </Link>
+                <div className='flex items-center justify-center'>
+                    <ApplicationLogo relative={true} />
+                </div>
             </nav>
             {/* Gradient background wrapper */}
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-500 via-blue-500 to-gray-900 px-4 pt-[60px]">
@@ -178,7 +171,7 @@ export default function Login({ status, canResetPassword }) {
                             <div className="mt-6 flex items-center justify-end gap-4">
                                 {canResetPassword && (
                                     <Link
-                                        href={route('password.request')}
+                                        href={route('seller.password.request')}
                                         className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
                                     >
                                         Forgot your password?
@@ -194,7 +187,7 @@ export default function Login({ status, canResetPassword }) {
                                 </motion.div>
 
                             </div>
-                         
+
                         </form>
                     </motion.div>
                 </motion.div>

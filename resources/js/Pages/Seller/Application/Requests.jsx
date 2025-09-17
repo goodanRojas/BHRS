@@ -1,10 +1,12 @@
 import SecondaryButton from "@/Components/SecondaryButton";
 import SellerLayout from "@/Layouts/SellerLayout";
-import { Head } from "@inertiajs/react";
-import React, { useState } from "react";
+import { Head, usePage } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
 import Modal from "@/Components/Modal";
 import axios from "axios";
 export default function Requests({ requests: IntialRequests }) {
+    const owner = usePage().props.auth.seller;
+    console.log(owner);
     const [requests, setRequests] = useState(IntialRequests || []);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [requestIdToCancel, setRequestIdToCancel] = useState(null);
@@ -27,6 +29,21 @@ export default function Requests({ requests: IntialRequests }) {
             console.error("Error cancelling request:", error);
         }
     };
+
+    useEffect(() => {
+        const channel = window.Echo.private(`seller-building-application-approved.${owner?.id}`)
+            .listen('.SellerBuildingApplicationApproved', (e) => {
+                console.log('🔔 New building application approved received!', e);
+                setRequests((prev) => [...prev, e.application]);
+            });
+        channel.subscribed(() => {
+            console.log('✅ Subscribed to seller channel');
+        });
+
+        return () => {
+            channel.stopListening('.SellerBuildingApplicationApproved');
+        };
+    }, [owner?. id]);
 
     return (
         <SellerLayout>

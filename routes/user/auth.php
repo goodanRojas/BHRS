@@ -85,3 +85,5 @@ require __DIR__ . '/profile.php';
 require __DIR__ . '/onboarding.php';
 require __DIR__ . '/feedback.php';
 require __DIR__ . '/bed.php';
+require __DIR__ . '/keyword.php';
+require __DIR__ . '/recommendation.php';
