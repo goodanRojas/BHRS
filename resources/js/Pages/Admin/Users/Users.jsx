@@ -81,7 +81,7 @@ export default function Users({ users }) {
 
     const handleEditSubmit = (e) => {
         e.preventDefault();
-        editPost(route("admin.user.update", { id: selectedUser.id }), {
+        editPost(route("admin.users.update", { id: selectedUser.id }), {
             onSuccess: () => {
                 setMoreUsers((prevUsers) =>
                     prevUsers.map((user) =>
