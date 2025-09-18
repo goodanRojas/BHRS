@@ -5,6 +5,7 @@ import Modal from '@/Components/Modal';
 import { useForm } from '@inertiajs/inertia-react';
 import { useState, useEffect } from 'react';
 export default function Dashboard({ booking }) {
+    console.log(booking);
     const user = usePage().props.auth.user;
     /* Booking Approved Channel */
     useEffect(() => {
@@ -242,12 +243,12 @@ export default function Dashboard({ booking }) {
                         </div>
 
                         <div className="flex w-full flex-wrap justify-end gap-2">
-                            <Link
-                                href="#"
-                                className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition text-sm"
-                            >
-                                Contact
-                            </Link>
+                                <Link
+                                    href={route('messages.owner', {owner: booking.bookable.room.building.seller_id})}
+                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition text-sm"
+                                >
+                                    Contact
+                                </Link>
                             {bookingStatus !== 'completed' && bookingStatus !== 'paid' && (
                                 <button
                                     onClick={() => setShowCancelModal(true)}
@@ -368,11 +369,11 @@ export default function Dashboard({ booking }) {
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500 mb-1">Seller Receipt</p>
+                                    <p className="text-sm text-gray-500 mb-1">Owner Receipt</p>
                                     {booking.receipt.seller_receipt ? (
                                         <img
                                             src={`/storage/${booking.receipt.seller_receipt}`}
-                                            alt="Seller Receipt"
+                                            alt="Owner Receipt"
                                             className="rounded-lg border shadow-sm w-full max-w-sm"
                                         />
                                     ) : (

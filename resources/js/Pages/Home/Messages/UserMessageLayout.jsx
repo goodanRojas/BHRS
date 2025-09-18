@@ -1,8 +1,9 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faUsers, faRobot, faStore } from "@fortawesome/free-solid-svg-icons";
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 export default function UseMessageLayout({ children }) {
     const { url } = usePage();
@@ -25,32 +26,39 @@ export default function UseMessageLayout({ children }) {
     ];
 
     return (
-        <AuthenticatedLayout>
-            <div className="flex flex-col h-[calc(100vh-4rem)] ">
-                {/* Sidebar */}
-                <div className="flex items-center justify-around shadow-md p-2 ">
-                  
-                        {navItems.map((item) => (
-                            <div key={item.key}>
-                                <Link
-                                    href={item.href}
-                                    className={`flex  items-center space-x-3 p-2 text-sm rounded-md transition-all ${activeTab === item.key
-                                            ? 'bg-indigo-100 text-indigo-600 font-semibold'
-                                            : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                >
-                                    <FontAwesomeIcon icon={item.icon} />
-                                    <span>{item.name}</span>
-                                </Link>
-                            </div>
-                        ))}
-                </div>
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
+            <div className="flex bg-gray-900 items-center justify-around shadow-lg mb-5 p-2 ">
 
-                {/* Chat Window */}
-                <div className='min-h-screen'>
-                    {children}
-                </div>
+                <Link
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.history.back();
+                    }}
+                >    <ApplicationLogo className=' h-10 w-auto ' relative={true} />
+                </Link>
+
+
+                {navItems.map((item) => (
+                    <div key={item.key}>
+                        <Link
+                            href={item.href}
+                            className={`flex  items-center space-x-3 p-2 text-sm rounded-md transition-all ${activeTab === item.key
+                                ? 'bg-indigo-100 text-indigo-600 font-semibold'
+                                : 'text-slate-100 hover:bg-gray-100 hover:text-slate-900'
+                                }`}
+                        >
+                            <FontAwesomeIcon icon={item.icon} />
+                            <span>{item.name}</span>
+                        </Link>
+                    </div>
+                ))}
             </div>
-        </AuthenticatedLayout>
+
+            {/* Chat Window */}
+            <div className='flex-1 overflow-auto'>
+                {children}
+            </div>
+        </div>
     );
 }

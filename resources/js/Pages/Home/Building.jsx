@@ -3,7 +3,7 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import { Head, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faStar, faBed, faMapMarkerAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faStar, faBed, faMapMarkerAlt, faInfoCircle, faMessage } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
     const [showRules, setShowRules] = useState(true);
@@ -105,9 +105,14 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                             </div>
 
                             {/* Seller */}
-                            <div className="flex items-center text-sm text-gray-700">
-                                <FontAwesomeIcon icon={faUserTie} className="mr-2 text-gray-500" />
-                                <span className="font-medium">{building.seller.name}</span>
+                            <div className="relative flex items-center text-sm text-gray-700 group">
+                                <Link
+                                    href={route('messages.owner', { owner: building.seller_id })}
+                                >
+                                    <FontAwesomeIcon icon={faUserTie} className="mr-2 text-gray-500" />
+                                    <span className="font-medium">{building.seller.name}</span>
+                                    <FontAwesomeIcon icon={faMessage} className="absolute left-[150px] top-1 text-gray-500 hidden group-hover:block group-hover:text-blue-600 transition duration-300 " />
+                                </Link>
                             </div>
 
                             {/* Address */}

@@ -60,6 +60,8 @@ class Messages extends Controller
         return Inertia::render('Home/Messages/LandOwner', [
             'sentMessages' => $sentMessages,
             'receivedMessages' => $receivedMessages,
+            'selectedOwnerId' => $request->query('owner'), // 👈 pass query owner
+
         ]);
     }
 }

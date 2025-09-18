@@ -9,9 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function landowner({ sentMessages, receivedMessages }) {
-    // console.log("Sent Messages:", sentMessages);
-    // console.log("Received Messages:", receivedMessages);
+export default function landowner({ sentMessages, receivedMessages, selectedOwnerId }) {
 
     const [owners, setOwners] = useState([]); // Store list of users (all conversations)
     const [onlineOwners, setOnlineOwners] = useState([]); // Store list of online users
@@ -52,6 +50,17 @@ export default function landowner({ sentMessages, receivedMessages }) {
         }
     }, []);
 
+    useEffect(() => {
+        if (selectedOwnerId) {
+            // Assume you have a way to fetch owner details
+            const owner = owners.find(o => o.id === parseInt(selectedOwnerId));
+            if (owner) {
+                setActiveOwner(owner);
+                selectedOwnerToSessionStorage(owner);
+                fetchMessages(owner.id);
+            }
+        }
+    }, [selectedOwnerId, owners]);
     // Extract users from both sent and received messages
     useEffect(() => {
         const allMessages = [...sentMessages, ...receivedMessages];
