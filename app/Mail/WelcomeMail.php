@@ -48,7 +48,7 @@ class WelcomeMail extends Mailable
     public function attachments(): array
     {
         return [
-            Attachment::fromStorageDisk('public', 'images/0d4axAbA9kMwcoHgVTybV5fty4atD6pcugGhmEIh.jpg')
+            Attachment::fromStorageDisk('public', 'images/welcome_email_image.svg')
         ];
     }
 }
