@@ -74,34 +74,43 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
-        // ✅ Tables
+
         $topSellers = Seller::select('sellers.*')
+            // count bookings
             ->selectSub(function ($query) {
-                $query->from('buildings')
+                $query->from('beds')
+                    ->join('rooms', 'rooms.id', '=', 'beds.room_id')
+                    ->join('buildings', 'buildings.id', '=', 'rooms.building_id')
                     ->join('bookings', function ($join) {
-                        $join->on('bookings.bookable_id', '=', 'buildings.id')
-                            ->where('bookings.bookable_type', '=', \App\Models\Building::class);
+                        $join->on('bookings.bookable_id', '=', 'beds.id')
+                            ->where('bookings.bookable_type', '=', Bed::class)
+                            ->where('bookings.status', '=', 'ended'); // only ended
                     })
                     ->whereColumn('sellers.id', 'buildings.seller_id')
                     ->whereNull('buildings.deleted_at')
-                    ->selectRaw('COUNT(*)');
+                    ->selectRaw('COUNT(bookings.id)');
             }, 'bookings_count')
+
+            // sum receipts (earnings)
             ->selectSub(function ($query) {
-                $query->from('buildings')
+                $query->from('beds')
+                    ->join('rooms', 'rooms.id', '=', 'beds.room_id')
+                    ->join('buildings', 'buildings.id', '=', 'rooms.building_id')
                     ->join('bookings', function ($join) {
-                        $join->on('bookings.bookable_id', '=', 'buildings.id')
-                            ->where('bookings.bookable_type', '=', Building::class);
+                        $join->on('bookings.bookable_id', '=', 'beds.id')
+                            ->where('bookings.bookable_type', '=', Bed::class)
+                            ->where('bookings.status', '=', 'ended'); // only ended
                     })
                     ->join('receipts', 'receipts.booking_id', '=', 'bookings.id')
                     ->whereColumn('sellers.id', 'buildings.seller_id')
                     ->whereNull('buildings.deleted_at')
                     ->selectRaw('SUM(receipts.amount)');
             }, 'earnings_sum')
+            ->having('bookings_count', '>', 0)
             ->orderByDesc('bookings_count')
             ->limit(5)
             ->get();
-
-
+    
         $recentBookers = Booking::with('user')->latest()->take(5)->get();
         $recentUsers = User::latest()->take(5)->get();
 
