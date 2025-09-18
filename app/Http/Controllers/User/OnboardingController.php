@@ -12,9 +12,6 @@ class OnboardingController extends Controller
 {
     public function store(Request $request)
     {
-        Log::info(
-            $request->all()
-        );
         $validated = $request->validate([
             'source' => 'nullable|string|max:255',
             'other_source' => 'nullable|string|max:255',
@@ -31,11 +28,7 @@ class OnboardingController extends Controller
         $user->has_completed_onboarding = true;
         $user->save();
 
-
-
-        // You can save preferences to another table if needed
-
-        return redirect()->back();
+        return redirect()->route('to.user.buildings');
     }
 
     public function show(Request $request)
