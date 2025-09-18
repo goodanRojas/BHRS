@@ -61,7 +61,7 @@ export default function Building({ building }) {
         formData.append('id', building.id);
 
         try {
-            const response = await axios.post("/seller/building/upload-image", formData, {
+            const response = await axios.post("/admin/owner/buildings/upload-image", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             console.log(response);
@@ -157,7 +157,7 @@ export default function Building({ building }) {
             formData.append('image', data.image);
             formData.append('building_id', building.id);
 
-            const response = await axios.post('/seller/building/add-room', formData, {
+            const response = await axios.post('/admin/owner/buildings/add-room', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -208,7 +208,7 @@ export default function Building({ building }) {
         }
 
         try {
-            const response = await axios.post(`/seller/building/update/${building.id}`, formData, {
+            const response = await axios.post(`/admin/owner/buildings/update/${building.id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             resetBuilding();
@@ -249,7 +249,7 @@ export default function Building({ building }) {
         formData.append("image", file);
 
         try {
-            const response = await axios.post(`/seller/building/update-main-image/${building.id}`, formData, {
+            const response = await axios.post(`/admin/owner/buildings/update-main-image/${building.id}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             building.image = response.data.image; // backend should return new file path
@@ -262,7 +262,7 @@ export default function Building({ building }) {
     // DELETE CAROUSEL IMAGE
     const handleDeleteCarouselImage = async (imageId) => {
         try {
-            const response = await axios.post(`/seller/building/delete-image/${imageId}`);
+            const response = await axios.post(`/admin/owner/buildings/delete-image/${imageId}`);
             if (response.data.success) {
                 setImages((prev) => prev.filter((img) => img.id !== imageId));
                 setToastMessage({ message: "Image deleted.", isTrue: true, isType: "success" });
@@ -281,7 +281,7 @@ export default function Building({ building }) {
         formData.append("image", file);
 
         try {
-            const response = await axios.post(`/seller/building/update-image/${imageId}`, formData, {
+            const response = await axios.post(`/admin/owner/buildings/update-image/${imageId}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
@@ -651,7 +651,7 @@ export default function Building({ building }) {
                                     {rooms.map((room, idx) => (
                                         <tr
                                             key={room.id}
-                                            onClick={() => (window.location.href = `/seller/room/${room.id}`)}
+                                            onClick={() => (window.location.href = `/admin/owner/building/room/show/${room.id}`)}
                                             className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                                                 } border-t border-gray-100 hover:bg-indigo-50/50 hover:cursor-pointer transition-colors`}
                                         >

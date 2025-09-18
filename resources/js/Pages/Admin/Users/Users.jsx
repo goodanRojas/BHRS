@@ -105,12 +105,18 @@ export default function Users({ users }) {
             const response = await axios.post(`/admin/users/toggle-status/${id}`);
             if (response.data.success) {
                 // Update the user's status locally
+                setToast({
+                    show: true,
+                    message: "User status updated",
+                    type: "success",
+                });
                 setMoreUsers((prevUsers) =>
                     prevUsers.map((user) =>
                         user.id === id
                             ? { ...user, status: user.status === 1 ? 0 : 1 }
                             : user
                     )
+                    
                 );
             } else {
                 console.error("Error in toggling status");

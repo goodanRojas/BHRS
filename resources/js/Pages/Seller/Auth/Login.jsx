@@ -20,7 +20,7 @@ export default function Login({ status, canResetPassword }) {
 
     // rotating welcome text
     const messages = [
-        "Welcome Seller",
+        "Welcome Owner",
         "Manage your boarding house",
         "Track bookings and payments easily",
     ];

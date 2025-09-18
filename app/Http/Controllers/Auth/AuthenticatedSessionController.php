@@ -37,18 +37,25 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+
         // Attempt login
         if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'), // Invalid credentials
             ]);
         }
+        $user = Auth::user();
+
+        if ($user->status != 1) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been restricted. Please contact support.',
+            ]);
+        }
 
         // Regenerate session
         $request->session()->regenerate();
-
         // Set user online status
-        $user = Auth::user();
         $user->update(['is_online' => true]);
         event(new UserStatusUpdated($user->id, true));
 

@@ -49,4 +49,14 @@ class UserController extends Controller
 
         return redirect()->back()->with('success', 'User updated successfully');
     }
+
+    public function toggleStatus($id)
+    {
+        $user = User::findOrFail($id); // Assuming you're using the `User` model, not `Seller`
+        $user->status = !$user->status;
+        $user->save();
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }

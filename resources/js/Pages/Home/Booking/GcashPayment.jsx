@@ -60,7 +60,7 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
             Please send your payment manually using the details below.
           </p>
 
-          {paymentInfo === null ? (
+          {paymentInfo ? (
             <div>
               {/* Owner Name */}
               <motion.div
@@ -99,7 +99,7 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
                 />
               </motion.div>
             </div>
-          ): (
+          ) : (
             <div>
               <p className="text-lg font-semibold text-gray-700 mb-6">The owner payment information is not available.</p>
             </div>
@@ -159,7 +159,7 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
 
 
             </div>
-            <PrimaryButton type="submit" disabled={processing} className="w-full">
+            <PrimaryButton type="submit" disabled={processing || !paymentInfo} className="w-full">
               {processing ? 'Processing...' : 'Confirm Payment'}
             </PrimaryButton>
             {errors.payment_proof && (
