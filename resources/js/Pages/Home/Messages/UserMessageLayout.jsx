@@ -8,7 +8,9 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 export default function UseMessageLayout({ children }) {
     const { url } = usePage();
     const [activeTab, setActiveTab] = useState('');
+    const [previousUrl, setPreviousUrl] = useState('/home/buildings'); // fallback
 
+    // Track active tab
     useEffect(() => {
         if (url.includes('/messages/owner')) {
             setActiveTab('landowner');
@@ -19,6 +21,15 @@ export default function UseMessageLayout({ children }) {
         }
     }, [url]);
 
+    // Save last non-messages URL
+    useEffect(() => {
+        if (!url.startsWith('/messages') && !url.startsWith('/group')) {
+            sessionStorage.setItem('previousUrl', url);
+        }
+        const stored = sessionStorage.getItem('previousUrl');
+        if (stored) setPreviousUrl(stored);
+    }, [url])
+
     const navItems = [
         { name: 'Direct', href: '/messages', icon: faUser, key: 'direct' },
         { name: 'Land Owner', href: '/messages/owner', icon: faStore, key: 'landowner' },
@@ -28,14 +39,8 @@ export default function UseMessageLayout({ children }) {
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
             <div className="flex bg-gray-900 items-center justify-around shadow-lg mb-5 p-2 ">
-
-                <Link
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        window.history.back();
-                    }}
-                >    <ApplicationLogo className=' h-10 w-auto ' relative={true} />
+                <Link href={previousUrl}>
+                    <ApplicationLogo className="h-10 w-auto" relative={true} />
                 </Link>
 
 

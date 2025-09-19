@@ -203,7 +203,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
                     setOnlineUsers(users);
                 })
                 .joining((user) => {
-                    setOnlineUsers([...preview, user]);
+                    setOnlineUsers([...onlineUsers, user]);
                 })
                 .leaving((user) => {
                     setOnlineUsers((prev) => prev.filter((u) => u.id !== user.id));

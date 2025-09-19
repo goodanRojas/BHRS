@@ -108,21 +108,46 @@ export default function landowner({ sentMessages, receivedMessages, selectedOwne
         e.preventDefault();
         if (!message.trim() || !activeOwner) return;
 
-        axios.post("/owner-messages/send", {
+        // Create a temporary message object
+        const tempMessage = {
+            id: Date.now(), // Temporary ID
+            sender_id: user.id,
             receiver_id: activeOwner.id,
             content: message,
-        }).then(({ data }) => {
-            // Update the messages in the state after sending a new message
-            // console.log(data.message);
+            created_at: new Date().toISOString(),
+            sender: { id: user.id, name: 'You', avatar: user.avatar },
+            pending: true, // Mark it as pending
+        };
 
-            setMessages((prevMessages) => {
-                // Append the new message to the existing messages
-                return [...prevMessages, data.message];
+        // Add it immediately to messages
+        setMessages((prevMessages) => [...prevMessages, tempMessage]);
+        setMessage(""); // Clear input
+
+        // Scroll to bottom
+        setTimeout(scrollToBottom, 50);
+
+        // Send to server
+        axios.post("/owner-messages/send", {
+            receiver_id: activeOwner.id,
+            content: tempMessage.content,
+        })
+            .then(({ data }) => {
+                // Replace the temporary message with real message from server
+                setMessages((prevMessages) =>
+                    prevMessages.map((msg) =>
+                        msg.id === tempMessage.id ? data.message : msg
+                    )
+                );
+            })
+            .catch((err) => {
+                console.error('Error sending message:', err);
+                // Optionally mark message as failed
+                setMessages((prevMessages) =>
+                    prevMessages.map((msg) =>
+                        msg.id === tempMessage.id ? { ...msg, failed: true, pending: false } : msg
+                    )
+                );
             });
-            console.log("Message sent:", data.message);
-
-            setMessage(""); // Clear the input
-        }).catch((err) => console.error('Error sending message:', err));
     };
 
     // Search owners based on query

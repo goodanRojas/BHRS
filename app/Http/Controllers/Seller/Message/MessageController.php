@@ -50,39 +50,6 @@ class MessageController extends Controller
     }
 
 
-
-    public function sendMessage(Request $request)
-    {
-        $owner = auth()->guard('seller')->user();
-        // Validate the request
-        $validated = $request->validate([
-            'receiver_id' => 'required|exists:users,id',
-            'content' => 'required|string',
-        ]);
-
-        // Create a new message
-        $message = Message::create([
-            'sender_id' => Auth::guard('seller')->id(),
-            'sender_type' => Seller::class,
-            'receiver_id' => $validated['receiver_id'],
-            'receiver_type' => User::class,
-            'content' => $validated['content'],
-            'is_read' => false,
-            'sent_at' => now(),
-        ]);
-
-        $message->load(['sender', 'receiver']);
-        broadcast(new OwnerMessageSentToUser($message));
-
-        ConversationAiSetting::firstOrCreate([
-            'seller_id' => $owner->id, // seller is receiver in this case
-            'user_id'   => $validated['receiver_id']
-        ]);
-
-
-        return response()->json(['message' => $message]);
-    }
-
     public function getUsers(Request $request)
     {
         $authOwnerId = Auth::guard('seller')->id();
@@ -124,12 +91,56 @@ class MessageController extends Controller
             ->unique()
             ->values();
 
-        $users = User::with('conversationAiSettings')->whereIn('id', $visibleUserIds)->get();
+        $users = User::with('conversationAiSettings')->whereIn('id', $visibleUserIds)->get()
+            ->map(function ($user) use ($authOwnerId) {
+                $setting = $user->conversationAiSettings
+                    ->where('seller_id', $authOwnerId)
+                    ->first();
+
+                $user->ai_response_status = [
+                    'status' => $setting ? $setting->ai_enabled : false
+                ];
+
+                return $user;
+            });
 
         return response()->json([
             'users' => $users
         ]);
     }
+
+    public function sendMessage(Request $request)
+    {
+        $owner = auth()->guard('seller')->user();
+        // Validate the request
+        $validated = $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+            'content' => 'required|string',
+        ]);
+
+        // Create a new message
+        $message = Message::create([
+            'sender_id' => Auth::guard('seller')->id(),
+            'sender_type' => Seller::class,
+            'receiver_id' => $validated['receiver_id'],
+            'receiver_type' => User::class,
+            'content' => $validated['content'],
+            'is_read' => false,
+            'sent_at' => now(),
+        ]);
+
+        $message->load(['sender', 'receiver']);
+        broadcast(new OwnerMessageSentToUser($message));
+
+        ConversationAiSetting::firstOrCreate([
+            'seller_id' => $owner->id, // seller is receiver in this case
+            'user_id' => $validated['receiver_id']
+        ]);
+
+
+        return response()->json(['message' => $message]);
+    }
+
 
 
     public function deleteConversation($selectedUserId)
@@ -168,7 +179,7 @@ class MessageController extends Controller
 
         $setting = ConversationAiSetting::firstOrCreate([
             'seller_id' => $ownerId,
-            'user_id'   => $userId,
+            'user_id' => $userId,
         ]);
 
         $setting->ai_enabled = !$setting->ai_enabled;

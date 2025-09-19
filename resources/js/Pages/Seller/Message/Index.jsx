@@ -19,13 +19,23 @@ export default function Index({ sentMessages, receivedMessages }) {
     const [searchQuery, setSearchQuery] = useState(''); // User search input
     const [messageOptionOpen, setMessageOptionOpen] = useState(false);
     const [deletePromptOpen, setDeletePromptOpen] = useState(false);
-    const isAIOn = activeUser?.ai_response_status?.status === true;
+    const [isAIOn, setIsAIOn] = useState(false);
+    const messagesEndRef = useRef(null);
 
+    console.log(isAIOn);
+    console.log(activeUser);
     const [focusedIndex, setFocusedIndex] = useState(-1);
     const searchBoxRef = useRef(null); // optional for scroll into view
     const menuRef = useRef(null);
 
     const owner = usePage().props.auth.seller; // Get the authenticated user
+
+    // Update AI status
+    useEffect(() => {
+        if (activeUser?.ai_response_status?.status !== undefined) {
+            setIsAIOn(activeUser.ai_response_status.status === true);
+        }
+    }, [activeUser]);
     // Extract users from both sent and received messages
     useEffect(() => {
         const allMessages = [...sentMessages, ...receivedMessages];
@@ -140,16 +150,17 @@ export default function Index({ sentMessages, receivedMessages }) {
                 ...prevUser,
                 ai_response_status: {
                     ...prevUser.ai_response_status,
-                    status: data.ai_enabled, // assuming backend returns new status
+                    status: data.ai_enabled,
                 }
             }));
             setUsers(prevUsers =>
                 prevUsers.map(user =>
                     user.id === userId
-                        ? { ...user, ai_response_status: { status: data.status } }
+                        ? { ...user, ai_response_status: { status: data.ai_enabled } }
                         : user
                 )
             );
+            setIsAIOn(data.ai_enabled);
         }).catch((err) => console.error('Error toggling AI:', err));
     };
 
@@ -209,15 +220,46 @@ export default function Index({ sentMessages, receivedMessages }) {
                     );
                 });
 
+            // Send from ai
+            const subscribed = Echo.private(`message-response-from-ai.${owner.id}`)
+                .listen('.MessageResponseFromAIEvents', (message) => {
+                    console.log('🔔 ai message sent!', message);
+                    if (activeUser && message.sender_id === owner.id && message.receiver_id === activeUser.id) {
+                        setMessages((prevMessages) => [...prevMessages, message]);
+                        
+                    }
+                    setUsers((prevUsers) =>
+                        prevUsers.map((u) =>
+                            u.id === message.receiver_id || u.id === message.sender_id
+                                ? { ...u, last_message: message }
+                                : u
+                        )
+                    );
+                });
+            subscribed.subscribed(() => {
+                console.log('ai is connected');
+            });
+
 
             // Cleanup Echo listener when component unmounts
             return () => {
                 if (window.Echo) {
                     window.Echo.leave(`user-to-owner-messages.${owner.id}`);
+                    window.Echo.leave(`message-response-from-ai.${owner.id}`);
                 }
             };
         }
     }, [owner?.id, activeUser]);
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollTo({
+            top: messagesEndRef.current.scrollHeight,
+            behavior: "smooth",
+        });
+    };
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
 
     return (
         <SellerLayout>
@@ -382,7 +424,9 @@ export default function Index({ sentMessages, receivedMessages }) {
                             </div>
 
                             {/* Messages scrollable section */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div
+                                ref={messagesEndRef}
+                                className="flex-1 overflow-y-auto p-4 space-y-3">
                                 {messages.length > 0 ? (
                                     <div >
                                         {messages.map((msg) => {

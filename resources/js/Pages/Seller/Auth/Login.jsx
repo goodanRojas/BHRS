@@ -96,7 +96,7 @@ export default function Login({ status, canResetPassword }) {
                                 transition={{ duration: 0.6, delay: 0.3 }}
                                 className="text-center mb-6"
                             >
-                                <h2 className="text-3xl font-bold text-gray-800">Welcome Back, Seller!</h2>
+                                <h2 className="text-3xl font-bold text-gray-800">Welcome Back, Owner!</h2>
                                 <p className="text-gray-500">Login to continue managing your business</p>
                             </motion.div>
 

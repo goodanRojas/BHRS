@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Chats;
 use App\Events\Message\OwnerMessageSentToUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Events\Seller\MessageResponseFromAIEvent;
 use App\Events\Message\UserMessageSentToOwner;
 use Illuminate\Support\Facades\{Http, Log};
 use Inertia\Inertia;
@@ -56,9 +57,11 @@ class LandOwnerController extends Controller
                     $subQuery = $q->where('name', 'like', '%' . $query . '%');
                 });
         })
-            ->with(['buildings' => function ($q) {
-                $q->select('id', 'name', 'image', 'seller_id');
-            }])
+            ->with([
+                'buildings' => function ($q) {
+                    $q->select('id', 'name', 'image', 'seller_id');
+                }
+            ])
             ->select('id', 'name', 'avatar') // only what you need
             ->get();
 
@@ -91,12 +94,6 @@ class LandOwnerController extends Controller
 
         return response()->json(['messages' => $messages]);
     }
-
-
-
-
-
-
 
 
     public function getOwners(Request $request)
@@ -177,13 +174,12 @@ class LandOwnerController extends Controller
 
     public function sendMessage(Request $request)
     {
-        
         $validated = $request->validate([
             'receiver_id' => 'required|exists:sellers,id',
             'content' => 'required|string',
         ]);
 
-        // Create a new message
+        // 1️⃣ Create the user's message
         $message = Message::create([
             'sender_id' => auth()->id(),
             'sender_type' => User::class,
@@ -197,86 +193,138 @@ class LandOwnerController extends Controller
         $message->load(['sender', 'receiver']);
         broadcast(new UserMessageSentToOwner($message));
 
+        // 2️⃣ Fetch or create AI setting
         $settings = ConversationAiSetting::firstOrCreate([
-            'seller_id' => $validated['receiver_id'], // seller is receiver in this case
-            'user_id'   => auth()->id(),
-            'ai_enabled' => false
+            'seller_id' => $validated['receiver_id'],
+            'user_id' => auth()->id(),
         ]);
 
-        Log::info($settings);
+        // 3️⃣ Only run AI if enabled
         if ($settings->ai_enabled) {
             $seller = $settings->seller;
 
-            $beds = Bed::with(['bookings.ratings'])
-                ->whereHas('room.building', function ($q) use ($seller) {
-                    $q->where('seller_id', $seller->id);
-                })->get();
-            $rooms = Room::whereHas('building', function ($q) use ($seller) {
-                $q->where('seller_id', $seller->id);
-            })->get(); // This gets the rooms for the seller
-
-            $buildings = Building::where('seller_id', $seller->id)->get();
-            $rulesAndRegulations = RulesAndRegulation::where('landowner_id', $seller->id)->get(); // THis gets the rules and regulations for the building
-            $areBedsBooked = Booking::where('bookable_type', Bed::class)
-                ->whereIn('bookable_id', $beds->pluck('id')
-                    ->where('status', 'completed'))
+            // Fetch minimal data upfront
+            $beds = Bed::with(['bookings' => fn($q) => $q->where('status', 'completed'), 'features'])
+                ->whereHas('room.building', fn($q) => $q->where('seller_id', $seller->id))
                 ->get();
-            $context = $this->prepareSellerContext($seller, $beds, $rooms, $buildings, $rulesAndRegulations, $areBedsBooked);
 
+            $rooms = Room::with('features')
+                ->whereHas('building', fn($q) => $q->where('seller_id', $seller->id))
+                ->get();
+
+            $buildings = Building::with('features')->where('seller_id', $seller->id)->get();
+
+            $rulesAndRegulations = RulesAndRegulation::where('landowner_id', $seller->id)->get();
+
+            // Only beds that are booked
+            $bookedBeds = $beds->filter(fn($b) => $b->bookings->isNotEmpty())->values();
+
+            // 4️⃣ Prepare dynamic context
+            $context = $this->prepareDynamicContext(
+                $seller,
+                $beds,
+                $rooms,
+                $buildings,
+                $rulesAndRegulations,
+                $bookedBeds,
+                $validated['content']
+            );
+
+            // 5️⃣ Ask GPT
             $aiResponse = $this->askGPT($validated['content'], $context);
 
+            // 6️⃣ Save AI response
             $aiMessage = Message::create([
-                'sender_id'     => $seller->id,
-                'sender_type'   => Seller::class,
-                'receiver_id'   => auth()->id(),
+                'sender_id' => $seller->id,
+                'sender_type' => Seller::class,
+                'receiver_id' => auth()->id(),
                 'receiver_type' => User::class,
-                'content'       => $aiResponse,
-                'is_read'       => false,
-                'sent_at'       => now(),
+                'content' => $aiResponse,
+                'is_read' => false,
+                'sent_at' => now(),
             ]);
+
             broadcast(new UserMessageSentToOwner($aiMessage));
             broadcast(new OwnerMessageSentToUser($aiMessage));
+            broadcast(new MessageResponseFromAIEvent($aiMessage));
         }
+
         return response()->json(['message' => $message]);
     }
-    private function prepareSellerContext($seller, $beds, $rooms, $buildings, $rulesAndRegulations, $areBedsBooked)
+
+    private function prepareDynamicContext($seller, $beds, $rooms, $buildings, $rules, $bookedBeds, $userMessage)
     {
-        return [
-            'seller' => $seller->only(['id', 'name', 'email', 'phone', 'address']),
-            'beds' => $beds->toArray(),
-            'rooms' => $rooms->toArray(),
-            'buildings' => $buildings->toArray(),
-            'rules' => $rulesAndRegulations->toArray(),
-            'bookedBeds' => $areBedsBooked->toArray(),
+        $context = [
+            'seller' => $seller->only(['id', 'name', 'email', 'phone', 'address'])
         ];
+
+        $lowerMessage = strtolower($userMessage);
+
+        foreach (['room', 'bed', 'availability'] as $word) {
+            if (str_contains($lowerMessage, $word)) {
+                $context['beds'] = $beds->toArray();
+                $context['rooms'] = $rooms->toArray();
+                $context['bookedBeds'] = $bookedBeds->toArray();
+                break;
+            }
+        }
+
+        foreach (['building', 'location', 'address'] as $word) {
+            if (str_contains($lowerMessage, $word)) {
+                $context['buildings'] = $buildings->toArray();
+                break;
+            }
+        }
+
+        foreach (['rule', 'regulation', 'policy'] as $word) {
+            if (str_contains($lowerMessage, $word)) {
+                $context['rules'] = $rules->toArray();
+                break;
+            }
+        }
+
+
+        return $context;
     }
+
     private function askGPT($userMessage, $context)
     {
-        $apiKey = env('OPENAI_API_KEY'); // Get your API key from .env
+        $apiKey = env('OPENAI_API_KEY');
 
-        $prompt = "You are a helpful boarding house assistant. Use the seller’s data below to answer the question.\n\n"
-            . "Seller Info:\n" . json_encode($context['seller'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Buildings:\n" . json_encode($context['buildings'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Rooms:\n" . json_encode($context['rooms'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Beds:\n" . json_encode($context['beds'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Rules:\n" . json_encode($context['rules'], JSON_PRETTY_PRINT) . "\n\n"
-            . "Currently Booked:\n" . json_encode($context['bookedBeds'], JSON_PRETTY_PRINT) . "\n\n"
-            . "User's Question: {$userMessage}";
+        $promptParts = [
+            "You are a helpful boarding house assistant. Answer concisely and kindly.",
+            "Seller Info:\n" . json_encode($context['seller'], JSON_PRETTY_PRINT),
+        ];
+
+        if (!empty($context['buildings']))
+            $promptParts[] = "Buildings:\n" . json_encode($context['buildings'], JSON_PRETTY_PRINT);
+        if (!empty($context['rooms']))
+            $promptParts[] = "Rooms:\n" . json_encode($context['rooms'], JSON_PRETTY_PRINT);
+        if (!empty($context['beds']))
+            $promptParts[] = "Beds:\n" . json_encode($context['beds'], JSON_PRETTY_PRINT);
+        if (!empty($context['bookedBeds']))
+            $promptParts[] = "Currently Booked Beds:\n" . json_encode($context['bookedBeds'], JSON_PRETTY_PRINT);
+        if (!empty($context['rules']))
+            $promptParts[] = "Rules:\n" . json_encode($context['rules'], JSON_PRETTY_PRINT);
+
+        $promptParts[] = "User Question: {$userMessage}";
+
+        $prompt = implode("\n\n", $promptParts);
 
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
         ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-5-mini',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are a boarding house assistant. Be concise and friendly.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            // 'temperature' => 0.7,
-            'max_completion_tokens' => 300,
-        ]);
+                    'model' => 'gpt-5-mini',
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'You are a boarding house assistant. Be concise and friendly.'],
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                    // 'max_completion_tokens' => 300,
+                ]);
 
         Log::info('OpenAI Response:', $response->json());
 
         return $response->json('choices.0.message.content') ?? 'Sorry, I could not generate a response.';
     }
+
 }
