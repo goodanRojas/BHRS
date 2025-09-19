@@ -11,7 +11,7 @@
 config/reverb.php
 config/mail.php
 config/queue.php
-config/broacasting.php
+config/broadcasting.php
 resources/js/echo.js
 .env.backup
 .env.production

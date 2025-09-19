@@ -206,28 +206,5 @@ class MessageController extends Controller
         ]);
     }
 
-    public function chatWithSeller($sellerId, $bedId)
-    {
-        // Fetch seller and bed details
-        $seller = Seller::findOrFail($sellerId);
-        $bed = Bed::with('room.building.features')->findOrFail($bedId);
 
-        // Prepare GPT input (querying GPT using the seller and bed context)
-        $gptInput = $this->prepareSellerContext($seller, $bed);
-        $gptResponse = $this->askGPT("Tell the user about the seller's bed and room", $gptInput);
-
-        // Return data to DirectChat with GPT response included
-        return Inertia::render('DirectChat', [
-            'seller' => $seller,
-            'bed' => $bed,
-            'gptResponse' => $gptResponse,  // Add the chatbot's response here
-        ]);
-    }
-    private function prepareSellerContext($seller, $bed)
-    {
-        return [
-            'seller' => $seller->only(['name', 'email', 'phone', 'address']),
-            'bed' => $bed ? $bed->toArray() : null,
-        ];
-    }
 }
