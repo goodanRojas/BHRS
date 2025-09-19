@@ -39,7 +39,6 @@ class BookingExpiredCommand extends Command
             if ($end->isPast()) {
                 Log::info('Booking expired: ' . $booking->id);
                 $booking->update(['status' => 'ended']);
-                $booking->user->notify(new BookingExpiredNotify($booking));
                 $booking->bookable->room->building->seller->notify(new BookingExpiredNotify($booking)); // Notify Seller
                 $booking->user->notify(new BookingExpiredNotify($booking));
                 event(new BookingEndedEvent($booking)); // Broadcast to User
