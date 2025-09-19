@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Schedule::command(BookingExpiredCommand::class)->everyMinute();
+Artisan::command('app:booking-expired-command', BookingExpiredCommand::class);
