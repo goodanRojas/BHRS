@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { usePage, Head } from '@inertiajs/react';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function Messages({ sentMessages, receivedMessages }) {
+export default function Messages({ sentMessages, receivedMessages, selectedUser }) {
 
     const [users, setUsers] = useState([]); // Store list of users (all conversations)
     const [onlineUsers, setOnlineUsers] = useState([]); // Store list of online users
@@ -85,7 +85,7 @@ export default function Messages({ sentMessages, receivedMessages }) {
     // Fetch messages for the active user
     const fetchMessages = (userId) => {
 
-        axios.get(`direct-message/selected-user/${userId}`)
+        axios.get(`/direct-message/selected-user/${userId}`)
             .then(({ data }) => {
                 setMessages(data.messages); // Store messages of the active user
 
@@ -236,6 +236,15 @@ export default function Messages({ sentMessages, receivedMessages }) {
         document.addEventListener('mousedown', handleCLickOutside);
         return () => document.removeEventListener('mousedown', handleCLickOutside);
     }, []);
+
+    useEffect(() => {
+        if (selectedUser ){
+            setActiveUser(selectedUser);
+            selectedUserToSessionStorage(selectedUser);
+            fetchMessages(selectedUser.id);
+        }
+        
+    },[selectedUser]);
     return (
         <UserMessageLayout>
             <Head title="Messages" />

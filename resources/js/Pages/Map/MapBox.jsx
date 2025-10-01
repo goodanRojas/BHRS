@@ -5,6 +5,9 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Head } from '@inertiajs/react';
 import ReactDOM from 'react-dom/client';
 import * as turf from '@turf/turf'; // Add the destance between two poi
+import Dropdown from '@/Components/Dropdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapPin, faRoute } from '@fortawesome/free-solid-svg-icons';
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export default function MapBox({ buildings, destinations, focusId }) {
@@ -14,14 +17,23 @@ export default function MapBox({ buildings, destinations, focusId }) {
   const routeLayerIds = useRef([]);
   const domMarkers = useRef([]);
   const currentPopup = useRef(null);
+  const mapStyles = {
+    Streets: "mapbox://styles/mapbox/streets-v12",
+    Outdoors: "mapbox://styles/mapbox/outdoors-v12",
+    Light: "mapbox://styles/mapbox/light-v11",
+    Dark: "mapbox://styles/mapbox/dark-v11",
+    Satellite: "mapbox://styles/mapbox/satellite-v9",
+    "Satellite Streets": "mapbox://styles/mapbox/satellite-streets-v12",
+  };
+
   useEffect(() => {
     if (map.current) return; // Prevent multiple initializations
 
     const savedView = JSON.parse(localStorage.getItem('lastMapView'));
-
+    const savedStyle = localStorage.getItem('lastMapStyle') || mapStyles.Streets;
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: savedStyle,
       center: savedView ? [savedView.lng, savedView.lat] : [124.98565169929262, 10.250049903257633], // Manila as fallback center
       zoom: savedView ? savedView.zoom : 12,
     });
@@ -51,15 +63,13 @@ export default function MapBox({ buildings, destinations, focusId }) {
 
   }, [buildings]);
 
-  // Add buildings and clustering
 
   useEffect(() => {
     if (!map.current || !buildings.length) {
       return;
     }
 
-    map.current.on('load', () => {
-
+    const addSourceAndLayers = () => {
       const geojson = {
         type: 'FeatureCollection',
         features: buildings.map((b) => ({
@@ -418,8 +428,13 @@ export default function MapBox({ buildings, destinations, focusId }) {
         }));
 
       });
+    };
+    map.current.on('load', addSourceAndLayers);
 
-    });
+    map.current.on('style.load', addSourceAndLayers);
+
+
+
   }, [buildings]);
 
   const showBuildingRoutes = (building) => {
@@ -447,7 +462,7 @@ export default function MapBox({ buildings, destinations, focusId }) {
           ? `${(distanceKm * 1000).toFixed(0)} m`
           : `${distanceKm.toFixed(2)} km`;
 
-        console.log(distanceDisplay);
+      console.log(distanceDisplay);
       const id = `route-${building.id}-${index}`;
 
       map.current.addSource(id, {
@@ -564,12 +579,96 @@ export default function MapBox({ buildings, destinations, focusId }) {
   return (
     <AuthenticatedLayout>
       <Head title="Map" />
+      <div className='p-2 absolute z-10 top-15 right-0 flex items-center gap-2'>
+        <Dropdown>
+          <Dropdown.Trigger>
+            <button className="px-2 py-1 bg-white rounded-lg shadow-md border font-bold text-sm hover:bg-gray-50">
+              <FontAwesomeIcon icon={faRoute} className="mr-2" />
+              Style
+            </button>
+          </Dropdown.Trigger>
 
-      <div className="p-4">
-        <div ref={mapContainer} className="w-full h-[80vh] rounded-lg shadow-md border" />
+          <Dropdown.Content>
+            {Object.keys(mapStyles).map((styleName) => (
+              <button
+                key={styleName}
+                onClick={() => {
+                  const newStyle = mapStyles[styleName];
+                  if (map.current) {
+                    map.current.setStyle(newStyle);
+                    localStorage.setItem("mapStyle", newStyle);
+                  }
+                }}
+                className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 hover:text-gray-900 "
+              >
+                {styleName}
+              </button>
+            ))}
+          </Dropdown.Content>
+        </Dropdown>
+        <button
+          className="px-2 py-1 bg-white rounded-lg shadow-md border font-bold text-sm hover:bg-gray-50"
+          onClick={() => {
+
+            if (!map.current) return;
+            if (!navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  map.current.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 14,
+                    essential: true
+                  });
+                  if (!map.current.getSource("user-location")) {
+                    map.current.addSource("user-location", {
+                      type: "geojson",
+                      data: {
+                        type: "Feature",
+                        geometry: {
+                          type: "Point",
+                          coordinates: [longitude, latitude],
+                        },
+                      },
+                    });
+
+                    map.current.addLayer({
+                      id: "user-location-point",
+                      type: "circle",
+                      source: "user-location",
+                      paint: {
+                        "circle-radius": 8,
+                        "circle-color": "#2563eb", // blue
+                        "circle-stroke-width": 2,
+                        "circle-stroke-color": "#fff",
+                      },
+                    });
+                  } else {
+                    // Update position if source already exists
+                    map.current.getSource("user-location").setData({
+                      type: "Feature",
+                      geometry: {
+                        type: "Point",
+                        coordinates: [longitude, latitude],
+                      },
+                    });
+                  }
+                }),
+                (err) => {
+                  alert("Could not fetch location: " + err.message);
+                }
+            }else{
+              alert("Geolocation is not supported by this browser.");
+            }
+
+        
+          }}
+        >
+          <FontAwesomeIcon icon={faMapPin} className="mr-2" />
+          My Location
+        </button>
       </div>
-
-
+      <div ref={mapContainer} className="w-full h-[100vh] rounded-lg shadow-md border" />
     </AuthenticatedLayout>
   );
 }

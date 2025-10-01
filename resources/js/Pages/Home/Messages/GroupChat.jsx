@@ -4,12 +4,14 @@ import axios from 'axios';
 import UserMessageLayout from './UserMessageLayout';
 import AvatarCollage from './AvatarCollage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEllipsisV, faPencil, faPaperPlane, faClock, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
+import { faArrowLeft, faEllipsisV, faPencil, faPaperPlane, faClock, faCheck, faXmark, faUserGroup } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import Dropdown from '@/Components/Dropdown';
 dayjs.extend(relativeTime);
 export default function GroupChat({ groups }) {
     const [activeGroup, setActiveGroup] = useState(null);
+    console.log(activeGroup);
     const [message, setMessage] = useState('');
     const { auth } = usePage().props;
     const currentUserId = auth?.user?.id;
@@ -226,11 +228,33 @@ export default function GroupChat({ groups }) {
                                         <h3 className='p-2 text-sm font-bold text-gray-900'>Options</h3>
                                         <hr />
                                         <button className='w-full truncate text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
-                                            <FontAwesomeIcon icon={faPencil} /> Edit Name
-                                        </button>
-                                        <button className='w-full truncate text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
                                             <FontAwesomeIcon icon={faPencil} /> Change Avatar
                                         </button>
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <button className='w-full truncate text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2'>
+                                                    <FontAwesomeIcon icon={faUserGroup} /> See members
+                                                </button>
+
+                                            </Dropdown.Trigger>
+                                            <Dropdown.Content>
+                                                <div className="flex flex-col gap-2">
+                                                    {activeGroup.members
+                                                    .filter(member => member.id !== currentUserId)
+                                                    .map(member => (
+                                                        <div 
+                                                        key={member.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
+                                                        onClick={() => window.location.href = `/messages/${member.id}`}
+                                                        >
+                                                            <img src={`/storage/${member.avatar || 'profile/default_avatar.png'}`} alt={member.name} className="w-6 h-6 rounded-full" />
+                                                            <span className='text-sm'>{member.name}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+
+
 
                                     </div>
                                 )}

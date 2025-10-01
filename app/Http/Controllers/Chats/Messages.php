@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\{Log, DB};
 class Messages extends Controller
 {
 
-    public function index(Request $request)
+    public function index(Request $request, $selectedUserId = null)
     {
         // Query sent messages where sender_type or receiver_type is User::class, excluding Seller::class
         $sentMessages = $request->user()->sentMessages()
@@ -36,11 +36,12 @@ class Messages extends Controller
                     ->where('receiver_type', '!=', Seller::class);
             })
             ->get();
-
+        $selectedUser = $selectedUserId ? User::find($selectedUserId) : null;
         // Return the data to the Inertia view
         return Inertia::render('Home/Messages/Messages', [
             'sentMessages' => $sentMessages,
             'receivedMessages' => $receivedMessages,
+            'selectedUser' => $selectedUser ?? null,
         ]);
     }
     public function ownerMessages(Request $request)

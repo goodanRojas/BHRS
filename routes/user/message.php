@@ -8,8 +8,8 @@ use App\Http\Controllers\Chats\{DirectChat, GroupChat, LandOwnerController, Mess
 Route::middleware('auth')->group(function () {
 
     Route::prefix('messages')->name('messages.')->group(function () {
-        Route::get('/', [Messages::class, 'index'])->name('index');
         Route::get('/owner', [Messages::class, 'ownerMessages'])->name('owner');
+        Route::get('/{selectedUserId?}', [Messages::class, 'index'])->name('index');
     });
 
     Route::controller(DirectChat::class)->group(function () {

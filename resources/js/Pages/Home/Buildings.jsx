@@ -4,17 +4,17 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import Recommendations from '@/Pages/Home/Recommendations/Recommendations';
-import Keywords from '@/Pages/Home/Keyword/Keywords';
+import Features from '@/Pages/Home/Keyword/Features';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faFilter, faSearch, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faFilter, faSearch, faStar, faEye } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
 export default function Buildings({ initialBuildings }) {
-    // console.log(initialBuildings);
+    console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
     const [keywords, setKeywords] = useState([]);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
-
+    const [suggestions, setSuggestions] = useState([]);
     // debounce search
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -48,25 +48,57 @@ export default function Buildings({ initialBuildings }) {
 
             <div className="p-6">
 
-                {/* Page Title */}
-                <div className="mb-8 text-left">
-                    <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight text-gray-900 italic">
-                        <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-                            Boarding House Reservation
-                        </span>
-                    </h1>
+                {/* Wrapper */}
+                <div className="w-[500px] relative">
+                    <div className="relative flex items-center">
+                        <FontAwesomeIcon
+                            icon={faSearch}
+                            className="absolute left-3 text-indigo-500 h-4 w-4"
+                        />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                if (e.target.value.length > 0) {
+                                    fetch(`/home/buildings/suggestions?query=${e.target.value}`)
+                                        .then((res) => res.json())
+                                        .then((data) => setSuggestions(data));
+                                } else {
+                                    setSuggestions([]);
+                                }
+                            }}
+                            placeholder="Search..."
+                            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+                        />
+                    </div>
 
-                    <p className="mt-2 text-gray-600 text-base md:text-lg font-light tracking-wide">
-                        Find the perfect place that suits your needs
-                    </p>
+                    {/* Suggestions Dropdown */}
+                    {suggestions.length > 0 && (
+                        <div className="absolute mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 w-fit min-w-full">
+                            {suggestions.map((name, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => {
+                                        setSearch(name);
+                                        setSuggestions([]);
+                                    }}
+                                    className="block text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50"
+                                >
+                                    {name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
+
 
                 {/* Keywords */}
                 <div className="mb-6">
                     <h3 className="py-2 font-bold tracking-tight text-gray-800 uppercase">
-                        Keywords
+                        Features
                     </h3>
-                    <Keywords
+                    <Features
                         keywords={["Aircon", "Wi-Fi", "Parking", "Laundry", "CCTV"]}
                         size="md"
                         variant="light"
@@ -85,22 +117,46 @@ export default function Buildings({ initialBuildings }) {
                         className=" font-bold text-gray-800 uppercase tracking-tight py-4"
                     >Buildings</h1>
                     {/* Buildings Grid */}
-                    <div className="flex flex-wrap justify-center sm:justify-start md:justify-start lg:justify-start xl:justify-start gap-3">
+                    <div className="flex flex-wrap  justify-center gap-3">
                         {buildings.map((building) => (
                             <Link
                                 key={building.id}
                                 href={`/home/building/${building.id}`}
-                                className="group flex flex-col rounded-lg w-[250px] bg-white shadow overflow-hidden 
+                                className="group flex flex-col  w-[250px] bg-white shadow overflow-hidden 
                  hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                             >
                                 {/* Image */}
-                                <div className="relative overflow-hidden">
+                                <div className="relative min-h-[200px] overflow-hidden group">
                                     <img
                                         src={`/storage/${building.image}`}
                                         alt={building.name}
-                                        className="w-full h-28 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-[200px] object-cover transform group-hover:scale-105 transition-transform duration-300"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                                    {/* View Count */}
+                                    {building.building_view_count_count > 0 && (
+                                        <div className="absolute top-2 left-2 z-20 flex items-center space-x-1 
+                bg-black/60 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
+                                            <span className="text-xs font-semibold">
+                                                {building.building_view_count_count}
+                                            </span>
+                                        </div>
+
+                                    )}
+                                    {building.rating_count > 0 && (
+                                        <div className="absolute top-2 right-2 z-20 flex items-center space-x-1 
+                bg-black/60 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                                            <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-yellow-500" />
+                                            <span className="text-xs font-semibold text-slate-100">
+                                                {building.avg_rating ? Number(building.avg_rating).toFixed(1) : "0.0"}
+                                            </span>
+                                            <span className="text-[10px] text-slate-100">
+                                                (<span className="font-medium">{building.rating_count || 0}</span>)
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="group-hover:block hidden absolute  inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent transition duration-300"></div>
+
                                 </div>
 
                                 {/* Content */}
@@ -114,7 +170,7 @@ export default function Buildings({ initialBuildings }) {
                                     </div>
 
                                     {/* Seller Info */}
-                                    <div className="flex items-center space-x-2">
+                                    <div className="relative flex items-center space-x-2">
                                         <img
                                             src={
                                                 building.seller?.avatar
@@ -124,24 +180,24 @@ export default function Buildings({ initialBuildings }) {
                                             alt={building.seller?.name || 'Default Avatar'}
                                             className="w-7 h-7 rounded-full border border-gray-200 object-cover shadow-sm"
                                         />
+
                                         <span className="text-xs font-medium text-gray-700 truncate">
                                             {building.seller?.name}
                                         </span>
                                     </div>
 
-                                    {/* Address */}
-                                    <div className="flex items-start text-gray-500 text-[10px] space-x-1">
+                                    {/* Address */}<div className="flex items-start text-gray-500 text-[10px] space-x-1">
                                         <i className="fas fa-location-arrow text-indigo-500 mt-0.5"></i>
                                         {building.address ? (
                                             building.address.address ? (
-                                                <span>
+                                                <span className="truncate block max-w-[200px]">
                                                     {[
                                                         building.address.barangay ?? building.address?.address?.barangay,
                                                         building.address.municipality ?? building.address?.address?.municipality,
-                                                        building.address.province ?? building.address?.address?.province
+                                                        building.address.province ?? building.address?.address?.province,
                                                     ]
                                                         .filter(Boolean)
-                                                        .join(', ')}
+                                                        .join(", ")}
                                                 </span>
                                             ) : (
                                                 <p>No Address Provided</p>
@@ -149,41 +205,9 @@ export default function Buildings({ initialBuildings }) {
                                         ) : (
                                             <p>No Address Provided</p>
                                         )}
-
                                     </div>
 
-                                    {/* Ratings & Tenants */}
-                                    <div className="flex items-center justify-between">
-                                        {/* Ratings */}
-                                        <div className="flex items-center space-x-1 text-yellow-500">
-                                            <FontAwesomeIcon icon={faStar} className="w-3 h-3" />
-                                            <span className="text-xs font-semibold text-gray-700">
-                                                {building.avg_rating ? Number(building.avg_rating).toFixed(1) : "0.0"}
-                                            </span>
-                                            <span className="text-[10px] text-gray-500">
-                                                (<span className="font-medium">{building.rating_count || 0}</span>)
-                                            </span>
-                                        </div>
 
-                                        {/* Overlapping Tenant Avatars */}
-                                        <div className="flex -space-x-1">
-                                            {building.user_images?.slice(0, 3).map((user, idx) => (
-                                                <img
-                                                    key={idx}
-                                                    src={`/storage/${user.avatar}`}
-                                                    alt={user.name}
-                                                    title={user.name}
-                                                    className="w-6 h-6 rounded-full border-2 border-white shadow-sm object-cover"
-                                                />
-                                            ))}
-
-                                            {building.rating_count > 3 && (
-                                                <div className="w-6 h-6 flex items-center justify-center bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-full border-2 border-white shadow-sm">
-                                                    +{building.rating_count - 3}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
 
                                 </div>
                             </Link>

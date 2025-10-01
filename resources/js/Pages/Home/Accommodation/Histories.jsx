@@ -1,16 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
 import Layout from './Layout';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBed, faBuilding, faDoorClosed, faMoneyBill, faClock, faStar } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
 import { motion } from "framer-motion";
-
 export default function Histories({ bookings }) {
 
     const openHistory = (id) => {
         window.location.href = `/feedback/bookings/${id}`;
     };
+
     return (
         <Layout>
             <Head title="History" />

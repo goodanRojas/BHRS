@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-export default function BookingNotif({ notification, onClose }) {
+export default function Notif({ notification, onClose }) {
     if (!notification) return null;
 
     const typeMap = {

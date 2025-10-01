@@ -116,7 +116,7 @@ export default function Users({ users }) {
                             ? { ...user, status: user.status === 1 ? 0 : 1 }
                             : user
                     )
-                    
+
                 );
             } else {
                 console.error("Error in toggling status");
@@ -180,7 +180,10 @@ export default function Users({ users }) {
                         <tbody className="min-h-screen">
                             {filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="border-t">
+                                    <tr
+                                        key={user.id}
+                                        onClick={() => window.location.href = route('admin.users.show', { id: user.id })}
+                                        className="border-t hover:bg-gray-200 hover:cursor-pointer transition duration-300">
                                         <td className="px-6 py-2">{user.name}</td>
                                         <td className="px-6 py-2">{user.email}</td>
                                         <td className="px-6 py-2 text-center">

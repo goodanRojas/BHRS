@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
-
+import UpdateAddressForm from './Partials/UpdateAddressForm';
 export default function Edit({ mustVerifyEmail, status, address }) {
     return (
         <SellerLayout
@@ -21,7 +21,6 @@ export default function Edit({ mustVerifyEmail, status, address }) {
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
-                            address={address}
                             className="max-w-xl"
                         />
                     </div>
@@ -29,10 +28,13 @@ export default function Edit({ mustVerifyEmail, status, address }) {
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <UpdatePasswordForm className="max-w-xl" />
                     </div>
-
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <UpdateAddressForm className="max-w-xl" address={address} />
+                    </div>
+{/* 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <DeleteUserForm className="max-w-xl" />
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </SellerLayout>

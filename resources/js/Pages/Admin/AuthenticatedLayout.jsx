@@ -15,6 +15,7 @@ export default function AuthenticatedLayout({ children }) {
     useEffect(() => {
         window.Echo.private(`App.Models.Admin.${user?.id}`)
             .notification((notification) => {
+                console.log(notification);
                 setNotifVisible(notification);
                 setNotificationsCount(notificationsCount + 1);
             });
@@ -38,19 +39,18 @@ export default function AuthenticatedLayout({ children }) {
         <div className="flex min-h-screen w-full ">
             <NotifPopUp notification={notifVisible} onClose={() => setNotifVisible(null)} />
 
-            {/* Background Image */}
             <div
-                className="fixed top-0 left-0 w-full h-screen bg-cover bg-center bg-no-repeat -z-10"
-                style={{ backgroundImage: "url('/storage/system/background/background.webp')" }}
-            ></div>
+                className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
+            >
 
+            </div>
             {/* Sidebar */}
             <Sidebar className={"flex-shrink-0"} isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
             {/* Main Content */}
-            <div className={`${isSidebarOpen ? "ml-64" : "ml-12"} flex-grow flex flex-col`}>
+            <div className={`${isSidebarOpen ? "ml-64" : "ml-16"} flex-grow flex flex-col`}>
                 {/* Top Navbar */}
-                <header className="bg-indigo-500 flex items-center justify-between shadow px-6 h-16">
+                <header className="flex items-center justify-between  bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md px-6 h-10">
 
                     <div className="flex items-center space-x-4">
 
@@ -71,7 +71,7 @@ export default function AuthenticatedLayout({ children }) {
                                     >
                                         <FontAwesomeIcon
                                             icon={faBell}
-                                            className="h-6 w-6 text-yellow-400 hover:text-yellow-500 focus:outline-none"
+                                            className="h-4 w-4 text-slate-100 hover:text-yellow-500 focus:outline-none"
                                         />
                                     </div>
                                 </Dropdown.Trigger>

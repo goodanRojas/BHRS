@@ -9,7 +9,6 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Auth\AddressController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Seller\SellerRegisterController;
 
@@ -58,8 +57,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-
-    Route::put('profile/address/update', [AddressController::class, 'update'])->name('profile.address.update');
 
 
     Route::put("/seller/register/{id}/cancel", [SellerRegisterController::class, 'cancel'])->name('seller.register.cancel');

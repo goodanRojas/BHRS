@@ -41,18 +41,11 @@ class SellerProfileController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('sellers')->ignore(auth()->guard('seller')->id())],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif'],
             'phone' => ['nullable', 'string'],
-            'address' => ['nullable', 'array'],
-            // Address validation fields
-            'address.street' => ['nullable', 'string'],
-            'address.city' => ['nullable', 'string'],
-            // Add other address validation rules if needed
         ]);
 
 
         $seller = auth()->guard('seller')->user();
-        $address = Address::where('addressable_id', $seller->id)
-            ->where('addressable_type', Seller::class)
-            ->first();
+       
         // Update seller fields excluding address-related fields
         $seller->fill($validated);
 
@@ -72,27 +65,31 @@ class SellerProfileController extends Controller
 
         // Handle phone number and address logic
         $seller->phone = $request->input('phone');
-
-        // Handle the address update via polymorphic relationship
-        if ($address) {
-            // Log::info($seller->address);
-            $address->update($request->input('address'));
-        } else {
-            if ($request->filled('address')) {
-                $address->create($request->input('address') + [
-                    'addressable_id' => $seller->id,
-                    'addressable_type' => Seller::class,
-                ]);
-            }
-        }
-
-        // Save the updated seller model
         $seller->save();
-
         // Redirect back to the profile edit page with a success message
         return Redirect::route('seller.profile.edit')->with('success', 'Profile updated successfully.');
     }
+    public function updateAddress(Request $request)
+    {
+        Log::info($request);
+        $validated = $request->validate([
+            'address' => ['required', 'array'],
+        ]);
+        $address = Address::updateOrCreate(
+            [
+                // 🔑 Unique key for this user
+                'addressable_id' => auth()->id(),
+                'addressable_type' => Seller::class,
+            ],
+            [
+                // ✅ Data to update
+                'address' => $validated['address'],
+            ]
+        );
+        Log::info($address);
 
+        return back();
+    }
     /**
      * Delete the seller's account.
      */

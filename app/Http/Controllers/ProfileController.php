@@ -43,11 +43,6 @@ class ProfileController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($request->user()->id)],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif'],
             'phone' => ['nullable', 'string'],
-            'address' => ['nullable', 'array'],
-            // Address validation fields
-            'address.street' => ['nullable', 'string'],
-            'address.city' => ['nullable', 'string'],
-            // Add other address validation rules if needed
         ]);
 
 
@@ -73,20 +68,7 @@ class ProfileController extends Controller
         // Handle phone number and address logic
         $user->phone = $request->input('phone');
 
-        // Handle the address update via polymorphic relationship
-        if ($user->address) {
-            $user->address->update($request->input('address'));
-            Log::info('Address updated: ', $user->address->toArray());
-        } else {
-            if ($request->filled('address')) {
-                $user->address()->create($request->input('address') + [
-                    'addressable_id' => $user->id,
-                    'addressable_type' => User::class,
-                ]);
-                Log::info('New address created: ', $user->address->toArray());
-            }
-        }
-
+       
         // Save the updated user model
         $user->save();
 

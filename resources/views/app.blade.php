@@ -14,12 +14,8 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=League+Script&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet"><!-- Scripts -->
-    {{-- Leaflet
-    <link rel="stylesheet" href="{{ asset('leaflet/leaflet.css') }}" />
-    <script src="{{ asset('leaflet/leaflet.js') }}"></script> --}}
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+
 
     @routes
     @viteReactRefresh

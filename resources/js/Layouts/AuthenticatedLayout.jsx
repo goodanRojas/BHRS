@@ -12,7 +12,7 @@ import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
-import BookingNotif from '@/Components/Notifications/User/BookingNotif';
+import Notif from '@/Components/Notifications/User/Notif';
 
 export const ChatContext = createContext();
 
@@ -65,7 +65,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
-            <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
+            <Notif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
 
             <div className="min-h-screen ">
 
@@ -81,7 +81,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center h-16 space-x-6">
                                 <Link href="/">
-                                    <ApplicationLogo className=' h-10 w-auto ' relative={true}/>
+                                    <ApplicationLogo className=' h-10 w-auto ' relative={true} />
                                 </Link>
 
                                 <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -120,10 +120,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <div className="relative group">
                                     {messagesCount > 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
-                                            {messagesCount}
+                                            {messagesCount > 9 ? "+9" : messagesCount}
                                         </div>
                                     )}
-                                    <Link href="/messages" className="p-2">
+                                    <Link href="/messages" className="p-2 flex items-center justify-center w-10 h-10">
                                         <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white" />
                                     </Link>
                                 </div>
@@ -132,10 +132,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <div className="relative group">
                                     {favoritesCount > 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
-                                            {favoritesCount}
+                                            {favoritesCount > 9 ? "+9" : favoritesCount}
                                         </div>
                                     )}
-                                    <Link href="/favorites" className="p-2">
+                                    <Link href="/favorites" className="p-2 flex items-center justify-center w-10 h-10">
                                         <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white" />
                                     </Link>
                                 </div>
@@ -149,8 +149,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                     )}
                                     <button
                                         onClick={() => setNotificationsModal(!notificationsModal)}
-                                        className="p-2"
-                                    >
+                                        className="p-2 flex items-center justify-center w-10 h-10">
+
                                         <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white" />
                                     </button>
                                     {notificationsModal && <NavNotif />}

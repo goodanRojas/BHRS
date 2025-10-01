@@ -21,7 +21,7 @@ export default function Login({ status }) {
 
     // rotating welcome text
     const messages = [
-        "Welcome to BoardingHub",
+        "Welcome to BHRS",
         "Find your perfect stay",
         "Fast, easy, and reliable booking",
     ];

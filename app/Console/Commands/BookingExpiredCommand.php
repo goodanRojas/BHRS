@@ -30,8 +30,6 @@ class BookingExpiredCommand extends Command
      */
     public function handle()
     {
-        Log::info('Checking for ended bookings.');
-
         $bookings = Booking::where('status', 'completed')->get();
         foreach ($bookings as $booking) {
             $start = Carbon::parse($booking->start_date);

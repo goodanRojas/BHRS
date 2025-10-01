@@ -10,6 +10,7 @@ export default function BookingNotif({ notification, onClose }) {
         "App\\Notifications\\User\\UserBookingGcashPaid": "Booking Paid",
         "App\\Notifications\\User\\BookingExpiredNotify": "Booking Expired",
         "App\\Notifications\\Seller\\BuildingApplicationApproved": "Building Application Approved",
+        "App\\Notifications\\Seller\\SellerSubscriptionExpiredNotif": "Subscription Expired",
     };
 
     const type = typeMap[notification.type] || "Unknown";

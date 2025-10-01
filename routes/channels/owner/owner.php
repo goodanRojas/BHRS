@@ -52,3 +52,7 @@ Broadcast::channel('seller-building-application-approved.{sellerId}', function (
 Broadcast::channel('seller-subscription-confirmed.{sellerId}', function ($seller, $sellerId) {
     return Auth::guard('seller')->check() && (int) $seller->id === (int) $sellerId;
 }, ['guards' => ['web', 'seller']]);
+
+Broadcast::channel('seller-subscription-expired.{sellerId}', function ($seller, $sellerId) {
+    return Auth::guard('seller')->check() && (int) $seller->id === (int) $sellerId;
+}, ['guards' => ['web', 'seller']]);

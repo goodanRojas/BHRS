@@ -10,6 +10,7 @@ import {
     faClock,
     faFlagCheckered,
 } from "@fortawesome/free-solid-svg-icons";
+import Breadcrumbs from "@/Components/Breadcrumbs";
 export default function History({ booking, comments: initialComments, rating }) {
     console.log(initialComments);
     const [comments, setComments] = useState(initialComments);
@@ -90,6 +91,14 @@ export default function History({ booking, comments: initialComments, rating }) 
     return (
         <AuthenticatedLayout>
             <Head title={booking.bookable.name + ` Booking Details`} />
+         <div className="p-4">
+               <Breadcrumbs
+                links={[
+                    { label: 'histories', url: `/accommodations/history` },
+                    { label: 'history' },
+                ]}
+            />
+         </div>
             <div className="max-w-3xl mx-auto py-6 px-4">
                 <h2 className="text-xl font-semibold text-indigo-700 mb-4 flex items-center gap-2">
                     <FontAwesomeIcon icon={faClock} className="text-indigo-500" />

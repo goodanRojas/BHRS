@@ -35,6 +35,12 @@ class Building extends Model
         return $this->hasMany(Room::class);
     }
 
+    public function buildingViewCount()
+    {
+        return $this->hasMany(BuildingViewCount::class);
+    }
+
+
     public function feedback()
     {
         return $this->morphMany(Feedback::class, 'feedbackable');
@@ -73,4 +79,5 @@ class Building extends Model
     {
         return $this->hasMany(ChatGroup::class, 'building_id');
     }
+
 }

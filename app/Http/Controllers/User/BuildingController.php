@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\{Auth, Log};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\{Building, Bed, Booking, Rating};
+use App\Models\{Building, Bed, Booking, BuildingViewCount, Rating};
 
 class BuildingController extends Controller
 {
@@ -20,10 +20,10 @@ class BuildingController extends Controller
                     ->with(['ratings.user', 'user']); // load booking->ratings and booking->user
             },
             'address',
-            'seller'
+            'seller',
         ])
             ->select('buildings.*')
-
+            ->withCount('buildingViewCount')
             // AVG rating
             ->selectSub(function ($query) {
                 $query->from('ratings')
@@ -89,17 +89,32 @@ class BuildingController extends Controller
                     ->with('ratings.user');
             },
             'features',
+
         ])
-            ->when(
-                $search,
-                fn($query) =>
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhereHas('address', function ($q) use ($search) {
-                        $q->where('barangay', 'like', "%{$search}%")
-                            ->orWhere('municipality', 'like', "%{$search}%")
-                            ->orWhere('province', 'like', "%{$search}%");
+            ->withCount('buildingViewCount')
+
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    // building name
+                    $q->where('name', 'like', "%{$search}%")
+
+                        // seller name
+                        ->orWhereHas('seller', function ($sellerQuery) use ($search) {
+                        $sellerQuery->where('name', 'like', "%{$search}%");
                     })
-            )
+
+                        // address (assuming address is stored as array with "street"/"city"/etc.)
+                        ->orWhereHas('address', function ($addrQuery) use ($search) {
+                        $addrQuery->where('address', 'like', "%{$search}%");
+                    })
+
+                        // features
+                        ->orWhereHas('features', function ($featQuery) use ($search) {
+                        $featQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%");
+                    });
+                });
+            })
             ->when(!empty($keywords), function ($query) use ($keywords) {
                 $query->whereHas('features', function ($q) use ($keywords) {
                     $q->whereIn('name', $keywords); // OR logic: building has any selected feature
@@ -189,6 +204,12 @@ class BuildingController extends Controller
 
             $avgRating = $ratingStats->avg_rating ?? 0;
             $ratingCount = $ratingStats->rating_count ?? 0;
+
+            BuildingViewCount::create([
+                'building_id' => $building->id,
+                'user_id' => auth()->id(),
+                'viewed' => now()
+            ]);
             return Inertia::render('Home/Building', [
                 'building' => $building,
                 'totalCompletedBookings' => $totalBedBookings,
@@ -197,6 +218,22 @@ class BuildingController extends Controller
             ]);
         }
     }
+    public function suggestions(Request $request)
+    {
+        $search = $request->query('query');
+
+        if (!$search) {
+            return response()->json([]);
+        }
+
+        $buildings = Building::where('name', 'like', "%{$search}%")
+            ->limit(5)
+            ->pluck('name'); // only get the name column
+
+        return response()->json($buildings);
+    }
+
+
 
 
 }

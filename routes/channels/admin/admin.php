@@ -17,6 +17,11 @@ Broadcast::channel('admin-new-seller-application.{adminId}', function ($admin, $
 Broadcast::channel('admin-new-seller-subscription.{adminId}', function ($admin, $adminId) {
     return Auth::guard('admin')->check() && (int) $admin->id === (int) $adminId;
 }, ['guards' => ['web', 'admin']]);
+
 Broadcast::channel('admin-new-seller-upgrade-subscription.{adminId}', function ($admin, $adminId) {
+    return Auth::guard('admin')->check() && (int) $admin->id === (int) $adminId;
+}, ['guards' => ['web', 'admin']]);
+
+Broadcast::channel('admin-subscription-expired.{adminId}', function ($admin, $adminId) {
     return Auth::guard('admin')->check() && (int) $admin->id === (int) $adminId;
 }, ['guards' => ['web', 'admin']]);

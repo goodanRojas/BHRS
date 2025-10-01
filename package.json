@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@chatscope/chat-ui-kit-react": "^2.0.3",
+        "@floating-ui/react-dom": "^2.1.6",
         "@fortawesome/fontawesome-free": "^6.7.2",
         "@fortawesome/fontawesome-svg-core": "^6.7.2",
         "@fortawesome/free-solid-svg-icons": "^6.7.2",

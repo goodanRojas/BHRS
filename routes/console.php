@@ -10,4 +10,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Artisan::command('app:booking-expired-command', BookingExpiredCommand::class);
+Schedule::command('app:check-for-expired-subscription')->hourly();
+Schedule::command('app:booking-expired-command')->hourly();
