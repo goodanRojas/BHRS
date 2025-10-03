@@ -103,7 +103,7 @@ export const DropdownLink = ({ className = '', children, active = false, ...prop
     <Link
       {...props}
       className={
-        'block w-full px-4 py-2 text-start text-sm leading-5 transition duration-150 ease-in-out focus:outline-none ' +
+        'block z-20 w-full px-4 py-2 text-start text-sm leading-5 transition duration-150 ease-in-out focus:outline-none ' +
         (active
           ? 'bg-gray-200 text-gray-900 '
           : 'text-gray-700 hover:bg-slate-100 focus:bg-slate-100 ') +

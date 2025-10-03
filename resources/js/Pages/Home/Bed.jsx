@@ -11,11 +11,9 @@ import Modal from '@/Components/Modal';
 import Toast from '@/Components/Toast';
 
 import Breadcrumbs from '@/Components/Breadcrumbs';
-import { comment } from 'postcss';
-import BedGuests from '../Seller/Guest/Guests';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked, comments, average_rating, rating_count, ratings }) {
 
-    console.log(bed);
+    console.log(comments);
     const { flash } = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -219,65 +217,106 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         </div>
                     </div>
                     {/* 💬 Feedback Section */}
-                    <div className="px-6 pb-6 space-y-6">
-                        <h4 className="text-xl font-semibold text-gray-800">
-                            Feedbacks ({comments?.length || 0})
+                    <div className="px-6 pb-10 space-y-8">
+                        <h4 className="text-2xl font-bold text-gray-900 border-b pb-3">
+                            Feedback ({comments?.length || 0})
                         </h4>
 
                         <div className="space-y-6">
+                            {/* Non-anonymous feedback */}
                             {ratings.map((rating) => {
-                                const userComments = comments.filter(
-                                    (c) => c.user_id === rating.user_id
+                                const normalComments = comments.filter(
+                                    (c) => c.user_id === rating.user_id && !c.anonymous
                                 );
+                                if (normalComments.length === 0) return null;
 
                                 return (
                                     <div
-                                        key={rating.id}
-                                        className="bg-white p-4 rounded-xl shadow border border-gray-100"
+                                        key={`rating-${rating.id}`}
+                                        className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition"
                                     >
                                         {/* User Header */}
-                                        <div className="flex items-center space-x-3 mb-2">
+                                        <div className="flex items-center space-x-4 mb-3">
                                             <img
                                                 src={`/storage/${rating.user.avatar || "profile/default-avatar.png"}`}
                                                 alt={rating.user.name}
-                                                className="w-10 h-10 rounded-full object-cover border"
+                                                className="w-12 h-12 rounded-full object-cover border"
                                             />
                                             <div>
-                                                <p className="font-semibold text-gray-800">{rating.user.name}</p>
-                                                <div className="flex">
+                                                <p className="font-semibold text-gray-900">{rating.user.name}</p>
+                                                <div className="flex items-center space-x-1">
                                                     {[1, 2, 3, 4, 5].map((star) => (
-                                                        <span
+                                                        <FontAwesomeIcon
                                                             key={star}
-                                                            className={`text-lg ${star <= rating.stars ? "text-yellow-500" : "text-gray-300"
+                                                            icon={faStar}
+                                                            className={`h-4 w-4 ${star <= rating.stars ? "text-yellow-500" : "text-gray-300"
                                                                 }`}
-                                                        >
-                                                            <FontAwesomeIcon icon={faStar} />
-                                                        </span>
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* User Comments */}
-                                        {userComments.length > 0 ? (
-                                            <ul className="ml-12 list-disc space-y-1 text-gray-700">
-                                                {userComments.map((c) => (
-                                                    <li key={c.id} className="text-sm">
-                                                        {c.body}
-                                                        {c.edited && (
-                                                            <span className="ml-2 text-xs text-gray-400">(edited)</span>
-                                                        )}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="ml-12 text-sm text-gray-500 italic">
-                                                No comments yet.
-                                            </p>
-                                        )}
+                                        {/* Grouped Comments */}
+                                        <ul className="ml-14 list-disc space-y-1 text-gray-700">
+                                            {normalComments.map((c) => (
+                                                <li key={c.id} className="text-sm leading-relaxed">
+                                                    {c.body}
+                                                    {c.edited && (
+                                                        <span className="ml-2 text-xs text-gray-400 italic">
+                                                            (edited)
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
                                 );
                             })}
+
+                            {/* Anonymous feedback */}
+                            {comments
+                                .filter((c) => c.anonymous)
+                                .map((c) => {
+                                    const rating = ratings.find((r) => r.user_id === c.user_id);
+                                    if (!rating) return null;
+
+                                    return (
+                                        <div
+                                            key={`anon-${c.id}`}
+                                            className="bg-gray-50 p-5 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition"
+                                        >
+                                            {/* Anonymous Header */}
+                                            <div className="flex items-center space-x-4 mb-3">
+                                                <img
+                                                    src={`/storage/profile/default-avatar.png`}
+                                                    alt="Anonymous"
+                                                    className="w-12 h-12 rounded-full object-cover border"
+                                                />
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">Anonymous</p>
+                                                    <div className="flex items-center space-x-1">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <FontAwesomeIcon
+                                                                key={star}
+                                                                icon={faStar}
+                                                                className={`h-4 w-4 ${star <= rating.stars ? "text-yellow-500" : "text-gray-300"
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <p className="ml-14 text-sm text-gray-700 leading-relaxed">
+                                                {c.body}
+                                                {c.edited && (
+                                                    <span className="ml-2 text-xs text-gray-400 italic">(edited)</span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </div>
 

@@ -12,6 +12,7 @@ class Comment extends Model
         'booking_id',
         'user_id',
         'body',
+        'anonymous',
         'edited'
     ];
 

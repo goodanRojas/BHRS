@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Table({ columns, data, legend, footer }) {
+export default function Table({ columns, data, legend, footer, onRowClick }) {
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
       {/* Legend */}
       {legend && (
-        <div className="mb-3 text-center">
+        <div className="mb-3 ">
           <h2 className="text-2xl font-bold text-gray-800">{legend}</h2>
         </div>
       )}
@@ -38,8 +38,9 @@ export default function Table({ columns, data, legend, footer }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3, delay: rowIndex * 0.05 }}
-                    className="odd:bg-white even:bg-gray-50 hover:bg-indigo-50 transition-colors"
-                  >
+                    className={`odd:bg-white even:bg-gray-50 hover:bg-indigo-50 transition-colors ${onRowClick ? "cursor-pointer" : ""
+                      }`}
+                    onClick={() => onRowClick?.(row.__id)} >
                     {columns.map((col, colIndex) => (
                       <td
                         key={colIndex}

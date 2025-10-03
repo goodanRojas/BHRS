@@ -6,7 +6,7 @@ use App\Models\Feedback;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Log};
 use App\Models\{Booking, Bed, Room};
 
 class AccommodationController extends Controller
@@ -51,7 +51,7 @@ class AccommodationController extends Controller
 
         $bookings = Booking::where('user_id', $userId)
             ->where('status', 'ended')
-            ->with('bookable.room.building.seller')
+            ->with(['bookable.room.building.seller'])
             ->get();
         return Inertia::render('Home/Accommodation/Histories', [
             'bookings' => $bookings

@@ -41,7 +41,9 @@ class HandleInertiaRequests extends Middleware
                     : null,
                 'seller' => Auth::guard('seller')->user(),
                 'admin' => Auth::guard('admin')->check()
-                    ? Auth::guard('admin')->user()
+                    ? Auth::guard('admin')->user()->load([
+                         'notifications' => fn($query) => $query->whereNull('read_at'),
+                    ])
                     : null,
 
             ],

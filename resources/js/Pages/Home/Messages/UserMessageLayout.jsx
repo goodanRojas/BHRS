@@ -37,7 +37,7 @@ export default function UseMessageLayout({ children }) {
     ];
 
     return (
-        <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
+        <div className="flex flex-col h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
             <div className="flex bg-gray-900 items-center justify-around shadow-lg mb-5 p-2 ">
                 <Link href={previousUrl}>
                     <ApplicationLogo className="h-10 w-auto" relative={true} />
@@ -61,7 +61,7 @@ export default function UseMessageLayout({ children }) {
             </div>
 
             {/* Chat Window */}
-            <div className='flex-1 overflow-auto'>
+            <div className='flex-1 overflow-hidden'>
                 {children}
             </div>
         </div>

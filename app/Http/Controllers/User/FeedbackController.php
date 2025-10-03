@@ -12,7 +12,7 @@ class FeedbackController extends Controller
 {
     public function show($booking)
     {
-        $booking = Booking::with('bookable.room.building.seller')->find($booking);
+        $booking = Booking::with(['bookable.room.building.seller', 'bookable.images'])->find($booking);
         $rating = Rating::where('booking_id', $booking->id)->first();
         $comments = Comment::where('user_id', auth()->user()->id)->get();
         return Inertia::render('Home/Accommodation/History', [
@@ -44,12 +44,14 @@ class FeedbackController extends Controller
     {
         $request->validate([
             'comment' => 'required|string|max:1000',
+            'anonymous' => 'required|boolean',
         ]);
 
        $comment = Comment::Create([
             'user_id' => auth()->id(),
             'booking_id' => $booking->id,
             'body' => $request->comment,
+            'anonymous' => $request->anonymous,
             'edited' => null
         ]);
 
@@ -67,12 +69,14 @@ class FeedbackController extends Controller
 
         $validated = $request->validate([
             'body' => 'required|string|max:1000',
+            'anonymous' => 'boolean|required'
         ]);
 
         // Store the original body in `edited` (text) and replace `body` with the new one
         $comment->update([
             'edited' => $comment->body,       // keep original text here
             'body'   => $validated['body'],   // new text
+            'anonymous' => $validated['anonymous']
         ]);
         return response()->json([
             'comment' => $comment->fresh(),

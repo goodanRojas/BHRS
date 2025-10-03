@@ -30,3 +30,4 @@ require __DIR__ . '/room.php';
 require __DIR__ . '/bed.php';
 require __DIR__ . '/subscription.php';
 require __DIR__ . '/rules.php';
+require __DIR__ . '/notification.php';

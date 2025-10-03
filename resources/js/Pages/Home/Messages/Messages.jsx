@@ -238,19 +238,19 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
     }, []);
 
     useEffect(() => {
-        if (selectedUser ){
+        if (selectedUser) {
             setActiveUser(selectedUser);
             selectedUserToSessionStorage(selectedUser);
             fetchMessages(selectedUser.id);
         }
-        
-    },[selectedUser]);
+
+    }, [selectedUser]);
     return (
         <UserMessageLayout>
             <Head title="Messages" />
-            <div className="flex min-h-screen overflow-hidden">
+            <div className="flex h-screen overflow-hidden">
                 {/* Left column: User list with search */}
-                <div className="w-1/4 sm:w-1/3 p-4 border-r border-gray-300">
+                <div className="pt-[95px] w-1/4 sm:w-1/3 p-4 border-r border-gray-300 flex flex-col overflow-y-auto">
                     {/* Search Bar */}
                     <div className="mb-4 flex items-center border-b pb-2">
                         <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
@@ -265,7 +265,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
 
                     {/* Default User List */}
                     {users.length > 0 ? (
-                        <ul className="space-y-2">
+                        <ul className="space-y-2 custom-scrollbar">
                             {users.map((user) => (
                                 <li
                                     key={user.id}
@@ -334,7 +334,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
 
 
                 {/* Right column: Chat window */}
-                <div className="w-2/3 ">
+                <div className="flex-1 flex flex-col pt-20">
                     {!activeUser ? (
                         <div className="text-center h-full flex items-center justify-center flex-col">
                             <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>
@@ -387,7 +387,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
                             </div>
 
                             {/* Messages scrollable section */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div className="flex-1 custom-scrollbar overflow-y-auto p-4 space-y-3">
                                 {messages.length > 0 ? (
                                     messages.map((msg) => {
                                         const isCurrentUser = msg.sender_id === user.id;

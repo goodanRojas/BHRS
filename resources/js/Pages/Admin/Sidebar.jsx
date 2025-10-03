@@ -126,7 +126,7 @@ export default function Sidebar({ className, isOpen, onToggle }) {
                             post(route('admin.logout.post'));
                         }}
                         className={`flex items-center text-gray-800 hover:text-gray-900 transition-all duration-300 rounded-full 
-                      ${isOpen ? "gap-2 px-4 py-2 w-full justify-start bg-slate-100 hover:bg-slate-300"
+                      ${isOpen ? "gap-2 px-4 py-2 w-full justify-center bg-slate-100 hover:bg-slate-300"
                                 : "p-2 mx-auto justify-center bg-slate-100 hover:bg-slate-300"}`}
                     >
                         <LogOutIcon size={20} />

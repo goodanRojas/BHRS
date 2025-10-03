@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
 
-export default function landowner({ sentMessages, receivedMessages, selectedOwnerId }) {
+export default function Landowner({ sentMessages, receivedMessages, selectedOwnerId }) {
 
     const [owners, setOwners] = useState([]); // Store list of users (all conversations)
     const [onlineOwners, setOnlineOwners] = useState([]); // Store list of online users
@@ -271,7 +271,7 @@ export default function landowner({ sentMessages, receivedMessages, selectedOwne
             <Head title="Messages" />
             <div className="flex min-h-screen overflow-hidden">
                 {/* Left column: User list with search */}
-                <div className="w-1/4 sm:w-1/3 p-4 border-r border-gray-300">
+                <div className="w-1/4 sm:w-1/3 p-4 pt-[95px] border-r border-gray-300">
                     {/* Search Bar */}
                     <div className="mb-4 flex items-center border-b pb-2">
                         <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
@@ -287,7 +287,7 @@ export default function landowner({ sentMessages, receivedMessages, selectedOwne
                     {/* Default User List */}
 
                     {owners.length > 0 ? (
-                        <ul className="space-y-2">
+                        <ul className="space-y-2 custom-scrollbar">
                             {owners.map((owner) => (
                                 <li
                                     key={owner.id}
@@ -369,7 +369,8 @@ export default function landowner({ sentMessages, receivedMessages, selectedOwne
 
 
                 {/* Right column: Chat window */}
-                <div className="w-2/3 ">
+
+                <div className="flex-1 flex flex-col pt-20">
                     {!activeOwner ? (
                         <div className="text-center h-full flex items-center justify-center flex-col">
                             <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>
@@ -422,7 +423,7 @@ export default function landowner({ sentMessages, receivedMessages, selectedOwne
                             </div>
 
                             {/* Messages scrollable section */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div className="flex-1 custom-scrollbar overflow-y-auto p-4 pt-[200px] space-y-3">
                                 {messages.length > 0 ? (
                                     <div >
                                         {messages.map((msg) => {
