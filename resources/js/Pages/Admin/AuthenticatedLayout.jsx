@@ -8,7 +8,7 @@ import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
-    console.log(user.notifications);
+    // console.log(user.notifications);
     const [notificationsModal, setNotificationsModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [notificationsCount, setNotificationsCount] = useState(0);

@@ -9,8 +9,8 @@ const NavNotif = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await axios.get('/admin/notification/latest');
-                 console.log("API notifications:", response.data.notifications);
+                    const response = await axios.get('/admin/notification/latest');
+                    console.log("API notifications:", response.data.notifications);
                 setNotifications(response.data.notifications);
             } catch (error) {
                 console.error('Error fetching notifications:', error);

@@ -12,3 +12,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:check-for-expired-subscription')->hourly();
 Schedule::command('app:booking-expired-command')->hourly();
+Schedule::command('app:warn-expire-booking')->hourly();

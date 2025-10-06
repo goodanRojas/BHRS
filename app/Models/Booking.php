@@ -20,6 +20,7 @@ class Booking extends Model
         'total_price',
         'special_request',
         'agreed_to_terms',
+        'warned',
         'status',
         'payment_method',
     ];
@@ -27,6 +28,12 @@ class Booking extends Model
     /**
      * Relationships
      */
+    protected function casts()
+    {
+        return [
+            'warned' => "datetime",
+        ];
+    }
     public function bookable()
     {
         return $this->morphTo();

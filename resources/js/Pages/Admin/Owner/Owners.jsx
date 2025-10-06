@@ -74,7 +74,7 @@ export default function Owner({ owners }) {
                                             <td className="px-6 py-3">
                                                 {owner.avatar ? (
                                                     <img
-                                                        src={`/storage/${owner.avatar}`}
+                                                        src={`/storage/${owner?.avatar ?? "default-avatar.png"}`}
                                                         alt="avatar"
                                                         className="w-10 h-10 rounded-full"
                                                     />
