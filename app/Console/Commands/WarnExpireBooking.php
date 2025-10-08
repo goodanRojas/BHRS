@@ -29,11 +29,14 @@ class WarnExpireBooking extends Command
      */
     public function handle()
     {
+        // Log::info('WarnExpireBooking Command started');
         $bookings = Booking::where('warned', null)->get();
         foreach ($bookings as $booking) {
             $start = Carbon::parse($booking->start_date);
             $end = $start->copy()->addMonths($booking->month_count);
-            if (now()->diffInDays($end, false) === 3) {
+            // Log::info('start date: ' . $start->toDateString() . ', end date: ' . $end->toDateString() . ', today: ' . now()->toDateString());
+            // Log::info($end->diffInDays(now()) === 3 && now()->lessThanOrEqualTo($end));
+            if (now()->lessThanOrEqualTo($end) && now()->diffInDays($end, false) <= 3) {
                 Log::info('Booking expired: ' . $booking->id);
                 $booking->update(['warned' => now()]);
                 $booking->user->notify(new WarningBookingExpirationNotif($booking));
