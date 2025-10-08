@@ -10,8 +10,10 @@ const NavNotif = () => {
         const fetchNotifications = async () => {
             try {
                 const response = await axios.get('/notifications/latest');
-                // Assuming response.data.notifications is an array of notifications
+                // Instead of querying the raw data, we'll parse it into a more usable format
+                // Such as name, date, description and type.
                 setNotifications(response.data.notifications);
+                console.log(response.data.notifications);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             } finally {

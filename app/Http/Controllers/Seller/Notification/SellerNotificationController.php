@@ -18,26 +18,16 @@ class SellerNotificationController extends Controller
             ->take(10)
             ->get();
 
+
+
         $notifications = $unread->map(function ($notification) {
-            $type = class_basename($notification->type);
-
-            switch ($type) {
-                case 'NewBookingNotification':
-                    $message = "New booking for {$notification->data['bed_name']} in {$notification->data['room_name']} ({$notification->data['building_name']}) by {$notification->data['tenant_name']}";
-                    $image   = $notification->data['tenant_image'] ?? $notification->data['bed_image'] ?? null;
-                    break;
-
-                default:
-                    $message = $notification->data['message'] ?? 'You have a new notification.';
-                    $image   = $notification->data['image'] ?? null;
-                    break;
-            }
-
             return [
                 'id' => $notification->id,
-                'type' => $type,
-                'message' => $message,
-                'image' => $image,
+                'title' => $notification->data['title'] ?? class_basename($notification->type),
+                'message' => $notification->data['message'] ?? 'You have a new notification.',
+                'image' => $notification->data['image'] ?? null,
+                'link' => $notification->data['link'] ?? null,
+                'meta' => $notification->data['meta'] ?? [],
                 'created_at' => $notification->created_at->diffForHumans(),
             ];
         });

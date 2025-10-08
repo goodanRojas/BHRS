@@ -75,11 +75,15 @@ export default function Welcome({ auth }) {
                             {/* Owner Login */}
                             <Link
                                 href={route('to.user.buildings')}
-                                className="border border-white text-white px-4 py-2 rounded-md text-sm font-semibold 
-                               hover:bg-white hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-white transition"
+                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold 
+                               hover:text-indigo-700 transition group"
                             >
                                 Dashboard
+                                <span
+                                    className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"
+                                ></span>
                             </Link>
+
 
                         </div>
 

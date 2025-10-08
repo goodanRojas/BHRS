@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Hash, Storage};
-use App\Models\{SellerApplication, Address};
+use App\Models\{SellerApplication, Address, Admin};
 use App\Events\Admin\SellerRegisteredEvent;
+use App\Notifications\Admin\NewSellerApplicationNotif;
 class SellerRegisterController extends Controller
 {
     public function index()
@@ -58,7 +59,8 @@ class SellerRegisterController extends Controller
             'addressable_type' => SellerApplication::class,
             'address' => $validated['address'],
         ]);
-
+        $admin = Admin::first();
+        $admin->notify(new NewSellerApplicationNotif($application));
         event(new SellerRegisteredEvent($application));
 
         return redirect()->back()->with('success', 'Application submitted successfully!');

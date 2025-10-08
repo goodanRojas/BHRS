@@ -142,12 +142,12 @@ export default function ShowPending({ subscription }) {
                 </motion.div>
 
                 <motion.div variants={item} className="flex justify-end gap-4 mt-4">
-                    <button
+                    {/* <button
                         onClick={() => setShowRejectModal(true)}
                         className="px-6 py-2 rounded-xl bg-red-400 text-white font-semibold hover:bg-red-700 transition"
                     >
                         Reject
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => setShowConfirmModal(true)}
                         className="px-6 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"

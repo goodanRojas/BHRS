@@ -1,7 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import NavNotif from '@/Pages/Home/Notification/NavNotif';
+import UserNotifModal from '@/Components/UserNotifModal';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Footer from '@/Components/Footer';
 import { FavoriteContext } from '@/Contexts/FavoriteContext';
@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
 import Notif from '@/Components/Notifications/User/Notif';
+import PopupNotif from '@/Components/Notifications/Owner/PopupNotif';
 
 export const ChatContext = createContext();
 
@@ -24,7 +25,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const [messagesCount, setMessagesCount] = useState(0);
 
     const [notificationsModal, setNotificationsModal] = useState(false);
-    const [notifVisiblt, setNotifVisible] = useState(null);
+    const [notifVisible, setNotifVisible] = useState(null);
     const [notificationsCount, setNotificationsCount] = useState(0);
 
     useEffect(() => {
@@ -65,7 +66,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <FavoriteContext.Provider value={{ favoritesCount, updateFavoritesCount }}>
-            <Notif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
+            <PopupNotif notification={notifVisible} onClose={() => setNotifVisible(null)} />
 
             <div className="min-h-screen ">
 
@@ -153,7 +154,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                         <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white" />
                                     </button>
-                                    {notificationsModal && <NavNotif />}
+                                    {notificationsModal && <UserNotifModal />}
                                 </div>
 
                                 {/* User Dropdown */}

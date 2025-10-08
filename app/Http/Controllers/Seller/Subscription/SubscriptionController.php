@@ -65,6 +65,7 @@ class SubscriptionController extends Controller
             'seller_remarks' => $request->remarks,
         ]);
         $admin = Admin::first();
+        $subscription->load('plan', 'seller');
 
         $admin->notify(new NewSellerSubscriptionNotif($subscription));
         event(new NewSellerSubscriptionEvent($subscription));

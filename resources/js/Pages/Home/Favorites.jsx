@@ -7,8 +7,9 @@ import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-export default function Favorites({ favorites }) {
-    const [favoriteItems, setFavoriteItems] = useState(favorites);
+export default function Favorites({ favorites: initialFavorites }) {
+    console.log('Favorites: ', initialFavorites);
+    const [favorites, setFavorites] = useState(initialFavorites);
     const { updateFavoritesCount } = useFavorite();
 
     const toggleFavorite = async (id, type) => {
@@ -16,7 +17,7 @@ export default function Favorites({ favorites }) {
             await axios.post(`/beds/${id}/favorite`);
 
             // remove from UI
-            setFavoriteItems((prev) =>
+            setFavorites((prev) =>
                 prev.filter((item) => {
                     const itemId = item.type === "bed" ? item.bed.id : item.room.id;
                     return !(itemId === id && item.type === type);
@@ -31,10 +32,10 @@ export default function Favorites({ favorites }) {
     return (
         <>
             <Head title="Favorites" />
-            <div className="p-6 min-h-screen bg-gray-50">
+            <div className="p-6 min-h-screen">
                 <h1 className="text-3xl font-bold mb-8 text-indigo-800">Favorites</h1>
 
-                {favoriteItems.length > 0 ? (
+                {favorites.length > 0 ? (
                     <motion.div
                         initial="hidden"
                         animate="show"
@@ -48,25 +49,24 @@ export default function Favorites({ favorites }) {
                         }}
                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                     >
-                        {favoriteItems.map((item, index) => {
-                            const isBed = item.type === "bed";
+                        {favorites.map((item, index) => {
                             const image =
-                                item.bed.image
-                                    ? `/storage/${item.bed.image}`
+                                item.favoritable.image
+                                    ? `/storage/${item.favoritable.image}`
                                     : `/storage/bed/default_bed.svg`;
 
-                            const name = isBed ? item.bed.name : item.room.name;
-                            const price = isBed ? (item.bed.sale_price || item.bed.price) : item.room.price;
-                            const occupied = isBed ? item.bed.is_occupied : null;
-                            const roomName = isBed ? item.room?.name : item.room?.name;
-                            const buildingName = item.building?.name || "Unknown Building";
+                            const name = item.favoritable.name;
+                            const price = item.favoritable.price;
+                            const occupied = item.favoritable.bookings.length > 0 ? true : false;
+                            const roomName = item.favoritable.room?.name;
+                            const buildingName = item.favoritable.room?.building?.name;
 
                             return (
                                 <motion.div
                                     key={index}
                                     variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
                                     whileHover={{ scale: 1.02 }}
-                                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-4 flex flex-col relative 
+                                    className="bg-white rounded-md shadow-md hover:shadow-xl transition flex flex-col relative 
                w-64" // 👈 make card narrower
                                 >
                                     {/* Image */}
@@ -74,24 +74,24 @@ export default function Favorites({ favorites }) {
                                         <img
                                             src={image}
                                             alt={name}
-                                            className="w-full h-32 object-cover rounded-xl" // 👈 slightly smaller height
+                                            className="w-full h-32 object-cover  rounded-t-md" // 👈 slightly smaller height
                                         />
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 toggleFavorite(isBed ? item.bed.id : item.room.id, item.type);
                                             }}
-                                            className="absolute top-3 right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white transition"
+                                            className="absolute top-3 right-3  p-2 rounded-full shadow  transition"
                                             title="Remove from favorites"
                                         >
-                                            <FontAwesomeIcon icon={faHeart} className="text-red-500" />
+                                            <FontAwesomeIcon icon={faHeart} className="text-red-500 hover:text-red-600" />
                                         </button>
                                     </div>
 
                                     {/* Content */}
-                                    <div className="mt-4 flex-1 flex flex-col">
+                                    <div className="mt-4 p-4 flex-1 flex flex-col">
                                         <Link
-                                            href={isBed ? `/home/bed/${item.bed.id}` : `/home/room/${item.room.id}`}
+                                            href={`/home/bed/${item.favoritable.id}`}
                                             className="text-lg font-semibold text-indigo-700 hover:underline"
                                         >
                                             {name}
@@ -100,7 +100,7 @@ export default function Favorites({ favorites }) {
 
                                         <div className="mt-3 flex items-center justify-between">
                                             <p className="text-xl font-bold text-indigo-800">₱{price}</p>
-                                            {isBed && (
+                                            {occupied && (
                                                 <span
                                                     className={`px-3 py-1 text-xs font-medium rounded-full ${occupied
                                                             ? "bg-red-100 text-red-600"

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\{Subscription, SubscriptionPlan};
 use Illuminate\Support\Facades\Log;
 use App\Events\Seller\SubscriptionConfirmedEvent;
-use App\Notifications\Seller\SubscriptionConfirmedNotif;
+use App\Notifications\Seller\{SubscriptionConfirmedNotif, SubscriptionRejectedNotif};
 class SubscriptionController extends Controller
 {
     public function index()
@@ -82,6 +82,7 @@ class SubscriptionController extends Controller
 
         $subscription->save();
         $seller = $subscription->seller;
+        $subscription->load('plan', 'seller');
         $seller->notify(new SubscriptionConfirmedNotif($subscription));
         event(new SubscriptionConfirmedEvent($subscription));
         return redirect()->route('admin.subscriptions.index')
@@ -93,6 +94,9 @@ class SubscriptionController extends Controller
     {
         $subscription->status = 'canceled';
         $subscription->save();
+        $subscription->load('plan', 'seller');
+        $seller = $subscription->seller;
+        $seller->notify(new SubscriptionRejectedNotif($subscription));
 
         return redirect()->route('admin.subscriptions.cancelled', $subscription)
             ->with('success', 'Subscription has been rejected and moved to cancelled!');

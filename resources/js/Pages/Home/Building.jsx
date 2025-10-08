@@ -56,7 +56,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                 images.map((image, index) => (
                                     <img
                                         key={index}
-                                        src={`/storage/${image.file_path}`}
+                                        src={`/storage/${image.file_path ? image.file_path : "room/default_room.svg"}`}
                                         alt={`${building.name} ${index + 1}`}
                                         className={`w-20 h-20 object-cover rounded-xl shadow-md flex-shrink-0 cursor-pointer border-2 transition 
               ${currentIndex === index
@@ -194,7 +194,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                 </div>
 
                 {/* Rooms Section */}
-                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-gray-900">Rooms</h3>
+                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-gray-900">{building.rooms.length > 0 ? "Rooms" : "No Available Rooms"}</h3>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {building.rooms.map((room) => (

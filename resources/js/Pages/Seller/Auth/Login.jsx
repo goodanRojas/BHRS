@@ -43,8 +43,10 @@ export default function Login({ status, canResetPassword }) {
     return (
         <GuestLayout>
             <Head title="Seller Log in" />
-            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
-                <div className='flex items-center justify-center'>
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 ">
+                <div className='flex items-center justify-center cursor-pointer'
+                    onClick={() => window.location.href = '/'}
+                >
                     <ApplicationLogo relative={true} />
                 </div>
             </nav>

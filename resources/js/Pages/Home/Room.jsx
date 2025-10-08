@@ -48,7 +48,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                             <img
                                 src={
                                     currentIndex === -1
-                                        ? `/storage/${room.image}`
+                                        ? `/storage/${room.image? room.image  : "room/default_room.svg"}`
                                         : `/storage/${images[currentIndex]?.file_path}`
                                 }
                                 alt={room.name}

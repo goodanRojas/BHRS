@@ -15,35 +15,18 @@ class FavoriteController extends Controller
     {
         $user = $request->user();
 
-        // Get the authenticated user's favorites with their polymorphic related models
-        $favorites = Favorite::with('favoritable')->where('user_id', $user->id)->get();
-
-        $formattedFavorites = [];
-
-        foreach ($favorites as $favorite) {
-            $item = $favorite->favoritable;
-
-            if ($item instanceof \App\Models\Room) {
-                $formattedFavorites[] = [
-                    'type' => 'room',
-                    'room' => $item,
-                    'building' => $item->building,
-                ];
+        $favorites = Favorite::with([
+            'favoritable',
+            'favoritable.room:id,name,building_id', // eager load room with its building_id
+            'favoritable.room.building:id,name',    // eager load building from room
+            'favoritable.bookings' => function ($query) {
+                $query->where('status', 'completed');
             }
+        ])->where('user_id', $user->id)->get();
 
-            if ($item instanceof \App\Models\Bed) {
-                $room = $item->room;
-                $formattedFavorites[] = [
-                    'type' => 'bed',
-                    'bed' => $item,
-                    'room' => $room,
-                    'building' => $room->building ?? null,
-                ];
-            }
-        }
 
         return Inertia::render('Home/Favorites', [
-            'favorites' => $formattedFavorites,
+            'favorites' => $favorites,
         ]);
     }
 
@@ -74,7 +57,7 @@ class FavoriteController extends Controller
             // If it exists, remove the favorite
             $favorite->delete();
             $userId = $user->id;
-            broadcast(new FavoriteToggled( $favoriteCount,$userId ))->toOthers();
+            broadcast(new FavoriteToggled($favoriteCount, $userId))->toOthers();
             return response()->json(['message' => 'Favorite removed']);
         } else {
             // If it doesn't exist, add it as a favorite

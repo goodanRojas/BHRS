@@ -47,7 +47,7 @@ export default function BedRequest({ booking }) {
         post(route('seller.request.bed.accept', booking.id),);
     };
 
-    const handleSubminCash = (e) => {
+    const handleSubmitCash = (e) => {
         e.preventDefault();
         post(route('seller.request.bed.accept.cash', data),);
     };
@@ -279,7 +279,7 @@ export default function BedRequest({ booking }) {
                     <h2 className="text-lg font-bold mb-4">Confirm Payment</h2>
                     <p className="mb-6">Make sure you upload the right payment proof. Otherwise, you will not be able to process your booking.</p>
 
-                    <form onSubmit={handleSubminCash}>
+                    <form onSubmit={handleSubmitCash}>
                         {/* Receipt Upload */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">

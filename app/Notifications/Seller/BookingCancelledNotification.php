@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Notifications\User;
+namespace App\Notifications\Seller;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\{MailMessage, BroadcastMessage};
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use App\Models\Booking;
-class UserBookingGcashPaid extends Notification
+class BookingCancelledNotification extends Notification
 {
     use Queueable;
 
@@ -25,18 +24,24 @@ class UserBookingGcashPaid extends Notification
      */
     public function via(object $notifiable): array
     {
-        return [ 'database', 'broadcast'];
+        return ['database', 'broadcast'];
     }
 
-
-     public function toDatabase($notifiable)
+    /* public function toMail($notifiable)
     {
-         return [
-            'title' => 'Booking Payment Received',
-            'message' => "{$this->booking->user->name} payed {$this->booking->bookable->name}",
-            'link' => route('seller.request.payments.show', $this->booking->receipt->id),
+        return (new MailMessage)
+            ->subject('New Booking Received')
+            ->line('A new tenant has booked one of your beds.')
+            ->action('View Booking', url('/seller/bookings'));
+    }
+ */
+    public function toDatabase($notifiable)
+    {
+        return [
+            'title' => 'Booking Cancelled',
+            'message' => "{$this->booking->bookable->name} has been cancelled",
+            'link' => route('seller.request.bed.index'),
             'meta' => [
-                'tenant_name' => $this->booking->user->name,
                 'bed_name' => $this->booking->bookable->name,
                 'room_name' => $this->booking->bookable->room->name,
                 'building_name' => $this->booking->bookable->room->building->name,
@@ -48,11 +53,10 @@ class UserBookingGcashPaid extends Notification
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-             'title' => 'Booking Payment Received',
-            'message' => "{$this->booking->user->name} payed {$this->booking->bookable->name}",
-            'link' => route('seller.request.payments.show', $this->booking->receipt->id),
+            'title' => 'Booking Cancelled',
+            'message' => "{$this->booking->bookable->name} has been cancelled",
+            'link' => route('seller.request.bed.index'),
             'meta' => [
-                'tenant_name' => $this->booking->user->name,
                 'bed_name' => $this->booking->bookable->name,
                 'room_name' => $this->booking->bookable->room->name,
                 'building_name' => $this->booking->bookable->room->building->name,

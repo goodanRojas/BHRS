@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\{Log, Auth};
 use Inertia\Inertia;
-use App\Models\{Booking, Rejection, Receipt, Bed,};
+use App\Models\{Booking, Rejection, Receipt, Bed, };
 use App\Events\User\Booking\BookingApproved;
 use App\Notifications\User\{BookingApprovedNotif, UserBookingRejected};
 use App\Events\User\Booking\BookingRejected;
@@ -15,12 +15,16 @@ class BedRequestController extends Controller
 {
     public function index()
     {
-        $seller = Auth::guard('seller')->user();;
+        $seller = Auth::guard('seller')->user();
+        ;
 
         // dd($bedIds);
-        $bedRequests = Booking::with(['user', 'bookable' => function ($morph) {
-            $morph->with(['room.building']);
-        }])
+        $bedRequests = Booking::with([
+            'user',
+            'bookable' => function ($morph) {
+                $morph->with(['room.building']);
+            }
+        ])
             ->where('bookable_type', Bed::class)
             ->Where('status', 'pending')
             ->whereHas('bookable.room.building', function ($query) use ($seller) {
@@ -40,15 +44,20 @@ class BedRequestController extends Controller
         // Eager load the related models for the booking
         $booking = Booking::where('id', $id)
             ->where('status', 'pending')
-            ->with(['user', 'receipt', 'bookable' => function ($morph) {
-                $morph->with(['room.building']);
-            }])
+            ->with([
+                'user',
+                'receipt',
+                'bookable' => function ($morph) {
+                    $morph->with(['room.building']);
+                }
+            ])
             ->first();
 
 
         if ($booking->status === 'approved' || $booking->status === 'rejected' || $booking->status === 'cancelled') {
             return redirect()->route('seller.request.index')->with('error', 'This booking has already been processed.');
-        };
+        }
+        ;
 
 
         // Return the Inertia page with the booking data
@@ -68,8 +77,7 @@ class BedRequestController extends Controller
 
     public function acceptCash(Request $request)
     {
-        Log::info('Booking request data: ', $request->all());
-
+        Log::info('Accept Cash request data: ', $request->all());
         $request->validate([
             'booking_id' => 'exists:bookings,id',
             'receipt' => 'nullable|image|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -79,8 +87,9 @@ class BedRequestController extends Controller
         $booking = Booking::find($request->booking_id);
         $booking->status = 'completed';
         $booking->save();
+        $booking->user->notify(new BookingApprovedNotif($booking));  // Notify the user
+        event(new BookingApproved($booking));
 
-        Log::info('booking data: ', $booking->toArray());
 
         if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('receipts', 'public');
@@ -93,7 +102,6 @@ class BedRequestController extends Controller
             'amount' => $request->amount
         ]);
 
-        Log::info('receipt data: ', $receipt->toArray());
 
         return redirect()->route('seller.request.payments.show', $receipt->id)
             ->with('success', 'Cash payment recorded successfully.');
@@ -110,7 +118,7 @@ class BedRequestController extends Controller
         ]);
         // Mark the booking as rejected
 
-        $booking =  Booking::find($request->booking_id);
+        $booking = Booking::find($request->booking_id);
         $booking->status = 'rejected';
         $booking->save();
 

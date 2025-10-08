@@ -33,21 +33,30 @@ class NewSellerSubscriptionNotif extends Notification
     }
 
 
-    public function toArray(object $notifiable): array
+    public function toDatabase($notifiable)
     {
         return [
-            'subscription_id' => $this->subscription->id,
-            'status' => 'pending',
-            'message' => 'New Pending Owner Subscription',
+            'title' => 'Owner Subscription',
+            'message' => "{$this->subscription->seller->name} subcribed for {$this->subscription->plan->name}.",
+            'link' => route('admin.subscriptions.show', $this->subscription->id),
+            'meta' => [
+                'owner_name' => $this->subscription->seller->name,
+                'email' => $this->subscription->seller->email,
+                'phone' => $this->subscription->seller->phone,
+            ]
         ];
     }
-
-    public function toBroadcast(object $notifiable)
+    public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-            'subscription_id' => $this->subscription->id,
-            'status' => 'pending',
-            'message' => 'New Pending Owner Subscription',
+            'title' => 'Owner Subscription',
+            'message' => "{$this->subscription->seller->name} subcribed for {$this->subscription->plan->name}.",
+            'link' => route('admin.subscriptions.show', $this->subscription->id),
+            'meta' => [
+                'owner_name' => $this->subscription->seller->name,
+                'email' => $this->subscription->seller->email,
+                'phone' => $this->subscription->seller->phone,
+            ]
         ]);
     }
 }

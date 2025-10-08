@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\{MailMessage, BroadcastMessage};
 use Illuminate\Notifications\Notification;
 
-class SubscriptionConfirmedNotif extends Notification
+class SubscriptionRejectedNotif extends Notification
 {
     use Queueable;
 
@@ -31,6 +31,9 @@ class SubscriptionConfirmedNotif extends Notification
         return ['database', 'broadcast'];
     }
 
+    /**
+     * Get the mail representation of the notification.
+     */
     public function toDatabase($notifiable)
     {
         return [

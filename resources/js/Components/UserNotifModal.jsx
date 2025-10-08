@@ -4,7 +4,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, CheckCircle, AlertCircle, Calendar } from "lucide-react";
 
-const SellerNotifModal = () => {
+const UserNotifModal = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const maxToShow = 5;
@@ -12,7 +12,7 @@ const SellerNotifModal = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get("/seller/notifications/latest");
+        const response = await axios.get("/notifications/latest");
         setNotifications(response.data.notifications || []);
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -103,7 +103,7 @@ const SellerNotifModal = () => {
 
       <div className="mt-3 text-right">
         <Link
-          href={route("seller.notifications.index")}
+          href={route("notifications.index")}
           className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
         >
           See all →
@@ -113,4 +113,4 @@ const SellerNotifModal = () => {
   );
 };
 
-export default SellerNotifModal;
+export default UserNotifModal;

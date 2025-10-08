@@ -16,12 +16,32 @@ class NotificationController extends Controller
             'highlight' => request('highlight'),
         ]);
     }
-
     public function latest()
     {
-        $latest = Auth::user()->unreadNotifications;
+        $seller = auth()->user();
+
+        $unread = $seller->unreadNotifications()
+            ->latest()
+            ->take(10)
+            ->get();
+
+
+
+        $notifications = $unread->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'title' => $notification->data['title'] ?? class_basename($notification->type),
+                'message' => $notification->data['message'] ?? 'You have a new notification.',
+                'image' => $notification->data['image'] ?? null,
+                'link' => $notification->data['link'] ?? null,
+                'meta' => $notification->data['meta'] ?? [],
+                'created_at' => $notification->created_at->diffForHumans(),
+            ];
+        });
+
         return response()->json([
-            'notifications' => $latest,
+            'notifications' => $notifications,
+            'unread_count' => $seller->unreadNotifications()->count(),
         ]);
     }
 

@@ -8,8 +8,8 @@ import Footer from '@/Components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faBell, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import SellerNotifModal from '@/Components/SellerNotifModal';
-import BookingNotif from '@/Components/Notifications/Owner/BookingNotif';
 import axios from 'axios';
+import PopupNotif from '@/Components/Notifications/Owner/PopupNotif';
 
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
@@ -36,6 +36,7 @@ export default function SellerLayout({ header, children }) {
 
                 setNotifications((prev) => [notification, ...prev]);
                 setNotifVisible(notification);
+                console.log('New notification:', notification);
                 setNotificationsCount(prevCount => prevCount + 1);
             });
     }, [user?.id]);
@@ -48,7 +49,7 @@ export default function SellerLayout({ header, children }) {
 
     return (
         <div className="min-h-screen">
-            <BookingNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
+            <PopupNotif notification={notifVisiblt} onClose={() => setNotifVisible(null)} />
 
             {/* Background Image */}
             <div

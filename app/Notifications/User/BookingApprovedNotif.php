@@ -28,7 +28,7 @@ class BookingApprovedNotif extends Notification
      */
     public function via(object $notifiable): array
     {
-        return [ 'database', 'broadcast'];
+        return ['database', 'broadcast'];
     }
 
     /* public function toMail($notifiable)
@@ -42,29 +42,33 @@ class BookingApprovedNotif extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'booking_id' => $this->booking->id,
-            'tenant_name' => $this->booking->user->name,
-            'tenant_image' => $this->booking->user->avatar,
-            'bed_image' => $this->booking->bookable->image,
-            'bed_name' => $this->booking->bookable->name,
-            'room_name' => $this->booking->bookable->room->name,
-            'building_name' => $this->booking->bookable->room->building->name,
-            'start_date' => $this->booking->start_date,
-            'month_count' => $this->booking->month_count,
+            'title' => 'Booking Confirmed',
+            'message' => "{$this->booking->bookable->name} has been confirmed",
+            'link' => route('accommodations.index'),
+            'meta' => [
+                'owner_name' => $this->booking->bookable->room->building->seller->name,
+                'bed_name' => $this->booking->bookable->name,
+                'room_name' => $this->booking->bookable->room->name,
+                'building_name' => $this->booking->bookable->room->building->name,
+                'start_date' => $this->booking->start_date,
+                'month_count' => $this->booking->month_count,
+            ]
         ];
     }
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-            'booking_id' => $this->booking->id,
-            'tenant_name' => $this->booking->user->name,
-            'tenant_image' => $this->booking->user->avatar,
-            'bed_image' => $this->booking->bookable->image,
-            'bed_name' => $this->booking->bookable->name,
-            'room_name' => $this->booking->bookable->room->name,
-            'building_name' => $this->booking->bookable->room->building->name,
-            'start_date' => $this->booking->start_date,
-            'month_count' => $this->booking->month_count,
+            'title' => 'Booking Confirmed',
+            'message' => "{$this->booking->bookable->name} has been confirmed",
+            'link' => route('accommodations.index'),
+            'meta' => [
+                'owner_name' => $this->booking->bookable->room->building->seller->name,
+                'bed_name' => $this->booking->bookable->name,
+                'room_name' => $this->booking->bookable->room->name,
+                'building_name' => $this->booking->bookable->room->building->name,
+                'start_date' => $this->booking->start_date,
+                'month_count' => $this->booking->month_count,
+            ]
         ]);
     }
 }

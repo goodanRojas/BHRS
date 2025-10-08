@@ -8,6 +8,7 @@ use App\Events\Owner\NewBooking;
 use App\Models\{Receipt, Address, Bed, Booking};
 use App\Notifications\NewBookingNotification;
 use App\Notifications\User\UserBookingGcashPaid;
+use App\Notifications\Seller\BookingCancelledNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -143,6 +144,8 @@ class BedBookingController extends Controller
     {
         $booking->status = 'canceled';
         $booking->save();
-        return redirect()->route('accommodations.cancelled')->with('success', 'Booking cancelled successfully.');
+        // Notify the owner about the cancellation
+        $booking->bookable->room->building->seller->notify(new BookingCancelledNotification($booking));
+        return redirect()->route('accommodations.canceled')->with('success', 'Booking cancelled successfully.');
     }
 }
