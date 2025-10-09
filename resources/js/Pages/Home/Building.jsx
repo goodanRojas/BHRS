@@ -3,21 +3,13 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import { Head, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faStar, faBed, faMapMarkerAlt, faInfoCircle, faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faStar, faBed, faMapMarkerAlt, faEye, faInfoCircle, faMessage } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
     const [showRules, setShowRules] = useState(true);
     const [images, setImages] = useState(building.images);
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(-1);
     console.log(building);
-
-    const handleNext = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1 === building.images.length ? 0 : prevIndex + 1));
-    };
-
-    const handlePrev = () => {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 < 0 ? building.images.length - 1 : prevIndex - 1));
-    };
 
     return (
         <AuthenticatedLayout>
@@ -71,15 +63,14 @@ export default function Building({ building, totalCompletedBookings, ratingCount
 
                     {/* Right Section: Info */}
                     <div className="flex flex-col items-center md:items-start gap-5">
-                        {/* Building Name */}
-                        <div className="w-full bg-white rounded-2xl shadow-md p-5">
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
-                                {building.name}
-                            </h2>
-                        </div>
 
                         {/* Details */}
                         <div className="w-full bg-white rounded-2xl shadow-md p-5 space-y-4">
+                            {/* Building Name */}
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
+                                {building.name}
+                            </h2>
+
                             {/* Stats */}
                             <div className="flex flex-wrap gap-6 text-sm text-gray-700">
                                 <div className="flex items-center gap-2">
@@ -90,6 +81,9 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                     <span className="text-gray-500">
                                         ({ratingCount} {ratingCount === 1 ? "review" : "reviews"})
                                     </span>
+                                    {building.building_view_count_count > 0 && (
+                                        <span className="ml-3 text-gray-500"><FontAwesomeIcon icon={faEye} /> {building.building_view_count_count} Views</span>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center gap-2">

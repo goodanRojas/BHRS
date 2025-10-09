@@ -103,7 +103,7 @@ const AdminNotifModal = () => {
 
       <div className="mt-3 text-right">
         <Link
-          href={route("notifications.index")}
+          href={route("admin.notification.index")}
           className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
         >
           See all →

@@ -172,7 +172,8 @@ class BuildingController extends Controller
                 'images',
                 'features',
                 'rulesAndRegulations',
-            ]);
+            ])
+            ->loadCount('buildingViewCount');
 
             foreach ($building->rooms as $room) {
                 $ratings = collect();

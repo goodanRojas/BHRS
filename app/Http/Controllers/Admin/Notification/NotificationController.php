@@ -5,23 +5,17 @@ namespace App\Http\Controllers\Admin\Notification;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Inertia\Inertia;
 class NotificationController extends Controller
 {
-    public function index(Request $request, $id = null)
+
+    public function index()
     {
-        $admin = auth()->guard('admin')->user();
-        if ($id) {
-            $notification = $admin->notifications()->where('id', $id)->first();
-            if ($notification) {
-                $notification->markAsRead();
-            }
-        }
-        $notifications = $admin->notifications()->orderBy('created_at', 'desc')->get();
-        return inertia('Admin/Notification/Index', [
-            'notifications' => $notifications,
-            'hightlight' => $id
+        return Inertia::render('Admin/Notification/Index', [
+            'notifications' => auth()->guard('admin')->user()->notifications()->latest()->get(),
+            'highlight' => request('highlight'),
         ]);
+
     }
 
 
@@ -61,5 +55,36 @@ class NotificationController extends Controller
             'count' => $admin->unreadNotifications->count(),
         ]);
     }
+    public function markAllRead()
+    {
+        auth()->guard('admin')->user()->unreadNotifications->markAsRead();
+        return back();
+    }
+    public function markAsRead($id)
+    {
+        $notification = auth()->guard('admin')->user()->notifications()->findOrFail($id);
+        if ($notification->read_at === null) {
+            $notification->markAsRead();
+        }
+        return back();
+    }
 
+    public function destroy($id)
+    {
+        $notification = auth()->guard('admin')->user()->notifications()->findOrFail($id);
+        $notification->delete();
+        return back();
+    }
+    public function destroyAll($type)
+    {
+        $query = auth()->guard('admin')->user()->notifications();
+
+        if ($type === 'unread') {
+            $query->whereNull('read_at')->delete();
+        } elseif ($type === 'read') {
+            $query->whereNotNull('read_at')->delete();
+        }
+
+        return back();
+    }
 }
