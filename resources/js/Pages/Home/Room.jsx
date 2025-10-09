@@ -11,7 +11,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
     // Normalize avgRating at the top of your component
     const ratingValue = avgRating ? Number(parseFloat(avgRating).toFixed(1)) : 0;
 
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(-1);
     const handleNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1 === room.images.length ? 0 : prevIndex + 1));
     };

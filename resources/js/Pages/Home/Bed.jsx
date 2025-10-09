@@ -16,7 +16,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
     console.log(comments);
     const { flash } = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(-1);
     const [preventBookingModal, setPreventBookingModal] = useState(false);
     const { updateFavoritesCount } = useFavorite();
 
