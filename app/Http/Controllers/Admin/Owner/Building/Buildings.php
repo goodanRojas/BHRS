@@ -18,6 +18,17 @@ class Buildings extends Controller
             'buildings' => $buildings
         ]);
     }
+
+    public function disable(Request $request, Building $building)
+    {
+        $building->status = $request->status  ? 'inactive' : 'active';
+        $building->save();
+        return response()->json([
+            'success' => true, // 👈 add this
+            'message' => 'Building status updated successfully',
+            'building' => $building,
+        ]);
+    }
     public function createShow(Request $request)
     {
         $sellers = Seller::select('id', 'name', 'avatar')->get();

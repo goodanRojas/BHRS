@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { usePage, Head } from '@inertiajs/react';
+import { usePage, Head, Link } from '@inertiajs/react';
 import axios, { all } from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -8,7 +8,8 @@ import SellerLayout from '@/Layouts/SellerLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning, faToggleOff, faToggleOn } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
-
+import Dropdown from '@/Components/Dropdown';
+import { Settings, MessageSquareText } from "lucide-react";
 export default function Index({ sentMessages, receivedMessages }) {
     const [users, setUsers] = useState([]); // Store list of users (all conversations)
     const [onlineUsers, setOnlineUsers] = useState([]); // Store list of online users
@@ -226,7 +227,7 @@ export default function Index({ sentMessages, receivedMessages }) {
                     console.log('🔔 ai message sent!', message);
                     if (activeUser && message.sender_id === owner.id && message.receiver_id === activeUser.id) {
                         setMessages((prevMessages) => [...prevMessages, message]);
-                        
+
                     }
                     setUsers((prevUsers) =>
                         prevUsers.map((u) =>
@@ -364,6 +365,38 @@ export default function Index({ sentMessages, receivedMessages }) {
 
                 {/* Right column: Chat window */}
                 <div className="w-2/3 ">
+                    <div className='flex justify-end '>
+                        <Dropdown>
+                            <Dropdown.Trigger>
+                                <button
+                                    className='p-4 align-self-start text-gray-700 hover:scale-105 hover:text-gray-900 focus:outline-none transition-all duration-200'
+                                >
+                                    <FontAwesomeIcon icon={faEllipsisV} />
+                                </button>
+                            </Dropdown.Trigger>
+
+                            <Dropdown.Content className="w-56 bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+                                {/* Settings Label */}
+                                <div className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700">
+                                    <Settings className="w-4 h-4 text-gray-500" />
+                                    <span>Settings</span>
+                                </div>
+
+                                <hr className="border-gray-200" />
+
+                                {/* Default Messages Link */}
+                                <Link
+                                    href="/seller/message/default"
+                                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    <MessageSquareText className="w-4 h-4 text-gray-500" />
+                                    <span>Default Messages</span>
+                                </Link>
+                            </Dropdown.Content>
+                        </Dropdown>
+
+                    </div>
+
                     {!activeUser ? (
                         <div className="text-center h-full flex items-center justify-center flex-col">
                             <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>

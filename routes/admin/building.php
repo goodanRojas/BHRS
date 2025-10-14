@@ -20,4 +20,5 @@ Route::prefix('admin/owner/buildings')->name('admin.owner.buildings.')->middlewa
     Route::post('/update-image/{media}', [Buildings::class, 'updateCarouselImage'])->name('update.carousel.image');
     Route::post('/delete-image/{media}', [Buildings::class, 'deleteCarouselImage'])->name('delete.carousel.image');
 
+    Route::post('/toggle/{building}', [Buildings::class, 'disable'])->name('disable');
 });

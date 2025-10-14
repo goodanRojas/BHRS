@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Owner;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{SellerApplication, Address, Seller};
+use App\Models\{SellerApplication, Address, DefaultMessage, Seller};
 use App\Notifications\User\SellerApplicationApproved;
 class OwnerApplicationController extends Controller
 {
@@ -32,11 +32,17 @@ class OwnerApplicationController extends Controller
         }
         $application->status = 'approved';
         $application->save();
-        Seller::create([
+        $seller =Seller::create([
             'name' => $application->fullname,
             'email' => $application->email,
             'password' => $application->password,
             'phone' => $application->phone,
+        ]);
+        DefaultMessage::create([
+            'type' => Seller::class,
+            'owner_id' => $seller->id,
+            'message' => "Thanks for checking in. If you have any questions, feel free to ask here. Enjoy your stay!",
+            'remarks' => "tenant_welcom",
         ]);
 
         return response()->json([

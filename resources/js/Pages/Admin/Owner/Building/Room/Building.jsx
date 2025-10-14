@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 import { faUserTie, faTimes, faGear, faCheckSquare, faRoute, faPen, faTrash, faPlus, faEllipsisV, faClose } from '@fortawesome/free-solid-svg-icons';
+import { Pencil, Ban, Settings, CheckCircle2 } from "lucide-react"; // 👈 icons
 import Modal from '@/Components/Modal';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -29,6 +30,8 @@ export default function Building({ building }) {
     });
 
     const [openSettings, setOpensettings] = useState(false);
+    const [disableBuilding, setDisableBuilding] = useState(false);
+    const [buildingStatus, setBuildingStatus] = useState(building?.status === 'active');
     const optionButtonRef = useRef(null);
     const optionPopupRef = useRef(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -185,6 +188,24 @@ export default function Building({ building }) {
         }
     };
 
+    const handleDisableBuilding = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`/admin/owner/buildings/toggle/${building.id}`, {
+                status: buildingStatus
+            });
+            if (response.data.success) {
+                setDisableBuilding(false);
+                setBuildingStatus(!buildingStatus);
+                setToastMessage({ message: "Building disabled successfully", isTrue: true, isType: "success" });
+            } else {
+                console.error('Error in disabling building:', response.data.message);
+            }
+        } catch (error) {
+            console.error('Error disabling building:', error);
+        }
+    };
+
     const handleUpdateBuilding = async (e) => {
         e.preventDefault();
 
@@ -329,6 +350,7 @@ export default function Building({ building }) {
         ].barangay_list
         : [];
 
+
     return (
         <AuthenticatedLayout>
             <Head title={building.name} />
@@ -344,22 +366,37 @@ export default function Building({ building }) {
                     {openSettings && (
                         <div
                             ref={optionPopupRef}
-                            className={`absolute right-0 top-7 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50   `}
+                            className="absolute right-0 top-7 mt-2 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
                         >
-                            <div className='p-2'>
-                                <h2 className='text-sm font-semibold text-gray-800 m-2'><FontAwesomeIcon icon={faGear} /> Options</h2>
-                                <hr className='border-gray-200 mt-2' />
-                                {/* Option content */}
-                                <div className="pt-2">
-                                    <button
-                                        onClick={() => {
-                                            setShowEditBuildingDetails(true);
-                                        }}
-                                        className=" group block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <FontAwesomeIcon className='group-hover:text-gray-900 transition-all duration-200' icon={faPen} /> Edit
-                                    </button>
+                            {/* Header */}
+                            <div className="px-4 py-2 flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <Settings className="w-3.5 h-3.5 text-gray-400" />
+                                Options
+                            </div>
 
-                                </div>
+                            <hr className="border-gray-200" />
+
+                            {/* Options */}
+                            <div className="py-1">
+                                <button
+                                    onClick={() => setShowEditBuildingDetails(true)}
+                                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                    <Pencil className="w-4 h-4 text-indigo-600 group-hover:text-indigo-700" />
+                                    Edit
+                                </button>
+
+                                <button
+                                    onClick={() => setDisableBuilding(true)}
+                                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                    {buildingStatus  ? (
+                                        <Ban className="w-4 h-4 text-red-600" />
+                                    ) : (
+                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                    )}    {buildingStatus ? "Disable" : "Enable"}
+                                </button>
+
                             </div>
                         </div>
                     )}
@@ -468,7 +505,19 @@ export default function Building({ building }) {
                     {!isEditing && (
                         <>
                             <div className='flex items-center justify-between'>
-                                <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                                    {building.name}
+                                </h2>
+
+                                <span
+                                    className={`text-gray-700 text-sm rounded-full px-2.5 py-1 font-medium ${buildingStatus
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                        }`}
+                                >
+                                    {buildingStatus ? "Active" : "Disabled"}
+                                </span>
+
                             </div>
                             <p>
                                 <FontAwesomeIcon icon={faUserTie} className="mr-1 text-gray-500" />
@@ -1014,6 +1063,35 @@ export default function Building({ building }) {
                     </form>
                 </div>
 
+            </Modal>
+
+            {/* Enable/Disable Modal */}
+            <Modal show={disableBuilding} onClose={() => setDisableBuilding(false)}>
+                <div className="p-6">
+                    <h2 className="text-lg font-bold mb-4">
+                        {buildingStatus ? "Disable Building" : "Enable Building"}
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Are you sure you want to {buildingStatus ? "disable" : "enable"} this building?
+                    </p>
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setDisableBuilding(false)}
+                            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleDisableBuilding}
+                            className={`px-4 py-2 text-white rounded-lg transition ${buildingStatus
+                                ? "bg-red-600 hover:bg-red-700"
+                                : "bg-green-600 hover:bg-green-700"
+                                }`}
+                        >
+                            {buildingStatus ? "Disable" : "Enable"}
+                        </button>
+                    </div>
+                </div>
             </Modal>
 
         </AuthenticatedLayout >

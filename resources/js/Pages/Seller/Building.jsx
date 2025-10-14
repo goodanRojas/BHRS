@@ -468,7 +468,15 @@ export default function Building({ building }) {
                     {!isEditing && (
                         <>
                             <div className='flex items-center justify-between'>
-                                <h2 className="text-lg font-semibold text-gray-800 mb-2">{building.name}</h2>
+                                <div className='flex items-center justify-center pb-2 gap-3'>
+                                    <h2 className="text-lg font-semibold text-gray-800 ">{building.name}</h2>
+                                    {building.status === 'inactive' && (
+                                        <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">
+                                            Inactive
+                                        </span>
+                                    )}
+
+                                </div>
                                 <Link
                                     href={`/seller/building/map/${building.id}`}
                                 >

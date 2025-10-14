@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { useForm, Head } from '@inertiajs/react';
+import { useForm, Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { faFaceSadTear, faMobileScreen, faQrcode, faUser } from '@fortawesome/free-solid-svg-icons';
 import PrimaryButton from '@/Components/PrimaryButton';
 import Modal from '@/Components/Modal';
@@ -42,7 +43,31 @@ const GCashPaymentPage = ({ amount, booking, paymentInfo }) => {
   return (
     <AuthenticatedLayout>
       <Head title="GCash Payment" />
-
+      {!paymentInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 flex flex-col items-center text-center"
+          >
+            <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              Payment Info Unavailable
+            </h2>
+            <p className="text-gray-600 mb-6">
+              The owner payment information is not available at the moment.
+              Please check back later or contact support.
+            </p>
+            <Link
+            href={route('accommodations.index')}
+            className="px-5 py-2 rounded-full bg-red-500 hover:bg-red-600 text-white font-medium shadow-lg transition">
+              Close
+            </Link>
+          </motion.div>
+        </div>
+      )}
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-4">
         <motion.div
           initial={{ opacity: 0, y: 40 }}

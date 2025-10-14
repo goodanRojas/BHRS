@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class DefaultMessage extends Model
 {
     protected $fillable = [
-        'owner_type',
+        'type',
         'owner_id',  
         'message',
-        'type'
+        'remarks'
     ];
 
     public function owner()

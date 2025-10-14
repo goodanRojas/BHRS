@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faBell, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { AlertCircle } from 'lucide-react';
 import SellerNotifModal from '@/Components/SellerNotifModal';
 import axios from 'axios';
 import PopupNotif from '@/Components/Notifications/Owner/PopupNotif';
@@ -22,10 +23,18 @@ export default function SellerLayout({ header, children }) {
     const [notifVisiblt, setNotifVisible] = useState(null);
     const [notificationsCount, setNotificationsCount] = useState(0);
     const [subscriptionType, setSubscriptionType] = useState(null);
+    const [warningVisible, setWarningVisible] = useState(false);
     useEffect(() => {
         axios.get('/seller/current/subscription').then((res) => {
             const sub = res.data.subscription;
             setSubscriptionType(sub ? sub.plan.plan : null);
+        });
+    }, [user?.id]);
+
+    useEffect(() => {
+        axios.get('/seller/warning/check').then((res) => {
+            setWarningVisible(res.data.showWarning);
+            console.log('Warning status:', res.data.showWarning);
         });
     }, [user?.id]);
 
@@ -156,7 +165,7 @@ export default function SellerLayout({ header, children }) {
                                             {/* Avatar with colored border */}
                                             <div
                                                 className={`h-9 w-9 rounded-full border-2 p-0.5
-                        ${subscriptionType === "Bronze" ? "border-yellow-700" :
+                                                   ${subscriptionType === "Bronze" ? "border-yellow-700" :
                                                         subscriptionType === "Silver" ? "border-gray-400" :
                                                             subscriptionType === "Gold" ? "border-yellow-500" :
                                                                 "border-transparent"}`}
@@ -180,6 +189,12 @@ export default function SellerLayout({ header, children }) {
                                                     {subscriptionType}
                                                 </span>
                                             )}
+
+                                            {warningVisible && (
+                                                <span className="absolute -top-1 left-9 -translate-x-1/2 px-0.5 text-[7px] font-semibold rounded-full bg-yellow-500 text-black">
+                                                    <AlertCircle className="h-3 w-3" />
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* First name */}
@@ -191,11 +206,17 @@ export default function SellerLayout({ header, children }) {
                                     <Dropdown.Link href={route('seller.profile.edit')}>
                                         Profile
                                     </Dropdown.Link>
-                                    <Dropdown.Link href={route('seller.payment-details.index')}>
+                                    <Dropdown.Link className='relative' href={route('seller.payment-details.index')}>
                                         Payment Details
+                                            {warningVisible && (
+                                                <span className="absolute -top-1 left-4 -translate-x-1/2 px-0.5 text-[7px] font-semibold rounded-full bg-yellow-500 text-black">
+                                                    <AlertCircle className="h-3 w-3" />
+                                                </span>
+                                            )}
                                     </Dropdown.Link>
-                                    <Dropdown.Link href={route('seller.subscription.landing')}>
+                                    <Dropdown.Link  className='relative' href={route('seller.subscription.landing')}>
                                         Subscription
+                                      
                                     </Dropdown.Link>
                                     <Dropdown.Link
                                         href={route('seller.logout.post')}

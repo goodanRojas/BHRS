@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Seller\Message\{MessageController};
+use App\Http\Controllers\Seller\Message\{DefaultMessageController, MessageController};
 
 Route::middleware(['seller', 'check.has.subscription:bronze,silver,gold'])->group(function () {
 
@@ -17,5 +17,12 @@ Route::middleware(['seller', 'check.has.subscription:bronze,silver,gold'])->grou
         });
         Route::get('/owner-messages/owners', 'getUsers');
         Route::delete('/owner-message/delete/{selectedUserId}', 'deleteConversation');
+    });
+
+    Route::prefix('/seller/message/default')->name('seller.message.default.')->group(function () {
+        Route::get('/', [DefaultMessageController::class, 'index']);
+        Route::delete('/{messageId}', [DefaultMessageController::class, 'destroy']);
+        Route::post('/store', [DefaultMessageController::class, 'store'])->name('store');
+        Route::post('/update/{messageId}', [DefaultMessageController::class, 'update'])->name('update');
     });
 });

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Seller\{SellerAuthenticateController, SellerRegisterController};
 use App\Http\Controllers\Seller\Auth\{PasswordResetLinkController, NewPasswordController};
+use App\Http\Controllers\Seller\Warning\WarningController;
 use Inertia\Inertia;
 
 Route::prefix('seller')->name('seller.')->group(function () {
@@ -26,6 +27,8 @@ Route::prefix('seller')->name('seller.')->group(function () {
         Route::get('/current/subscription', [SellerAuthenticateController::class, 'currentSubscription'])->name('current.subscription');
         Route::get('/logout', [SellerAuthenticateController::class, 'destroy'])->name('logout.get');
         Route::post('/logout', [SellerAuthenticateController::class, 'destroy'])->name('logout.post');
+
+        Route::get('/warning/check', [WarningController::class, 'checkWarning'])->name('warning.check');
     });
 });
 

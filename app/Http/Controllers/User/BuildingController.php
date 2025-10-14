@@ -47,6 +47,7 @@ class BuildingController extends Controller
                     ->whereColumn('rooms.building_id', 'buildings.id')
                     ->selectRaw('COUNT(ratings.id)');
             }, 'rating_count')
+            ->where('status', 'active')
 
             ->get()
             ->map(function ($building) {
@@ -120,6 +121,7 @@ class BuildingController extends Controller
                     $q->whereIn('name', $keywords); // OR logic: building has any selected feature
                 });
             })
+            ->where('status', 'active')
             ->get()
             ->map(function ($building) {
                 // Collect all ratings across rooms → beds → bookings
