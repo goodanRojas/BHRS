@@ -89,7 +89,7 @@ class BuildingController extends Controller
                 'string',
                 'max:255',
                 // Unique per building
-                Rule::unique('rooms')->where(fn($query) => $query->where('building_id', $request->building_id)),
+                // Rule::unique('rooms')->where(fn($query) => $query->where('building_id', $request->building_id)),
             ],
             'image' => 'required|image|',
         ]);
