@@ -8,8 +8,7 @@ import { faUserTie, faStar, faBed, faMapMarkerAlt, faEye, faInfoCircle, faMessag
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
     const [showRules, setShowRules] = useState(true);
     const [images, setImages] = useState(building.images);
-    const [currentIndex, setCurrentIndex] = useState(-1);
-    console.log(building);
+    const [currentIndex, setCurrentIndex] = useState(-1);   
 
     return (
         <AuthenticatedLayout>
@@ -42,7 +41,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                         </div>
 
                         {/* Thumbnails */}
-                        <div className="flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                        <div className="w-full flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                             {images &&
                                 images.length > 0 &&
                                 images.map((image, index) => (
@@ -67,7 +66,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                         {/* Details */}
                         <div className="w-full bg-white rounded-2xl shadow-md p-5 space-y-4">
                             {/* Building Name */}
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800  md:text-left">
                                 {building.name}
                             </h2>
 

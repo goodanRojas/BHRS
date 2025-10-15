@@ -91,12 +91,15 @@ export default function Login({ status }) {
                         initial={{ x: 50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 0.7, delay: 0.2 }}
-                        className="w-full md:w-1/2 p-10 bg-white/80 backdrop-blur-xl rounded-r-2xl"
+                        className="
+        w-full max-w-md md:max-w-lg lg:w-1/2
+        p-6 sm:p-8 md:p-10
+        bg-white/80 backdrop-blur-xl
+        rounded-2xl md:rounded-r-2xl
+        mx-auto shadow-lg
+    "
                     >
-                        <form
-                            onSubmit={submit}
-                            className="space-y-6"
-                        >
+                        <form onSubmit={submit} className="space-y-6">
                             {/* Title */}
                             <motion.div
                                 initial={{ opacity: 0, y: 15 }}
@@ -104,8 +107,12 @@ export default function Login({ status }) {
                                 transition={{ duration: 0.6, delay: 0.3 }}
                                 className="text-center mb-6"
                             >
-                                <h2 className="text-3xl font-bold text-gray-800">Welcome Back!</h2>
-                                <p className="text-gray-500">Login to continue your journey</p>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                                    Welcome Back!
+                                </h2>
+                                <p className="text-gray-500 text-sm sm:text-base">
+                                    Login to continue your journey
+                                </p>
                             </motion.div>
 
                             {/* Status message */}
@@ -160,7 +167,7 @@ export default function Login({ status }) {
                             </div>
 
                             {/* Remember + Register */}
-                            <div className="flex items-center justify-between mt-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -172,7 +179,7 @@ export default function Login({ status }) {
                                     />
                                     <label htmlFor="remember" className="text-sm text-gray-600">Remember Me</label>
                                 </div>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500  sm:text-right">
                                     Not a member?{" "}
                                     <Link href={route('register')} className="text-indigo-600 font-semibold hover:underline">
                                         Register
@@ -181,24 +188,25 @@ export default function Login({ status }) {
                             </div>
 
                             {/* Forgot + Login button */}
-                            <div className="mt-6 flex items-center justify-between">
+                            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <PrimaryButton
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition w-full sm:w-auto"
+                                        disabled={processing}
+                                    >
+                                        Log in
+                                    </PrimaryButton>
+                                </motion.div>
                                 <Link
                                     href={route('password.request')}
                                     className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
                                 >
                                     Forgot your password?
                                 </Link>
-                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                    <PrimaryButton
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg transition"
-                                        disabled={processing}
-                                    >
-                                        Log in
-                                    </PrimaryButton>
-                                </motion.div>
                             </div>
                         </form>
                     </motion.div>
+
                 </motion.div>
             </div>
         </GuestLayout>

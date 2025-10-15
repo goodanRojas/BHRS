@@ -11,88 +11,70 @@ export default function Welcome({ auth }) {
     return (
         <>
             <Head title="Welcome" />
-            <div className="min-h-screen bg-gradient-to-br from-slate-200 via-gray-gray-100 to-slate-100 text-gray-900 overflow-hidden">
+            <div className="min-h-screen bg-gradient-to-br from-slate-200 via-gray-100 to-slate-100 text-gray-900 overflow-hidden">
+                {/* Navbar */}
                 {!auth ? (
-                    <nav className="flex justify-between items-center px-5 py-4">
+                    <nav className="flex flex-wrap justify-between items-center px-4 py-4 md:px-8">
                         {/* Logo */}
-                        <div>
+                        <div className="flex-shrink-0">
                             <Link href="/">
-                                <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" variant='black' />
+                                <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-500" variant="black" />
                             </Link>
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-wrap items-center justify-end space-x-3 md:space-x-6 mt-3 md:mt-0">
                             {/* Owner Login */}
                             <Link
                                 href="/seller/login"
-                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold 
-                               hover:text-indigo-700 transition group"
+                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
                             >
                                 Owner Login
-                                <span
-                                    className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"
-                                ></span>
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
 
-                            {/* Tenant Log in */}
+                            {/* Tenant Login */}
                             <Link
                                 href={route('login')}
-                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold 
-                               hover:text-indigo-700 transition group"
+                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
                             >
                                 Log in
-                                <span
-                                    className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"
-                                ></span>
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
 
                             {/* Register */}
                             <Link
                                 href={route('register')}
-                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold 
-                               hover:text-indigo-700 transition group"
+                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
                             >
                                 Register
-                                <span
-                                    className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"
-                                ></span>
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-
                         </div>
                     </nav>
-
                 ) : (
-                    < nav className="flex justify-between items-center px-5 py-4">
+                    <nav className="flex justify-between items-center px-4 py-4 md:px-8">
                         <div>
                             <Link href="/">
-                                <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" variant='black' />
+                                <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-500" variant="black" />
                             </Link>
                         </div>
 
-                        {/* Buttons */}
                         <div className="flex items-center space-x-4">
-                            {/* Owner Login */}
                             <Link
                                 href={route('to.user.buildings')}
-                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold 
-                               hover:text-indigo-700 transition group"
+                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
                             >
                                 Dashboard
-                                <span
-                                    className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"
-                                ></span>
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-
-
                         </div>
-
                     </nav>
                 )}
 
                 {/* Hero Section */}
                 <motion.section
-                    className="relative px-6 py-16 md:py-24 "
+                    className="relative px-5 py-16 md:py-24 overflow-hidden"
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
@@ -100,72 +82,68 @@ export default function Welcome({ auth }) {
                     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-12">
                         {/* Text Content */}
                         <div className="text-center md:text-left z-10">
-                            <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-gray-900 leading-tight"
+                            <h1
+                                className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 text-gray-900 leading-tight"
                                 style={{ fontFamily: "'Satisfy', cursive" }}
                             >
                                 Boarding House Reservation System
                             </h1>
 
-                            <p className="text-base md:text-lg text-gray-500 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                            <p className="text-sm sm:text-base md:text-lg text-gray-500 mb-8 max-w-md mx-auto md:mx-0 leading-relaxed">
                                 Easily book your stay and find the best accommodations tailored for your needs.
                             </p>
 
                             <Link
                                 href="/home/buildings"
-                                className="inline-block bg-yellow-500 text-indigo-800 font-semibold text-lg py-3 px-8 rounded-full shadow-md 
-                             hover:bg-yellow-600 transition-transform transform hover:scale-105 hover:text-white"
+                                className="inline-block bg-yellow-500 text-indigo-800 font-semibold text-sm sm:text-base md:text-lg py-3 px-8 rounded-full shadow-md 
+            hover:bg-yellow-600 transition-transform transform hover:scale-105 hover:text-white"
                             >
                                 Book Now
                             </Link>
                         </div>
 
                         {/* Hero Images */}
-                        <div className="relative flex justify-center md:justify-end">
+                        <div className="relative flex justify-center md:justify-end w-full">
                             {/* Background */}
                             <img
                                 src={'/storage/system/landingpage/hero-bg.png'}
                                 alt="Hero background"
-                                className="w-[500px] md:w-[800px] lg:w-[1000px] max-w-none absolute -right-10 top-[0px] drop-shadow-lg z-0"
+                                className="w-[300px] sm:w-[400px] md:w-[600px] lg:w-[800px] max-w-full absolute right-0 top-0 drop-shadow-lg z-0"
                             />
 
                             {/* Clouds */}
                             <img
                                 src={'/storage/system/landingpage/clouds.svg'}
                                 alt="Clouds"
-                                className="w-24 md:w-32 lg:w-40 absolute left-10 -top-[200px] opacity-80 drop-shadow-sm z-5"
+                                className="w-16 sm:w-24 md:w-32 absolute left-4 -top-[120px] opacity-80 drop-shadow-sm z-10"
                             />
                             <img
                                 src={'/storage/system/landingpage/clouds.svg'}
                                 alt="Clouds"
-                                className="w-28 md:w-36 scale-x-[-1] lg:w-40 absolute right-[100px] -top-[140px] opacity-80 drop-shadow-sm z-5"
+                                className="w-20 sm:w-28 md:w-36 scale-x-[-1] absolute right-6 -top-[100px] opacity-80 drop-shadow-sm z-10"
                             />
 
-                            {/* Hero 3 (center big) */}
+                            {/* Hero Illustrations */}
                             <img
                                 src={'/storage/system/landingpage/hero2.svg'}
-                                alt="Hero illustration 3"
-                                className="w-40 md:w-56 lg:w-72 absolute top-[100px] right-0 drop-shadow-lg z-10"
+                                alt="Hero 2"
+                                className="w-28 sm:w-36 md:w-56 lg:w-64 absolute top-[80px] right-2 drop-shadow-lg z-20"
                             />
-
-                            {/* Hero 1 (left, flipped) */}
                             <img
                                 src={'/storage/system/landingpage/hero1.svg'}
-                                alt="Hero illustration 1"
-                                className="w-20 md:w-28 lg:w-36 drop-shadow-lg absolute top-[170px] right-[50%] z-20"
+                                alt="Hero 1"
+                                className="w-16 sm:w-20 md:w-28 drop-shadow-lg absolute top-[160px] right-[50%] z-30"
                             />
-
-                            {/* Hero 2 (right) */}
                             <img
                                 src={'/storage/system/landingpage/hero3.svg'}
-                                alt="Hero illustration 2"
-                                className="w-28 md:w-36 lg:w-44 drop-shadow-lg absolute top-0 right-[40%] z-20"
+                                alt="Hero 3"
+                                className="w-20 sm:w-28 md:w-36 drop-shadow-lg absolute top-[20px] right-[35%] z-30"
                             />
                         </div>
-
                     </div>
                 </motion.section>
+            </div>
 
-            </div >
             {/* Blog Pages Section */}
             < section className="min-h-screen py-16 bg-white text-light-blue-600"
             >

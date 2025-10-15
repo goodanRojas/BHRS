@@ -7,22 +7,8 @@ import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRating }) {
     const images = room.images;
-    console.log(room);
-    // Normalize avgRating at the top of your component
-    const ratingValue = avgRating ? Number(parseFloat(avgRating).toFixed(1)) : 0;
 
     const [currentIndex, setCurrentIndex] = useState(-1);
-    const handleNext = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1 === room.images.length ? 0 : prevIndex + 1));
-    };
-
-    const handlePrev = () => {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 < 0 ? room.images.length - 1 : prevIndex - 1));
-    };
-
-    const handleImageClick = (index) => {
-        setCurrentIndex(index);
-    };
 
 
     return (
@@ -48,7 +34,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                             <img
                                 src={
                                     currentIndex === -1
-                                        ? `/storage/${room.image? room.image  : "room/default_room.svg"}`
+                                        ? `/storage/${room.image ? room.image : "room/default_room.svg"}`
                                         : `/storage/${images[currentIndex]?.file_path}`
                                 }
                                 alt={room.name}
@@ -57,7 +43,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                         </div>
 
                         {/* Thumbnails */}
-                        <div className="flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                        <div className="w-full flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                             {images &&
                                 images.length > 0 &&
                                 images.map((image, index) => (
@@ -78,15 +64,13 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
 
                     {/* Right Section: Info */}
                     <div className="flex flex-col items-center md:items-start gap-5">
-                        {/* Building Name */}
-                        <div className="w-full bg-white rounded-2xl shadow-md p-5">
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
-                                {room.name}
-                            </h2>
-                        </div>
 
                         {/* Details */}
                         <div className="w-full bg-white rounded-2xl shadow-md p-5 space-y-4">
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800  md:text-left">
+                                {room.name}
+                            </h2>
+
                             {/* Stats */}
                             <div className="flex flex-wrap gap-6 text-sm text-gray-700">
                                 <div className="flex items-center gap-2">
@@ -146,7 +130,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                     Beds
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 md:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {room.beds.map((bed) => (
                         <Link
                             key={bed.id}

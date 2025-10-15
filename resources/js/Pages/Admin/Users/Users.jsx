@@ -1,10 +1,20 @@
 import AuthenticatedLayout from "../AuthenticatedLayout";
 import { Head, useForm, usePage } from "@inertiajs/react";
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/Components/Modal"; // Assuming you have a Modal component
 import Toast from "@/Components/Toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPencil, faCheck, faBan, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+    faSearch,
+    faPlus,
+    faCheck,
+    faBan,
+    faPencil,
+    faUsers,
+    faWifi,
+} from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { motion } from "framer-motion";
 export default function Users({ users }) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -12,6 +22,8 @@ export default function Users({ users }) {
     const [searchQuery, setSearchQuery] = useState("");
     const { data: ownerList = [], links = [], meta = {} } = users || {};
     const [moreUsers, setMoreUsers] = useState(ownerList);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [onlineCount, setOnlineCount] = useState(0);
     const { flash } = usePage().props;
     const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
@@ -131,110 +143,188 @@ export default function Users({ users }) {
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    useEffect(() => {
+        const channel = window.Echo.join('online-users')
+            .here((users) => {
+                setOnlineUsers(users.map((u) => u.id));
+                setOnlineCount(users.length);
+            })
+            .joining((user) => {
+                setOnlineUsers((prev) => [...prev, user.id]);
+                setOnlineCount((prev) => prev + 1);
+            })
+            .leaving((user) => {
+                setOnlineUsers((prev) => prev.filter((id) => id !== user.id));
+                setOnlineCount((prev) => prev - 1);
+            });
+        return () => {
+            window.Echo.leave('online-users');
+        }
+    }, []);
+
 
     return (
         <AuthenticatedLayout>
             <Head title="user" />
             {flash.success && <Toast message={flash.success} />}
             <Toast isTrue={toast.show} isType={toast.type} message={toast.message} id={Date.now()} />
-            <div className="">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Users</h1>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="p-6 md:p-8"
+            >
+                {/* Header */}
+                <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                    {/* Left Section */}
+                    <div className="flex items-center gap-4">
+                        <motion.div
+                            initial={{ rotate: -10, opacity: 0 }}
+                            animate={{ rotate: 0, opacity: 1 }}
+                            transition={{ duration: 0.4 }}
+                            className="bg-indigo-100 text-indigo-600 p-3 rounded-full shadow-sm"
+                        >
+                            <FontAwesomeIcon icon={faUsers} className="w-5 h-5" />
+                        </motion.div>
 
-                    <div className="flex items-center space-x-4">
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                                Users
+                            </h1>
+                            <p className="text-sm text-gray-500 flex items-center gap-1">
+                                <FontAwesomeIcon icon={faWifi} className="text-green-500" />
+                                Online: {onlineCount}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Right Section: Search + Add */}
+                    <div className="flex items-center gap-3 w-full md:w-auto">
                         {/* Search Bar */}
-                        <div className="relative mb-4">
+                        <div className="relative w-full md:w-64">
                             <FontAwesomeIcon
                                 icon={faSearch}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                             />
                             <input
                                 type="text"
-                                placeholder="Search..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Search users..."
+                                className="pl-10 pr-4 py-2 w-full text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
 
-                        {/* Add button */}
-                        <button
+                        {/* Add Button */}
+                        <motion.button
+                            whileHover={{ scale: 1.1, rotate: 90 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={openCreateModal}
-                            className="bg-indigo-600 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-indigo-700 mb-4"
+                            className="bg-indigo-600 text-white w-10 h-10 flex items-center justify-center rounded-full shadow-md hover:bg-indigo-700 transition"
+                            title="Add New User"
                         >
                             <FontAwesomeIcon icon={faPlus} />
-                        </button>
-
+                        </motion.button>
                     </div>
-
                 </div>
-                <div className="overflow-x-auto w-full">
-                    <table className="min-w-full table-auto border-collapse">
+
+                {/* Table */}
+                <div className="overflow-x-auto rounded-xl border border-gray-100">
+                    <table className="min-w-full table-auto">
                         <thead>
-                            <tr className="bg-gray-100">
-                                <th className="px-6 py-2 text-center">Username</th>
-                                <th className="px-6 py-2 text-center">Email</th>
-                                <th className="px-6 py-2 text-center">Status</th>
-                                <th className="px-6 py-2 text-center">Actions</th>
+                            <tr className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wide">
+                                <th className="px-6 py-3 text-left">Username</th>
+                                <th className="px-6 py-3 text-left">Email</th>
+                                <th className="px-6 py-3 text-center">Status</th>
+                                <th className="px-6 py-3 text-center">Online</th>
+                                <th className="px-6 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="min-h-screen">
+                        <tbody>
                             {filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
-                                    <tr
+                                    <motion.tr
                                         key={user.id}
-                                        onClick={() => window.location.href = route('admin.users.show', { id: user.id })}
-                                        className="border-t hover:bg-gray-200 hover:cursor-pointer transition duration-300">
-                                        <td className="px-6 py-2">{user.name}</td>
-                                        <td className="px-6 py-2">{user.email}</td>
-                                        <td className="px-6 py-2 text-center">
-                                            <button
-                                                onClick={() => toggleUserStatus(user.id)}
-                                                className={`${user.status === 1 ? "bg-green-600" : "bg-red-600"
-                                                    } rounded-full w-10 h-10 flex items-center justify-center text-white hover:bg-opacity-80`}
+                                        whileHover={{ scale: 1.01 }}
+                                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                        className="border-t text-gray-700 hover:bg-gray-50 cursor-pointer"
+                                        onClick={() =>
+                                            (window.location.href = route("admin.users.show", { id: user.id }))
+                                        }
+                                    >
+                                        <td className="px-6 py-3 font-medium">{user.name}</td>
+                                        <td className="px-6 py-3">{user.email}</td>
+                                        <td className="px-6 py-3 text-center">
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleUserStatus(user.id);
+                                                }}
+                                                className={`${user.status === 1
+                                                        ? "bg-green-500 hover:bg-green-600"
+                                                        : "bg-red-500 hover:bg-red-600"
+                                                    } w-9 h-9 rounded-full flex items-center justify-center text-white shadow`}
+                                                title={user.status === 1 ? "Active" : "Inactive"}
                                             >
-                                                {user.status === 1 ? (
-                                                    <FontAwesomeIcon icon={faCheck} />
-                                                ) : (
-                                                    <FontAwesomeIcon icon={faBan} />
-                                                )}
-                                            </button>
+                                                <FontAwesomeIcon
+                                                    icon={user.status === 1 ? faCheck : faBan}
+                                                />
+                                            </motion.button>
                                         </td>
-                                        <td className="py-2 flex justify-center items-center">
-                                            <button
-                                                onClick={() => openEditModal(user)}
-                                                className="bg-blue-500 rounded-full flex items-center justify-center w-10 h-10 text-white hover:bg-blue-600"
+                                        <td className="px-6 py-3 text-center">
+                                            {onlineUsers.includes(user.id) ? (
+                                                <span className="text-green-600 font-semibold">Online</span>
+                                            ) : (
+                                                <span className="text-gray-400">Offline</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-3 text-center">
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEditModal(user);
+                                                }}
+                                                className="bg-blue-500 hover:bg-blue-600 w-9 h-9 rounded-full flex items-center justify-center text-white shadow"
+                                                title="Edit User"
                                             >
                                                 <FontAwesomeIcon icon={faPencil} />
-                                            </button>
+                                            </motion.button>
                                         </td>
-                                    </tr>
+                                    </motion.tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="text-center  text-gray-500 py-4">
-                                        No results found.
+                                    <td
+                                        colSpan="5"
+                                        className="text-center py-6 text-gray-500 italic"
+                                    >
+                                        No users found.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
-
                     </table>
-                    {/*  */}
-                    <div className="flex justify-center mt-4 space-x-2">
-                        {links?.map((link, index) => (
-                            <button
-                                key={index}
-                                disabled={!link.url}
-                                onClick={() => link.url && (window.location.href = link.url)}
-                                className={`px-3 py-1 rounded ${link.active ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
-                                    }`}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
-                        ))}
-                    </div>
-
                 </div>
-            </div>
+
+                {/* Pagination */}
+                <div className="flex justify-center mt-6 space-x-2">
+                    {links?.map((link, index) => (
+                        <button
+                            key={index}
+                            disabled={!link.url}
+                            onClick={() => link.url && (window.location.href = link.url)}
+                            className={`px-3 py-1 rounded-md text-sm font-medium ${link.active
+                                    ? "bg-indigo-600 text-white shadow"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                    ))}
+                </div>
+            </motion.div>
 
             {/* Create Modal */}
             <Modal show={showCreateModal} onClose={closeCreateModal}>

@@ -116,7 +116,7 @@ export default function OnboardingModal() {
                 className="space-y-3"
               >
                 <h2 className="text-2xl font-semibold text-gray-800">
-                  Choose your bed preferences
+                  Choose your preferences
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {preferenceOptions.map((pref) => {

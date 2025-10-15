@@ -55,6 +55,13 @@ export default function SellerLayout({ header, children }) {
             setNotificationsCount(res.data.count);
         });
     }, [user?.id]);
+    useEffect(() => {
+        const channel = window.Echo.join('online-sellers');
+
+        return () => {
+            window.Echo.leave('online-sellers');
+        };
+    }, []);
 
     return (
         <div className="min-h-screen">
@@ -208,15 +215,15 @@ export default function SellerLayout({ header, children }) {
                                     </Dropdown.Link>
                                     <Dropdown.Link className='relative' href={route('seller.payment-details.index')}>
                                         Payment Details
-                                            {warningVisible && (
-                                                <span className="absolute -top-1 left-4 -translate-x-1/2 px-0.5 text-[7px] font-semibold rounded-full bg-yellow-500 text-black">
-                                                    <AlertCircle className="h-3 w-3" />
-                                                </span>
-                                            )}
+                                        {warningVisible && (
+                                            <span className="absolute -top-1 left-4 -translate-x-1/2 px-0.5 text-[7px] font-semibold rounded-full bg-yellow-500 text-black">
+                                                <AlertCircle className="h-3 w-3" />
+                                            </span>
+                                        )}
                                     </Dropdown.Link>
-                                    <Dropdown.Link  className='relative' href={route('seller.subscription.landing')}>
+                                    <Dropdown.Link className='relative' href={route('seller.subscription.landing')}>
                                         Subscription
-                                      
+
                                     </Dropdown.Link>
                                     <Dropdown.Link
                                         href={route('seller.logout.post')}

@@ -25,3 +25,11 @@ Broadcast::channel('admin-new-seller-upgrade-subscription.{adminId}', function (
 Broadcast::channel('admin-subscription-expired.{adminId}', function ($admin, $adminId) {
     return Auth::guard('admin')->check() && (int) $admin->id === (int) $adminId;
 }, ['guards' => ['web', 'admin']]);
+
+Broadcast::channel('online-users', function ($user){
+    return ['id' => $user->id, 'name' => $user->name];
+}, ['guards' => ['web', 'admin']]);
+Broadcast::channel('online-sellers', function ($seller){
+    return ['id' => $seller->id, 'name' => $seller->name];
+}, ['guards' => ['seller', 'admin']]);
+

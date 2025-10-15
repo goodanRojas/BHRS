@@ -6,10 +6,8 @@ import Modal from "@/Components/Modal";
 import ph from '@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json';
 import { faPlus, faEdit, faPhone, faEnvelope, faAddressCard } from "@fortawesome/free-solid-svg-icons";
 import CreateBuildingModal from "./CreateBuildingModal";
-import MultiStepForm from "@/Components/MultiStepForm";
 import InputField from "@/Components/InputField";
-import InputLabel from "@/Components/InputLabel";
-import InputError from "@/Components/InputError";
+import Breadcrumbs from "@/Components/Breadcrumbs";
 import FileInput from "@/Components/FileInput"; // <-- Make sure you have this
 
 
@@ -67,7 +65,12 @@ export default function Owner({ owner }) {
     return (
         <AuthenticatedLayout>
             <Head title={owner.name} />
-
+            <Breadcrumbs
+                links={[
+                    { label: 'Owners', url: '/admin/owners' },
+                    { label: `${owner.name}` },
+                ]}
+            />
             <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
                 {/* Owner Welcome */}
                 <section className="bg-white shadow rounded p-6 relative">

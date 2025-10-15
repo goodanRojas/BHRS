@@ -8,6 +8,7 @@ import {motion} from "framer-motion";
 import { Building2, DoorOpen, BedDouble, BookCheck } from "lucide-react";
 import AddBooking from "./AddBooking";
 import UserInfo from "./UserInfo";
+import Breadcrumbs from "@/Components/Breadcrumbs";
 
 export default function User({ user }) {
     const admin = usePage().props.auth.user;
@@ -55,6 +56,12 @@ export default function User({ user }) {
     return (
         <AuthenticatedLayout>
             <Head title={user.name} />
+            <Breadcrumbs 
+                links={[
+                    { label: 'Users', url: '/admin/users' },
+                    { label: `${user.name}` },
+                ]}
+            />
             <div className="max-w-2xl mx-auto space-y-6 p-6">
                 <UserInfo user={user} />
 

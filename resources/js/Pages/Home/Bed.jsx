@@ -43,32 +43,13 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
         }
         window.location.href = `/bed/book/${bedId}`;
     };
-    const handleNext = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1 === bed.images.length ? 0 : prevIndex + 1));
-    };
-
-    const handlePrev = () => {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 < 0 ? bed.images.length - 1 : prevIndex - 1));
-    };
-
-    const handleImageClick = (index) => {
-        setCurrentIndex(index);
-    };
-
-    const chatWithSeller = (sellerId, bedId) => {
-        // Navigate to DirectChat page with seller and bed info
-        window.location.href = `/chatbot/seller/${sellerId}/bed/${bedId}`;
-    };
-
-
-
 
 
     return (
         <>
             <Head title={`Bed in ${bed.name}`} />
             {flash?.error && <Toast message={flash.error} isType="error" isTrue={true} />}
-            <div className="p-6 space-y-6">
+            <div className="p-4 ">
                 {/* Breadcrumbs */}
                 <Breadcrumbs
                     links={[
@@ -78,7 +59,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                     ]}
                 />
 
-                <div className="bg-white shadow-lg rounded-xl px-4 overflow-hidden">
+                <div className=" overflow-hidden">
 
                     {/* Top Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
@@ -97,6 +78,17 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                     alt={bed.name || "Bed"}
                                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                 />
+                                {/* 📦 Book Now – Bottom Right */}
+                                {bed.bookings.some(booking => booking.status === 'completed') ? (
+                                    null
+                                ) : (
+                                    <button
+                                        onClick={() => redirectToBook(bed.id)}
+                                        className="absolute bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
+                                    >
+                                        Book now!
+                                    </button>
+                                )}
 
                                 {/* ❤️ Favorite Icon – Top Left */}
                                 <div className="absolute top-3 left-3 group">
@@ -121,7 +113,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                             </div>
 
                             {/* Thumbnails */}
-                            <div className="flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                            <div className="w-full flex space-x-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                                 {images &&
                                     images.length > 0 &&
                                     images.map((image, index) => (
@@ -142,16 +134,12 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
                         {/* Right Section: Info */}
                         <div className=" relative flex flex-col items-center md:items-start gap-5">
-                            {/* Building Name */}
-                            <div className="w-full bg-white rounded-2xl shadow-md p-5">
-                                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
-                                    {bed.name}
-                                </h2>
-                            </div>
 
                             {/* Details */}
                             <div className="w-full bg-white rounded-2xl shadow-md p-5 space-y-4">
-
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-800  md:text-left">
+                                    {bed.name}
+                                </h2>
                                 {/* Stats */}
                                 <div className="flex flex-wrap gap-6 text-sm text-gray-700">
                                     <div className="flex items-center gap-2">
@@ -179,7 +167,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
 
 
                                 {/* Features */}
-                                {bed.features && bed.features.length > 0 && (
+                                {bed.features && bed.features.length > 0 ? (
                                     <div>
                                         <h2 className='text-md sm:text-lg font-semibold mb-2'>Features</h2>
                                         <div className="flex flex-wrap gap-2">
@@ -193,24 +181,18 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                             ))}
                                         </div>
                                     </div>
+                                ) : (
+                                    <p className="text-gray-500 text-sm">- No features available.</p>
                                 )}
 
                                 {/* Description */}
-                                {bed.description && (
+                                {bed.description ? (
                                     <pre className="mt-4 text-sm text-gray-500">{bed.description}</pre>
+                                ) : (
+                                    <p className="text-gray-500 text-sm">- No description available.</p>
                                 )}
                             </div>
-                            {/* 📦 Book Now – Bottom Right */}
-                            {bed.bookings.some(booking => booking.status === 'completed') ? (
-                                null
-                            ) : (
-                                <button
-                                    onClick={() => redirectToBook(bed.id)}
-                                    className="absolute bottom-10 right-5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-2 px-4 rounded-md shadow-sm transition"
-                                >
-                                    Book now!
-                                </button>
-                            )}
+
 
 
 

@@ -8,7 +8,7 @@ import { FavoriteContext } from '@/Contexts/FavoriteContext';
 
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, createContext } from 'react';
-import { faHeart, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faHome, faUser, faStore, faRightFromBracket, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
@@ -60,6 +60,14 @@ export default function AuthenticatedLayout({ header, children }) {
 
     }, [user?.id]);
 
+    useEffect(() => {
+        const channel = window.Echo.join('online-users');
+
+        return () => {
+            window.Echo.leave('online-users');
+        };
+    }, []);
+
     const updateFavoritesCount = (newCount) => {
         setFavoritesCount(newCount);
     };
@@ -71,7 +79,7 @@ export default function AuthenticatedLayout({ header, children }) {
             <div className="min-h-screen ">
 
                 <div
-                    className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
+                    className="fixed -z-10 offset-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
                 >
 
 
@@ -211,33 +219,95 @@ export default function AuthenticatedLayout({ header, children }) {
 
                     {/* Mobile Dropdown Menu */}
                     {showingNavigationDropdown && (
-                        <div className="sm:hidden bg-gray-900 text-white px-4 pt-2 pb-4 space-y-2">
-                            <ResponsiveNavLink href={route("to.user.buildings")} active={route().current("to.user.buildings")}>
-                                Home
+                        <div className="sm:hidden bg-gray-900 text-white px-4 pt-3 pb-6 space-y-3">
+                            {/* Home */}
+                            <ResponsiveNavLink
+                                href={route("to.user.buildings")}
+                                active={route().current("to.user.buildings")}
+                                className="flex items-center gap-3 text-sm"
+                            >
+                                <FontAwesomeIcon icon={faHome} className="w-5 h-5 text-indigo-400" />
+                                <span>Home</span>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route("accommodations.index")}>
-                                Accommodations
+
+                            {/* Accommodations */}
+                            <ResponsiveNavLink
+                                href={route("accommodations.index")}
+                                className="flex items-center gap-3 text-sm"
+                            >
+                                <FontAwesomeIcon icon={faBed} className="w-5 h-5 text-indigo-400" />
+                                <span>Accommodations</span>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route("map.index")}>
-                                Map
+
+                            {/* Map */}
+                            <ResponsiveNavLink
+                                href={route("map.index")}
+                                className="flex items-center gap-3 text-sm"
+                            >
+                                <FontAwesomeIcon icon={faMapLocation} className="w-5 h-5 text-indigo-400" />
+                                <span>Map</span>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href="/messages">
-                                Messages {messagesCount > 0 && <span className="ml-2 bg-red-500 px-2 py-0.5 rounded-full text-xs">{messagesCount}</span>}
+
+                            {/* Messages */}
+                            <ResponsiveNavLink href="/messages" className="flex items-center gap-3 text-sm">
+                                <div className="relative">
+                                    <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 text-indigo-400" />
+                                    {messagesCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-2 h-4 w-4 flex items-center justify-center text-[10px] bg-red-500 rounded-full font-bold">
+                                            {messagesCount > 9 ? "+9" : messagesCount}
+                                        </span>
+                                    )}
+                                </div>
+                                <span>Messages</span>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href="/favorites">
-                                Favorites {favoritesCount > 0 && <span className="ml-2 bg-red-500 px-2 py-0.5 rounded-full text-xs">{favoritesCount}</span>}
+
+                            {/* Favorites */}
+                            <ResponsiveNavLink href="/favorites" className="flex items-center gap-3 text-sm">
+                                <div className="relative">
+                                    <FontAwesomeIcon icon={faHeart} className="w-5 h-5 text-indigo-400" />
+                                    {favoritesCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-2 h-4 w-4 flex items-center justify-center text-[10px] bg-red-500 rounded-full font-bold">
+                                            {favoritesCount > 9 ? "+9" : favoritesCount}
+                                        </span>
+                                    )}
+                                </div>
+                                <span>Favorites</span>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink as="button" onClick={() => setNotificationsModal(true)}>
-                                Notifications {notificationsCount > 0 && <span className="ml-2 bg-red-500 px-2 py-0.5 rounded-full text-xs">{notificationsCount > 9 ? "+9" : notificationsCount}</span>}
+                            <ResponsiveNavLink href={route('notifications.index')} className="flex items-center gap-3 text-sm">
+                                <div className="relative">
+                                    <FontAwesomeIcon icon={faBell} className="w-5 h-5 text-indigo-400" />
+                                    {notificationsCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-2 h-4 w-4 flex items-center justify-center text-[10px] bg-red-500 rounded-full font-bold">
+                                            {notificationsCount > 9 ? "+9" : notificationsCount}
+                                        </span>
+                                    )}
+                                </div>
+                                <span>Notifications</span>
                             </ResponsiveNavLink>
-                            <div className="border-t border-gray-700 pt-2">
-                                <ResponsiveNavLink href={route("profile.edit")}>Profile</ResponsiveNavLink>
-                                <ResponsiveNavLink method="post" href={route("logout")} as="button">
-                                    Log Out
-                                </ResponsiveNavLink>
-                            </div>
+
+
+
+                            {/* Divider */}
+                            <div className="border-t border-gray-700 pt-3 mt-2"></div>
+
+                            {/* User Section */}
+                            <ResponsiveNavLink href={route("profile.edit")} className="flex items-center gap-3 text-sm">
+                                <FontAwesomeIcon icon={faUser} className="w-5 h-5 text-indigo-400" />
+                                <span>Profile</span>
+                            </ResponsiveNavLink>
+
+                            <ResponsiveNavLink href={route("seller.register.index")} className="flex items-center gap-3 text-sm">
+                                <FontAwesomeIcon icon={faStore} className="w-5 h-5 text-indigo-400" />
+                                <span>Apply as Owner</span>
+                            </ResponsiveNavLink>
+
+                            <ResponsiveNavLink method="post" href={route("logout")} as="button" className="flex items-center gap-3 text-sm">
+                                <FontAwesomeIcon icon={faRightFromBracket} className="w-5 h-5 text-indigo-400" />
+                                <span>Log Out</span>
+                            </ResponsiveNavLink>
                         </div>
                     )}
+
                 </nav>
 
                 {header && (

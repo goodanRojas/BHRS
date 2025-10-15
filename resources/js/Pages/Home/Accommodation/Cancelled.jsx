@@ -51,29 +51,10 @@ export default function Canceled({ bookings }) {
                                             {/* Bed */}
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={
-                                                            bed?.image
-                                                                ? `/storage/${bed.image}`
-                                                                : "https://via.placeholder.com/80x60?text=No+Image"
-                                                        }
-                                                        alt={bed?.name || "Bed"}
-                                                        className="w-16 h-12 rounded-lg object-cover shadow-sm"
-                                                    />
                                                     <div>
                                                         <p className="font-semibold text-gray-800">
                                                             {bed?.name ?? "N/A"}
                                                         </p>
-                                                        {bed?.ratings ? (
-                                                            <p className="text-xs text-gray-500">
-                                                                ⭐ {bed.ratings} (
-                                                                {bed.people_rated ?? 0} reviews)
-                                                            </p>
-                                                        ) : (
-                                                            <p className="text-xs text-gray-400 italic">
-                                                                No ratings yet
-                                                            </p>
-                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -81,15 +62,7 @@ export default function Canceled({ bookings }) {
                                             {/* Room */}
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={
-                                                            room?.image
-                                                                ? `/storage/${room.image}`
-                                                                : "https://via.placeholder.com/80x60?text=No+Image"
-                                                        }
-                                                        alt={room?.name || "Room"}
-                                                        className="w-16 h-12 rounded-lg object-cover shadow-sm"
-                                                    />
+
                                                     <span className="font-medium text-gray-700">
                                                         {room?.name ?? "N/A"}
                                                     </span>
@@ -99,15 +72,7 @@ export default function Canceled({ bookings }) {
                                             {/* Building */}
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={
-                                                            building?.image
-                                                                ? `/storage/${building.image}`
-                                                                : "https://via.placeholder.com/80x60?text=No+Image"
-                                                        }
-                                                        alt={building?.name || "Building"}
-                                                        className="w-16 h-12 rounded-lg object-cover shadow-sm"
-                                                    />
+                                                  
                                                     <span className="font-medium text-gray-700">
                                                         {building?.name ?? "N/A"}
                                                     </span>
@@ -117,15 +82,7 @@ export default function Canceled({ bookings }) {
                                             {/* Owner */}
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={
-                                                            seller?.avatar
-                                                                ? `/storage/${seller.avatar}`
-                                                                : "https://via.placeholder.com/40?text=User"
-                                                        }
-                                                        alt={seller?.name || "Owner"}
-                                                        className="w-10 h-10 rounded-full object-cover shadow-sm"
-                                                    />
+                                                  
                                                     <div>
                                                         <p className="font-semibold text-gray-800">
                                                             {seller?.name ?? "N/A"}
