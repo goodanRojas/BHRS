@@ -222,13 +222,17 @@ export default function User({ user }) {
                                     legend={'Previous Bookings'}
                                     data={prevBookings.map((b) => ({
                                         start_date: dayjs(b.start_date).format("MMMM D, YYYY"),
+                                        month_count: b.month_count,
                                         end_date: dayjs(b.start_date).add(b.month_count, 'month').format("MMMM D, YYYY"),
+                                        status: b.status.charAt(0).toUpperCase() + b.status.slice(1),
                                         rating: b.ratings_avg_stars || "-",
                                         comment: b.comments?.map(c => c.body).join(', ') || "-"
                                     }))}
                                     columns={[
                                         { key: 'start_date', label: 'Start Date' },
+                                        { key: 'month_count', label: 'Month Count' },
                                         { key: 'end_date', label: 'End Date' },
+                                        { key: 'status', label: 'Status' },
                                         { key: 'rating', label: 'Rating' },
                                         { key: 'comment', label: 'Comment' },
                                     ]}
@@ -239,7 +243,9 @@ export default function User({ user }) {
 
                         {/* Function for creating a booking, rating and comment for previous user. */}
 
-                        {/* <AddBooking bedId={selectedBed} userId={user.id} /> */}
+                        <AddBooking bedId={selectedBed} userId={user.id} onBookingAdded={(newBooking) => {
+                            setPrevBookings([newBooking, ...prevBookings]);
+                        }} />
                     </div>
                 )}
             </div>

@@ -91,9 +91,10 @@ class UserController extends Controller
         $bookings = Booking::with('comments')
             ->withAvg('ratings', 'stars')
             ->where('user_id', $userId)
-            ->where('status', 'ended')
+            // ->where('status', 'ended')
             ->where('bookable_type', Bed::class)
             ->where('bookable_id', $bedId)
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json($bookings);
@@ -101,15 +102,16 @@ class UserController extends Controller
 
     public function addBooking(Request $request)
     {
-        $validated  = $request->validate([
+        Log::info($request->all());
+        $validated = $request->validate([
             'userId' => 'required|integer|exists:users,id',
             'bedId' => 'required|integer|exists:beds,id',
-            'startDate' => 'required|date|after_or_equal:today',
+            'startDate' => 'required|date|', //after_or_equal:today
             'monthCount' => 'required|integer|min:1',
-            'address.region' => 'required|string|max:255',
-            'address.province' => 'required|string|max:255',
-            'address.municipality' => 'required|string|max:255',
-            'address.barangay' => 'required|string|max:255',
+            //     'address.region' => 'required|string|max:255',
+            //     'address.province' => 'required|string|max:255',
+            //     'address.municipality' => 'required|string|max:255',
+            //     'address.barangay' => 'required|string|max:255',
         ]);
 
         $booking = Booking::create([
@@ -120,11 +122,14 @@ class UserController extends Controller
             'month_count' => $validated['monthCount'],
             'total_price' => 0,
             'special_request' => false,
-            'agreed_to_terms' => false,
-            'status' => 'ended',
+            'agreed_to_terms' => true,
+            'status' => 'completed',
             'payment_method' => 'cash',
         ]);
 
-        return back()->with('success', 'Booking added successfully');
+        return response()->json([
+            'success' => true,
+            'booking' => $booking,
+        ]);
     }
 }

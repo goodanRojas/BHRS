@@ -1,3 +1,4 @@
+import { useState } from "react";
 import PrimaryButton from "@/Components/PrimaryButton";
 import ph from "@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json";
 import { useForm } from "@inertiajs/react";
@@ -5,7 +6,9 @@ import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { router } from "@inertiajs/react";
 import { Calendar, Hash, MapPin, Map, Building2, Home } from "lucide-react";
-export default function AddBooking({ bedId, userId }) {
+import axios from "axios";
+import Toast from "@/Components/Toast";
+export default function AddBooking({ bedId, userId, onBookingAdded }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
         address: {
@@ -19,6 +22,7 @@ export default function AddBooking({ bedId, userId }) {
         bedId: bedId,
         userId: userId,
     });
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     const regions = Object.entries(ph);
 
@@ -38,21 +42,30 @@ export default function AddBooking({ bedId, userId }) {
             .municipality_list[data.address.municipality].barangay_list
         : [];
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        post(route('admin.users.add.booking'), {
-            onSuccess: () => {
-                router.reload({ only: ["bookings"] });
+
+        try {
+            const response = await axios.post(route("admin.users.add.booking"), data);
+            if (onBookingAdded) onBookingAdded(response.data.booking);
+            if (response.data.success) {
+                setToast({ show: true, message: 'Booking added successfully!', type: 'success' });
+                reset();
             }
-        });
-    };
+        }
+        catch (error) {
+            console.error("Error adding booking:", error);
+        }
+    }
     return (
+
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-2xl mx-auto"
         >
+            <Toast message={toast.message} isTrue={toast.show} isType={toast.type} />
             {/* Title */}
             <motion.h1
                 initial={{ opacity: 0, y: -20 }}
@@ -107,7 +120,7 @@ export default function AddBooking({ bedId, userId }) {
                 </motion.div>
 
                 {/* User Address */}
-                <motion.div
+                {/*  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.5 }}
@@ -118,7 +131,6 @@ export default function AddBooking({ bedId, userId }) {
                         User Address
                     </h2>
 
-                    {/* Region */}
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                             <Map className="w-4 h-4 text-indigo-500" />
@@ -146,7 +158,6 @@ export default function AddBooking({ bedId, userId }) {
                         </select>
                     </div>
 
-                    {/* Province */}
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                             <Building2 className="w-4 h-4 text-indigo-500" />
@@ -173,7 +184,6 @@ export default function AddBooking({ bedId, userId }) {
                         </select>
                     </div>
 
-                    {/* Municipality */}
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                             <MapPin className="w-4 h-4 text-indigo-500" />
@@ -199,7 +209,6 @@ export default function AddBooking({ bedId, userId }) {
                         </select>
                     </div>
 
-                    {/* Barangay */}
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                             <Home className="w-4 h-4 text-indigo-500" />
@@ -224,7 +233,7 @@ export default function AddBooking({ bedId, userId }) {
                         </select>
                     </div>
                 </motion.div>
-
+ */}
                 {/* Submit Button */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
