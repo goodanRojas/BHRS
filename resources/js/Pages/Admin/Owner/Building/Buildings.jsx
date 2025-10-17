@@ -1,11 +1,9 @@
 import AuthenticatedLayout from "../../AuthenticatedLayout";
 import { Head, useForm, usePage } from "@inertiajs/react";
-import { use, useState, useEffect } from "react";
-import Modal from "@/Components/Modal"; // Assuming you have a Modal component
+import { useState, useEffect } from "react";
 import Toast from "@/Components/Toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPencil, faCheck, faBan, faSearch, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "@inertiajs/inertia-react";
+import { Search, Building2, User, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
 export default function Buildings({ buildings }) {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -93,85 +91,125 @@ export default function Buildings({ buildings }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Building" />
+            <Head title="Buildings" />
             {flash.success && <Toast message={flash.success} />}
 
-            <div className="flex items-center justify-between overflow-hidden">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">Buildings</h1>
+            <div className="p-6 space-y-6 overflow-hidden">
+                {/* Header */}
+                <motion.div
+                    className="flex items-center justify-between"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <div className="flex items-center gap-2">
+                        <Building2 className="w-7 h-7 text-indigo-600" />
+                        <h1 className="text-3xl font-bold text-gray-800">Buildings</h1>
+                    </div>
 
-                <div className="flex items-center space-x-4">
                     {/* Search Bar */}
-                    <div className="relative mb-4">
-                        <FontAwesomeIcon
-                            icon={faSearch}
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
-                        />
+                    <div className="relative w-72">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Search..."
-                            className="pl-10 mr-10 pr-4 py-2 border border-indigo-300 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Search building..."
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                </motion.div>
 
-
-
-                </div>
-
-            </div>
-            {buildings.data.length > 0 ? (
-                <div>
-                    <table className="min-w-full table-auto border-collapse overflow-hidden">
-                        <thead>
-                            <tr className="bg-gray-500 text-white">
-                                <th className="px-6 py-2 text-center">Id</th>
-                                <th className="px-6 py-2 text-center">Image</th>
-                                <th className="px-6 py-2 text-center">Name</th>
-                                <th className="px-6 py-2 text-center">Owner</th>
-                            </tr>
-                        </thead>
-                        <tbody className="min-h-screen">
-                            {filteredBuildings.map((building) => (
-                                <tr
-                                    onClick={() =>    window.location.href = `/admin/owner/buildings/${building.id}`}
-                                    className="border cursor-pointer hover:bg-gray-50 transition-colors duration-200 group">
-                                    <td className="px-6 py-2 text-center">{building.id}</td>
-                                    <td className="px-6 py-2">
-                                        <img src={`/storage/${building.image}`} alt="building" className="w-16 h-16 rounded-md" />
-                                    </td>
-                                    <td className="px-6 py-2 text-center group-hover:font-bold">{building.name}</td>
-                                    <td className="px-6 py-2 text-center">{building.seller.name}</td>
-
-
-
+                {/* Table Section */}
+                {filteredBuildings.length > 0 ? (
+                    <motion.div
+                        className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.4 }}
+                    >
+                        <table className="min-w-full table-auto">
+                            <thead className="bg-indigo-600 text-white">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold">ID</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold">Image</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold">Owner</th>
                                 </tr>
-                            ))}
-                        </tbody>
+                            </thead>
 
-                    </table>
-                    <div className="flex justify-center mt-4 space-x-2 fixed bottom-2 left-1/2 right-0">
+                            <motion.tbody layout>
+                                {filteredBuildings.map((building, index) => (
+                                    <motion.tr
+                                        key={building.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        onClick={() =>
+                                            (window.location.href = `/admin/owner/buildings/${building.id}`)
+                                        }
+                                        className="group cursor-pointer hover:bg-indigo-50 transition duration-200 border-b"
+                                    >
+                                        <td className="px-6 py-3">{building.id}</td>
+                                        <td className="px-6 py-3">
+                                            <div className="flex items-center justify-center">
+                                                {building.image ? (
+                                                    <img
+                                                        src={`/storage/${building.image}`}
+                                                        alt="building"
+                                                        className="w-16 h-16 rounded-xl object-cover shadow-sm"
+                                                    />
+                                                ) : (
+                                                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-3 font-medium text-gray-800 group-hover:text-indigo-700">
+                                            {building.name}
+                                        </td>
+                                        <td className="px-6 py-3 flex items-center justify-center gap-2 text-gray-700">
+                                            <User className="w-4 h-4 text-indigo-500" />
+                                            {building.seller.name}
+                                        </td>
+                                    </motion.tr>
+                                ))}
+                            </motion.tbody>
+                        </table>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        className="flex flex-col items-center justify-center py-20 text-gray-500"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <AlertCircle className="w-10 h-10 text-gray-400 mb-2" />
+                        <p className="text-lg font-medium">No results found.</p>
+                    </motion.div>
+                )}
+
+                {/* Pagination */}
+                {filteredBuildings.length > 0 && (
+                    <motion.div
+                        className="flex justify-center mt-6 space-x-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                    >
                         {links?.map((link, index) => (
                             <button
                                 key={index}
                                 disabled={!link.url}
                                 onClick={() => link.url && (window.location.href = link.url)}
-                                className={`px-3 py-1 rounded ${link.active ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
+                                className={`px-3 py-1 rounded-full text-sm font-medium transition ${link.active
+                                        ? "bg-indigo-600 text-white shadow"
+                                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                                     }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}
-                    </div>
-                </div>
-            ) : (
-                <div className="flex justify-center mt-4 space-x-2">
-                    <div className="text-center text-gray-500 py-4">
-                        No results found.
-                    </div>
-                </div>
-            )}
-
-
-
+                    </motion.div>
+                )}
+            </div>
         </AuthenticatedLayout>
     );
 }

@@ -39,24 +39,27 @@ export default function AuthenticatedLayout({ children }) {
         sessionStorage.setItem("sidebarState", JSON.stringify({ isOpen: isSidebarOpen }));
     }, [isSidebarOpen]);
     return (
-        <div className="flex min-h-screen w-full ">
+        <div className="flex min-h-screen w-full overflow-hidden">
             <PopupNotif notification={notifVisible} onClose={() => setNotifVisible(null)} />
 
-            <div
-                className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"
-            >
+            {/* Background */}
+            <div className="fixed -z-10 top-0 left-0 w-screen h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300"></div>
 
-            </div>
             {/* Sidebar */}
-            <Sidebar className={"flex-shrink-0"} isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+            <Sidebar
+                className="flex-shrink-0"
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
 
             {/* Main Content */}
-            <div className={`${isSidebarOpen ? "ml-64" : "ml-16"} flex-grow flex flex-col`}>
+            <div
+                className={`flex-grow flex flex-col transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-16"
+                    } overflow-x-hidden`}
+            >
                 {/* Top Navbar */}
-                <header className="flex items-center justify-between  bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md px-6 h-10">
-
+                <header className="flex items-center justify-between bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md px-6 h-10">
                     <div className="flex items-center z-50 space-x-4">
-
                         {/* Notifications Dropdown */}
                         <div className="relative group">
                             {notificationsCount > 0 && (
@@ -66,25 +69,23 @@ export default function AuthenticatedLayout({ children }) {
                             )}
                             <button
                                 onClick={() => setNotificationsModal(!notificationsModal)}
-                                className="p-2 flex items-center justify-center w-10 h-10">
-
+                                className="p-2 flex items-center justify-center w-10 h-10"
+                            >
                                 <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white" />
                             </button>
                             {notificationsModal && <AdminNotifModal />}
                         </div>
-
                     </div>
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                     <main className="flex-1 p-6 overflow-auto min-w-0">
                         {children}
                     </main>
                 </div>
 
-                <Footer className="" />
-                {/* Footer */}
+                <Footer />
             </div>
         </div>
     );

@@ -61,7 +61,7 @@ export default function AddBooking({ bedId, userId }) {
                 className="text-2xl font-bold text-gray-800 flex items-center gap-2"
             >
                 <Calendar className="w-6 h-6 text-indigo-600" />
-                Add Booking
+                Add Previous Booking
             </motion.h1>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
@@ -81,7 +81,7 @@ export default function AddBooking({ bedId, userId }) {
                         className="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         name="startDate"
                         value={data.startDate}
-                        min={dayjs().format("YYYY-MM-DD")}
+                        // min={dayjs().format("YYYY-MM-DD")}
                         onChange={(e) => setData("startDate", e.target.value)}
                     />
                 </motion.div>

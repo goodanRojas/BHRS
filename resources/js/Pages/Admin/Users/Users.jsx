@@ -172,7 +172,6 @@ export default function Users({ users }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="p-6 md:p-8"
             >
                 {/* Header */}
                 <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">

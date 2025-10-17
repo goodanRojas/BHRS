@@ -14,7 +14,7 @@ class FeedbackController extends Controller
     {
         $booking = Booking::with(['bookable.room.building.seller', 'bookable.images'])->find($booking);
         $rating = Rating::where('booking_id', $booking->id)->first();
-        $comments = Comment::where('user_id', auth()->user()->id)->get();
+        $comments = Comment::where('booking_id', auth()->user()->id)->get();
         return Inertia::render('Home/Accommodation/History', [
             'booking' => $booking,
             'rating' => $rating,
@@ -37,6 +37,7 @@ class FeedbackController extends Controller
             ['user_id' => auth()->id()],
             ['stars' => $request->stars]
         );
+        $booking->update(['is_rated' => true,]);
         return response()->json(['message' => 'Rating submitted.']);
     }
 

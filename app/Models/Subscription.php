@@ -19,6 +19,7 @@ class Subscription extends Model
         'admin_receipt_path',
         'admin_ref_num',
         'admin_remarks',
+        'warned'
     ];
 
     protected $casts = [

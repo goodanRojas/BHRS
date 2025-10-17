@@ -21,6 +21,9 @@ class Booking extends Model
         'special_request',
         'agreed_to_terms',
         'warned',
+        'is_rated',
+        'last_rating_reminder_at',
+        'rating_reminder_count',
         'status',
         'payment_method',
     ];
