@@ -239,7 +239,7 @@ export default function User({ user }) {
 
                         {/* Function for creating a booking, rating and comment for previous user. */}
 
-                        <AddBooking bedId={selectedBed} userId={user.id} />
+                        {/* <AddBooking bedId={selectedBed} userId={user.id} /> */}
                     </div>
                 )}
             </div>
