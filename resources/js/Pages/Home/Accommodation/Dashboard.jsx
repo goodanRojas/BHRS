@@ -243,12 +243,12 @@ export default function Dashboard({ booking }) {
                         </div>
 
                         <div className="flex w-full flex-wrap justify-end gap-2">
-                                <Link
-                                    href={route('messages.owner', {owner: booking.bookable.room.building.seller_id})}
-                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition text-sm"
-                                >
-                                    Contact
-                                </Link>
+                            <Link
+                                href={route('messages.owner', { owner: booking.bookable.room.building.seller_id })}
+                                className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition text-sm"
+                            >
+                                Contact
+                            </Link>
                             {bookingStatus !== 'completed' && bookingStatus !== 'paid' && (
                                 <button
                                     onClick={() => setShowCancelModal(true)}
@@ -261,7 +261,7 @@ export default function Dashboard({ booking }) {
                     </div>
                 </div>
 
-                {booking.status === 'completed' && (
+                {booking.status === 'completed' && booking.receipt && (
                     <div className="bg-white rounded-2xl shadow-md p-6 space-y-6">
                         {/* Payment Details */}
                         <h4 className="text-lg md:text-xl font-bold text-gray-800 border-b pb-3">
@@ -273,12 +273,17 @@ export default function Dashboard({ booking }) {
                             <div className="space-y-3">
                                 <p className="text-sm text-gray-500">Payment Method</p>
                                 <p className="text-base font-semibold capitalize">
-                                    {booking.receipt.payment_method}
+                                    {booking.receipt?.payment_method || '-'}
                                 </p>
 
                                 <p className="text-sm text-gray-500">Amount Paid</p>
                                 <p className="text-lg font-bold text-green-600">
-                                    ₱{parseFloat(booking.receipt.amount).toLocaleString()}
+                                    {booking?.receipt?.amount ? (
+                                        <>₱{parseFloat(booking.receipt.amount).toLocaleString()}</>
+                                    ) : (
+                                        <span>-</span>
+                                    )}
+
                                 </p>
 
                                 <div className='flex items-center gap-4'>
