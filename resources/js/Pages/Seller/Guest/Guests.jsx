@@ -1,5 +1,5 @@
 import SellerLayout from "@/Layouts/SellerLayout";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,17 +13,23 @@ export default function BedGuests({ bookings }) {
   return (
     <SellerLayout>
       <Head title="Guests" />
+      <Link
+        href="/seller/guest/history"
+        className="inline-block m-4 px-4 py-2 text-blue-600 font-medium bg-white border border-blue-500 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 shadow-sm"
+      >
+        Histories
+      </Link>
 
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
-        {bookings.length === 0 ? (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-gray-500 text-center"
-          >
-            No bed bookings found.
-          </motion.p>
-        ) : (
+      {bookings.length === 0 ? (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-gray-500 text-center"
+        >
+          No bed bookings found.
+        </motion.p>
+      ) : (
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
           <div className="overflow-x-auto">
             <motion.table
               initial={{ opacity: 0 }}
@@ -139,8 +145,8 @@ export default function BedGuests({ bookings }) {
               </tbody>
             </motion.table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </SellerLayout>
   );
 }

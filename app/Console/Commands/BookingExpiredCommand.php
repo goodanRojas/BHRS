@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Notifications\User\BookingExpiredNotify;
 use App\Events\User\Booking\BookingEndedEvent;
 use App\Events\Owner\BookingEndedEventOwner;
+use App\Notifications\Seller\SellerBookingExpiredNotif;
 use Illuminate\Support\Facades\Log;
 class BookingExpiredCommand extends Command
 {
@@ -37,8 +38,8 @@ class BookingExpiredCommand extends Command
             if ($end->isPast()) {
                 Log::info('Booking expired: ' . $booking->id);
                 $booking->update(['status' => 'ended']);
-                $booking->bookable->room->building->seller->notify(new BookingExpiredNotify($booking)); // Notify Seller
                 $booking->user->notify(new BookingExpiredNotify($booking));
+                $booking->bookable->room->building->seller->notify(new SellerBookingExpiredNotif($booking)); // Notify Seller
                 event(new BookingEndedEvent($booking)); // Broadcast to User
                 event(new BookingEndedEventOwner($booking)); // Broadcast to Owner
                 
