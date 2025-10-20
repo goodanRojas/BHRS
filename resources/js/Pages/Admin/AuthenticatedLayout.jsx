@@ -55,11 +55,11 @@ export default function AuthenticatedLayout({ children }) {
             {/* Main Content */}
             <div
                 className={`flex-grow flex flex-col transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-16"
-                    } overflow-x-hidden`}
+                    } `} // overflow-x-hidden
             >
                 {/* Top Navbar */}
                 <header className="flex items-center justify-between bg-blue-900 bg-opacity-80 backdrop-blur-md shadow-md px-6 h-10">
-                    <div className="flex items-center z-50 space-x-4">
+                    <div className="flex items-center z-[9999] space-x-4">
                         {/* Notifications Dropdown */}
                         <div className="relative group">
                             {notificationsCount > 0 && (

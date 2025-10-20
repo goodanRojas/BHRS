@@ -3,12 +3,12 @@ import Breadcrumbs from '@/Components/Breadcrumbs';
 import { Head, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserTie, faStar, faBed, faMapMarkerAlt, faEye, faInfoCircle, faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faUserTie, faStar, faBed, faMapMarkerAlt, faEye, faInfoCircle, faMessage } from '@fortawesome/free-solid-svg-icons';
 
 export default function Building({ building, totalCompletedBookings, ratingCount, avgRating }) {
     const [showRules, setShowRules] = useState(true);
     const [images, setImages] = useState(building.images);
-    const [currentIndex, setCurrentIndex] = useState(-1);   
+    const [currentIndex, setCurrentIndex] = useState(-1);
 
     return (
         <AuthenticatedLayout>
@@ -165,10 +165,10 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                         className="text-lg sm:text-xl font-semibold text-gray-800 cursor-pointer flex items-center gap-2"
                         onClick={() => setShowRules(!showRules)}
                     >
-                        <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600" /> Rules & Regulations
+                        <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600" /> Rules & Regulations <FontAwesomeIcon icon={faChevronDown} className="text-gray-500 h-4 w-4" />
                     </h2>
 
-                    {showRules && (
+                    {!showRules && (
                         <div className="mt-4 space-y-3">
                             {building.rules_and_regulations && building.rules_and_regulations.length > 0 ? (
                                 building.rules_and_regulations.map((rule) => (

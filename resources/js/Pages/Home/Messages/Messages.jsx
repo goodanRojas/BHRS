@@ -248,18 +248,21 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
     return (
         <UserMessageLayout>
             <Head title="Messages" />
-            <div className="flex h-screen overflow-hidden">
+            <div className="flex h-[calc(100vh-4rem)]">
                 {/* Left column: User list with search */}
-                <div className="pt-[95px] w-1/4 sm:w-1/3 p-4 border-r border-gray-300 flex flex-col overflow-y-auto">
+                <div className="w-1/4 sm:w-1/3 p-4 border-r border-gray-300 flex flex-col overflow-y-auto">
                     {/* Search Bar */}
-                    <div className="mb-4 flex items-center border-b pb-2">
-                        <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
+                    <div className="relative mb-4 flex items-center">
+                        <FontAwesomeIcon
+                            icon={faSearch}
+                            className="absolute left-3 text-gray-500"
+                        />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => searchUsers(e.target.value)}
                             placeholder="Search users"
-                            className="w-full p-2 border border-gray-300 rounded-full text-sm pl-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-2 border border-gray-300 rounded-full text-sm pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
@@ -297,7 +300,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
 
                     {/* Search Results (overlayed or below) */}
                     {searchQuery.length >= 2 && searchResults.length > 0 && (
-                        <div className="absolute left-[40px] top-[180px] w-[200px ] z-30 bg-white border border-gray-300 rounded-md shadow-lg max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                        <div className="absolute left-[40px] top-[120px] w-[200px ] z-30 bg-white border border-gray-300 rounded-md shadow-lg max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
 
                             <h3 className='p-2 text-sm font-medium'>Results</h3>
                             <hr />
@@ -334,11 +337,15 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
 
 
                 {/* Right column: Chat window */}
-                <div className="flex-1 flex flex-col pt-20">
+                <div className="flex-1 flex flex-col min-h-screen">
                     {!activeUser ? (
-                        <div className="text-center h-full flex items-center justify-center flex-col">
-                            <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>
-                            <p className="text-gray-500">Select a user from the list to begin the conversation.</p>
+                        <div className="min-h-screen flex flex-1 items-center justify-center flex-col text-center">
+                            <h3 className="text-xl font-semibold text-gray-700">
+                                Start chatting with someone!
+                            </h3>
+                            <p className="text-gray-500">
+                                Select a user from the list to begin the conversation.
+                            </p>
                         </div>
                     ) : (
                         <div className="h-[calc(100vh-4rem)] flex flex-col">

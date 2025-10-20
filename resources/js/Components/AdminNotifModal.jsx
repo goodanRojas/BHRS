@@ -44,7 +44,7 @@ const AdminNotifModal = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
-      className="absolute right-0 mt-2 w-80 bg-white shadow-xl rounded-2xl z-50 p-4 border border-gray-200"
+      className="absolute right-0 mt-2 w-80 bg-white shadow-xl rounded-2xl z-[9999] p-4 border border-gray-200"
     >
       <h3 className="text-gray-900 font-semibold mb-3 flex items-center gap-2">
         <Bell className="h-5 w-5 text-indigo-500" />

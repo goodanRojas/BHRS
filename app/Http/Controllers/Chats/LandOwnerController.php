@@ -72,7 +72,12 @@ class LandOwnerController extends Controller
     public function fetchOwnerConversation($selectedOwnerId)
     {
         $authUserId = auth()->id();
+        $owner = Seller::select('id', 'name', 'email', 'avatar', 'created_at')
+            ->find($selectedOwnerId);
 
+        if (!$owner) {
+            return response()->json(['message' => 'Owner not found'], 404);
+        }
         $messages = Message::with(['sender', 'receiver'])
             ->where(function ($query) use ($authUserId, $selectedOwnerId) {
                 $query->where(function ($q) use ($authUserId, $selectedOwnerId) {
@@ -92,7 +97,10 @@ class LandOwnerController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return response()->json(['messages' => $messages]);
+        return response()->json([
+            'owner' => $owner,
+            'messages' => $messages
+        ]);
     }
 
 

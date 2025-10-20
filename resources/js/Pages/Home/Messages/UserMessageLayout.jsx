@@ -37,8 +37,8 @@ export default function UseMessageLayout({ children }) {
     ];
 
     return (
-        <div className="flex flex-col h-screen bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
-            <div className="flex bg-gray-900 items-center justify-around shadow-lg mb-5 p-2 ">
+        <div className="flex flex-col  bg-gradient-to-br from-gray-100 via-blue-200 to-gray-300 overflow-hidden ">
+            <div className="flex bg-gray-900 items-center justify-around shadow-lg p-2 ">
                 <Link href={previousUrl}>
                     <ApplicationLogo className="h-10 w-auto" relative={true} />
                 </Link>
@@ -61,7 +61,7 @@ export default function UseMessageLayout({ children }) {
             </div>
 
             {/* Chat Window */}
-            <div className='flex-1 overflow-hidden'>
+            <div className='flex-1 overflow-x-hidden'>
                 {children}
             </div>
         </div>

@@ -37,30 +37,32 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
         sessionStorage.setItem('selectedOwner', JSON.stringify(owner));
     };
     useEffect(() => {
-        const saved = sessionStorage.getItem('selectedOwner');
-        if (saved) {
-            try {
-                const parsedOwner = JSON.parse(saved);
-                setActiveOwner(parsedOwner);
-                fetchMessages(parsedOwner.id);
-            } catch (e) {
-                console.error("Invalid JSON in sessionStorage:", e);
-                sessionStorage.removeItem('selectedOwner');
-            }
-        }
-    }, []);
+        if (!selectedOwnerId) return;
 
-    useEffect(() => {
-        if (selectedOwnerId) {
-            // Assume you have a way to fetch owner details
-            const owner = owners.find(o => o.id === parseInt(selectedOwnerId));
-            if (owner) {
-                setActiveOwner(owner);
-                selectedOwnerToSessionStorage(owner);
-                fetchMessages(owner.id);
-            }
+        const owner = owners.find(o => o.id === selectedOwnerId);
+
+        if (owner) {
+            // ✅ If found locally
+            setActiveOwner(owner);
+            selectedOwnerToSessionStorage(owner);
+            fetchMessages(owner.id);
+        } else {
+            // 🧩 If not found locally, fetch directly from backend
+            axios.get(`/owner-message/selected-owner/${selectedOwnerId}`)
+                .then(({ data }) => {
+                    if (data.owner) {
+                        setActiveOwner(data.owner);
+                        selectedOwnerToSessionStorage(data.owner);
+                    }
+                    if (data.messages) {
+                        setMessages(data.messages);
+                    }
+                })
+                .catch(err => console.error('Error fetching selected owner:', err));
         }
     }, [selectedOwnerId, owners]);
+
+
     // Extract users from both sent and received messages
     useEffect(() => {
         const allMessages = [...sentMessages, ...receivedMessages];
@@ -99,7 +101,7 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
         axios.get(`/owner-message/selected-owner/${ownerId}`)
             .then(({ data }) => {
                 setMessages(data.messages); // Store messages of the active user
-                console.log(data.messages);
+                // console.log(data.messages);
             }).catch((err) => console.error('Error loading messages:', err));
     };
 
@@ -269,9 +271,9 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
     return (
         <UserMessageLayout>
             <Head title="Messages" />
-            <div className="flex min-h-screen overflow-hidden">
+            <div className="flex h-[calc(100vh-4rem)]">
                 {/* Left column: User list with search */}
-                <div className="w-1/4 sm:w-1/3 p-4 pt-[95px] border-r border-gray-300">
+                <div className="w-1/4 sm:w-1/3 p-4  border-r border-gray-300">
                     {/* Search Bar */}
                     <div className="mb-4 flex items-center border-b pb-2">
                         <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
@@ -370,7 +372,7 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
 
                 {/* Right column: Chat window */}
 
-                <div className="flex-1 flex flex-col pt-20">
+                <div className="flex-1 flex flex-col ">
                     {!activeOwner ? (
                         <div className="text-center h-full flex items-center justify-center flex-col">
                             <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>
