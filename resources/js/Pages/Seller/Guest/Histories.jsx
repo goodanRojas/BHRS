@@ -12,7 +12,7 @@ import {
     ChevronLeft,
     ChevronRight,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Link } from "@inertiajs/react";
 import SellerLayout from "@/Layouts/SellerLayout";
 
