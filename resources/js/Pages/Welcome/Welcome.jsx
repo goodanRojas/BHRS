@@ -50,6 +50,14 @@ export default function Welcome({ auth }) {
                                 Register
                                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
+                            {/* About Us */}
+                            <Link
+                                href={route('about-us')}
+                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
+                            >
+                                About Us
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
+                            </Link>
                         </div>
                     </nav>
                 ) : (
