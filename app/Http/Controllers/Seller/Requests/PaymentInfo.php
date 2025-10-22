@@ -55,9 +55,14 @@ class PaymentInfo extends Controller
             $receipt->seller_receipt = $path;
         }
         $receipt->save();
+        
         $booking = $receipt->booking;
         $booking->status = 'completed';
         $booking->save();
+
+        $bed = $booking->bookable;
+        $bed->is_occupied = true;
+        $bed->save();
         event(new PaymentConfirmed($booking));
         $booking->user->notify(new BookingSetupCompleted($booking));
         // Afther the user has booked he/she is then added to the gc of this building
@@ -72,7 +77,7 @@ class PaymentInfo extends Controller
 
         //Notify the user after he/she is added to the group and broadcast an event
         $owner = auth()->guard('seller')->user();
-       $message = DefaultMessage::where('type', 'tenant_welcome')->first();
+        $message = DefaultMessage::where('type', 'tenant_welcome')->first();
 
         Message::create([
             'sender_id' => $owner->id,
@@ -80,7 +85,7 @@ class PaymentInfo extends Controller
             'receiver_id' => $booking->user_id,
             'receiver_type' => User::class,
             'content' => $message->message,
-        ]) ;
+        ]);
 
         return redirect()->route('seller.request.payments.index')
             ->with('success', 'Payment has been confirmed successfully.');

@@ -9,7 +9,6 @@ import Toast from '@/Components/Toast';
 import axios from 'axios';
 import { motion, AnimatePresence } from "framer-motion";
 export default function Bed({ bed }) {
-    console.log(bed)
     const { flash } = usePage().props;
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [showFeatureInput, setShowFeatureInput] = useState(false);
@@ -24,6 +23,8 @@ export default function Bed({ bed }) {
     const [features, setFeatures] = useState(bed.features);
     const [description, setDescription] = useState(bed.description || '');
     const [images, setImages] = useState(bed.images);
+    const [isOccupied, setIsOccupied] = useState(bed.is_occupied);
+    const [isOccupiedModalOpen, setIsOccupiedModalOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState({
         'message': '',
         'isTrue': false,
@@ -208,7 +209,7 @@ export default function Bed({ bed }) {
     const deleteBed = () => {
         router.delete(`/seller/bed/delete/${bed.id}`);
     };
-    const submitName =  async (name) => {
+    const submitName = async (name) => {
         try {
             const response = await axios.post(`/seller/bed/update-name/${bed.id}`, {
                 name,
@@ -220,13 +221,22 @@ export default function Bed({ bed }) {
         }
     };
 
-    const submitPrice =  async (price) => {
+    const submitPrice = async (price) => {
         try {
             const response = await axios.post(`/seller/bed/update-price/${bed.id}`, {
                 price,
             });
             setIsEditingPrice(false);
             setPrice(response.data.price);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    const handleToggleIsOccupied = async () => {
+        try {
+            const response = await axios.post(`/seller/bed/toggle-is-occupied/${bed.id}`);
+            setIsOccupied(response.data.is_occupied);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -273,6 +283,11 @@ export default function Bed({ bed }) {
                                         className="hidden"
                                     />
                                 </label>
+                                <button
+                                    onClick={() => setIsOccupiedModalOpen(true)}
+                                    className="absolute bottom-3 left-3  bg-black/50 text-white px-2 py-1 rounded-md cursor-pointer hover:bg-black/70 transition">
+                                    {isOccupied ? 'Occupied' : 'Available'}
+                                </button>
                             </>
                         ) : (
                             <div className="w-full h-56 md:h-72 flex items-center justify-center bg-gray-100 rounded-lg">
@@ -351,7 +366,7 @@ export default function Bed({ bed }) {
 
                 {/* Content Section */}
                 <div className="p-4 flex flex-col justify-between">
-                    
+
 
                     <div className="flex items-center gap-2 group">
                         {/* Edit Icon */}
@@ -383,9 +398,10 @@ export default function Bed({ bed }) {
                                         className="p-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-sm"
                                         placeholder="Enter name..."
                                     />
-                                 
+
                                     <motion.button
-                                        onClick={() =>{ setIsEditingName(false);
+                                        onClick={() => {
+                                            setIsEditingName(false);
                                             submitName(name);
                                         }}
                                         className="px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
@@ -438,9 +454,10 @@ export default function Bed({ bed }) {
                                         className="p-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-sm"
                                         placeholder="Enter price..."
                                     />
-                                 
+
                                     <motion.button
-                                        onClick={() =>{ setIsEditingPrice(false);
+                                        onClick={() => {
+                                            setIsEditingPrice(false);
                                             submitPrice(price);
                                         }}
                                         className="px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm text-sm"
@@ -464,7 +481,7 @@ export default function Bed({ bed }) {
                         </AnimatePresence>
                     </div>
 
-                 
+
                     {/* Features */}
                     <div >
                         <div className='flex items-center gap-2'>
@@ -614,7 +631,47 @@ export default function Bed({ bed }) {
                 </div>
             </div>
 
-
+            {/* Is Occupied Confirmation Modal */}
+            <Modal show={isOccupiedModalOpen} onClose={() => setIsOccupiedModalOpen(false)}>
+                <motion.div
+                    className="text-center p-6"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {/* Icon */}
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-yellow-100 text-yellow-600 p-3 rounded-full">
+                            <FontAwesomeIcon icon={faExclamationTriangle} className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-2">Is this bed {bed.is_occupied ? 'Occupied' : 'Available'}?</h2>
+                    <p className="text-sm text-gray-600 mb-1">Are you sure you want to mark this bed as {bed.is_occupied ? 'Available' : 'Occupied'}?</p>
+                    {/* Actions */}
+                    <div className="flex justify-center gap-3">
+                        <motion.button
+                            onClick={() => setIsOccupiedModalOpen(false)}
+                            className="px-5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            Cancel
+                        </motion.button>
+                        <motion.button
+                            onClick={() => {
+                                setIsOccupiedModalOpen(false);
+                                handleToggleIsOccupied();
+                            }}
+                            className="px-5 py-2 rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-red-700"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            Mark as {bed.is_occupied ? 'Available' : 'Occupied'}
+                        </motion.button>
+                    </div>
+                </motion.div>
+            </Modal>
             {/* Delete Bed Modal */}
             <Modal show={showDeleteBedModal} onClose={() => setShowDeleteBedModal(false)}>
                 <motion.div

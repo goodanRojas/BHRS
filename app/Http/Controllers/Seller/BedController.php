@@ -165,4 +165,13 @@ class BedController extends Controller
             'price' => $bed->price
         ]);
     }
+
+    public function toggleIsOccupied(Request $request, Bed $bed)
+    {
+        $bed->is_occupied = !$bed->is_occupied;
+        $bed->save();
+        return response()->json([
+            'is_occupied' => $bed->is_occupied
+        ]);
+    }
 }

@@ -11,6 +11,7 @@ class Bed extends Model
     use HasFactory;
     use SoftDeletes;
     protected $fillable = [
+        'is_occupied',
         'room_id',
         'name',
         'description',

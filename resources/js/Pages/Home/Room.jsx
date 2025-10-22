@@ -157,7 +157,7 @@ export default function Rooms({ room, totalCompletedBookings, ratingCount, avgRa
                                         {bed.name}
                                     </h4>
 
-                                    {bed.bookings.some(booking => booking.status === 'completed') ? (
+                                    { bed.is_occupied ? (
                                         <span className="px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white bg-gray-500 rounded-full shadow-sm">
                                             Occupied
                                         </span>

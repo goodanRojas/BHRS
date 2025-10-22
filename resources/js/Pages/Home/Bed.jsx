@@ -13,7 +13,6 @@ import Toast from '@/Components/Toast';
 import Breadcrumbs from '@/Components/Breadcrumbs';
 export default function Bed({ bed, completed_bookings, total_booking_duration, sibling_beds, able_to_book, is_booked, comments, average_rating, rating_count, ratings }) {
 
-    console.log(comments);
     const { flash } = usePage().props;
     const [isFavorite, setIsFavorite] = useState(bed.is_favorite); // Assume `is_favorite` is passed from the backend
     const [currentIndex, setCurrentIndex] = useState(-1);
@@ -40,7 +39,12 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
         if (able_to_book > 0) {
             setPreventBookingModal(true);
             return;
+        } else if(bed.is_occupied)
+        {
+            alert("This bed is already occupied. Please try again later.");
+            return;
         }
+        
         window.location.href = `/bed/book/${bedId}`;
     };
 
@@ -78,8 +82,13 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                     alt={bed.name || "Bed"}
                                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                 />
+                                {/* Bed status */}
+                                <div className="absolute bottom-4 left-4 bg-white/90 text-gray-700 text-xs font-medium px-3 py-1 rounded-full shadow-md">
+                                    {bed.is_occupied ? 'Occupied' : 'Available'}
+                                </div>
+
                                 {/* 📦 Book Now – Bottom Right */}
-                                {bed.bookings.some(booking => booking.status === 'completed') ? (
+                                {bed.is_occupied ? (
                                     null
                                 ) : (
                                     <button
@@ -109,7 +118,6 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                         </span>
                                     </div>
                                 </div>
-
                             </div>
 
                             {/* Thumbnails */}

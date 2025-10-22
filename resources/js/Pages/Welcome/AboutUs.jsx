@@ -63,7 +63,7 @@ export default function AboutUs() {
                             initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1, duration: 0.6 }}
-                            className="group relative w-72 bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-md hover:shadow-2xl hover:border-blue-200 transition-all duration-500 overflow-hidden"
+                            className="group relative w-60  bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-md hover:shadow-2xl hover:border-blue-200 transition-all duration-500 overflow-hidden"
                         >
                             {/* Image Section */}
                             <div className="relative overflow-hidden">
@@ -142,15 +142,15 @@ export default function AboutUs() {
                 >
                     <div className="flex flex-col items-center">
                         <Mail className="w-8 h-8 text-blue-600 mb-2" />
-                        <p className="font-medium">team@boardinghouse.ai</p>
+                        <p className="font-medium">admin@bhrs.shop</p>
                     </div>
                     <div className="flex flex-col items-center">
                         <Phone className="w-8 h-8 text-blue-600 mb-2" />
-                        <p className="font-medium">+63 912 345 6789</p>
+                        <p className="font-medium">+63 9505291990</p>
                     </div>
                     <div className="flex flex-col items-center">
                         <MapPin className="w-8 h-8 text-blue-600 mb-2" />
-                        <p className="font-medium">Cebu City, Philippines</p>
+                        <p className="font-medium">San Isidro, Tomas Oppus, Southern Leyte, Philippines</p>
                     </div>
                 </motion.div>
             </section>

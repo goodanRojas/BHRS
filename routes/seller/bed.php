@@ -22,5 +22,6 @@ Route::prefix('/seller')->name('seller.building.')->middleware(['seller'])->grou
 
     Route::post('/bed/update-name/{bed}', [BedController::class, 'updateName'])->name('update.name');
     Route::post('/bed/update-price/{bed}', [BedController::class, 'updatePrice'])->name('update.price');
+    Route::post('/bed/toggle-is-occupied/{bed}', [BedController::class, 'toggleIsOccupied'])->name('toggle.is.occupied');
 });
 
