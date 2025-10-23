@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use App\Events\Favorite\FavoriteToggled;
-
+use App\Models\{Bed};
 class FavoriteController extends Controller
 {
 
@@ -37,20 +37,14 @@ class FavoriteController extends Controller
         // Get the authenticated user
         $user = $request->user();
 
-        // Find the bed or room (favoritable item) by id
-        $favoritable = \App\Models\Bed::find($id) ?: \App\Models\Room::find($id);
-        Log::info($id);
-        if (!$favoritable) {
-            return response()->json(['message' => 'Item not found'], 404);
-        }
 
         // Check if the user already favorited this item
         $favorite = Favorite::where('user_id', $user->id)
-            ->where('favoritable_id', $favoritable->id)
-            ->where('favoritable_type', get_class($favoritable))
+            ->where('favoritable_id', $id)
+            ->where('favoritable_type', Bed::class)
             ->first();
         $favoriteCount = Favorite::where('user_id', $user->id)
-            ->where('favoritable_type', get_class($favoritable))
+            ->where('favoritable_type', Bed::class)
             ->count();
 
         if ($favorite) {
@@ -63,8 +57,8 @@ class FavoriteController extends Controller
             // If it doesn't exist, add it as a favorite
             Favorite::create([
                 'user_id' => $user->id,
-                'favoritable_id' => $favoritable->id,
-                'favoritable_type' => get_class($favoritable),
+                'favoritable_id' => $id,
+                'favoritable_type' => Bed::class,
             ]);
             return response()->json(['message' => 'Favorite updated']);
         }

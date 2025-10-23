@@ -3,7 +3,6 @@ export default function ApplicationLogo({ variant = 'white', relative = false, .
         variant === 'black'
             ? '/storage/system/logo/logo_black.svg'
             : '/storage/system/logo/logo_white.svg';
-console.log('Logo source:', logoSrc);
     return (
         <div className={relative ? 'relative' : 'absolute top-0 left-0'}>
             <img

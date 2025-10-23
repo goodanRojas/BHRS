@@ -143,7 +143,23 @@ class LandOwnerController extends Controller
             ->unique()
             ->values();
 
-        $owners = Seller::whereIn('id', $visibleOwnerIds)->get();
+        $owners = Seller::whereIn('id', $visibleOwnerIds)->get()
+            ->map(function ($owner) use ($authUserId) {
+                $lastMessage = Message::where(function ($query) use ($authUserId, $owner) {
+                    $query->where('sender_id', $authUserId)
+                        ->where('receiver_id', $owner->id)
+                        ->whereNull('sender_deleted_at');
+                })
+                    ->orWhere(function ($query) use ($authUserId, $owner) {
+                        $query->where('sender_id', $owner->id)
+                            ->where('receiver_id', $authUserId)
+                            ->whereNull('sender_deleted_at');
+                    })
+                    ->latest('created_at')
+                    ->first();
+                $owner->last_message = $lastMessage;
+                return $owner;
+            });
 
         return response()->json([
             'owners' => $owners

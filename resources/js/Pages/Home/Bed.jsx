@@ -18,18 +18,21 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
     const [currentIndex, setCurrentIndex] = useState(-1);
     const [preventBookingModal, setPreventBookingModal] = useState(false);
     const { updateFavoritesCount } = useFavorite();
-
     const images = bed.images;
 
     const toggleFavorite = async () => {
         try {
-            const response = await axios.post(`/beds/${bed.id}/favorite`, {
+            const response = await axios.post(`/favorite/bed/${bed.id}`, {
                 favorite: !isFavorite, // Toggle the current state
             });
 
             if (response.status === 200) {
+                if (isFavorite) {
+                    updateFavoritesCount(-1);
+                } else {
+                    updateFavoritesCount(1);
+                }
                 setIsFavorite(!isFavorite); // Update stfte after success
-                updateFavoritesCount(response.data.favorites_count);
             }
         } catch (error) {
             console.error("Error toggling favorite:", error);
@@ -39,12 +42,11 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
         if (able_to_book > 0) {
             setPreventBookingModal(true);
             return;
-        } else if(bed.is_occupied)
-        {
+        } else if (bed.is_occupied) {
             alert("This bed is already occupied. Please try again later.");
             return;
         }
-        
+
         window.location.href = `/bed/book/${bedId}`;
     };
 
@@ -57,6 +59,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                 {/* Breadcrumbs */}
                 <Breadcrumbs
                     links={[
+                        { label: 'Buildings', url: `/home/building/${bed.room.building_id}` },
                         { label: bed.room.building.name, url: `/home/building/${bed.room.building_id}` },
                         { label: bed.room.name, url: `/home/room/${bed.room.id}` },
                         { label: bed.name },
@@ -104,7 +107,7 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                                     <div className="relative">
                                         <FontAwesomeIcon
                                             icon={faHeart}
-                                            className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${bed.is_favorite
+                                            className={`h-6 w-6 cursor-pointer transition-transform duration-200 group-hover:scale-110 ${isFavorite
                                                 ? 'text-red-500 hover:text-red-600'
                                                 : 'text-red-100 hover:text-red-200 hover:border-red-500'
                                                 } drop-shadow-md`}
@@ -319,53 +322,49 @@ export default function Bed({ bed, completed_bookings, total_booking_duration, s
                         </h4>
 
                         {sibling_beds?.length > 0 ? (
-                            <div
-                                className="
-                flex gap-4 overflow-x-auto md:grid md:grid-cols-3 lg:grid-cols-4
-                scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent pb-2
-            "
-                            >
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                                 {sibling_beds.map((b) => (
-                                    <Link key={b.id} href={`/home/bed/${b.id}`}>
-                                        <div
-                                            className="
-                            min-w-[180px] max-w-[180px] md:min-w-0
-                            bg-white border rounded-lg shadow-sm p-3 flex-shrink-0
-                            hover:shadow-md hover:-translate-y-0.5 transition-all duration-200
-                        "
-                                        >
-                                            {/* Image */}
+                                    <Link key={b.id} href={`/home/bed/${b.id}`}
+                                        className="group rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border border-gray-200 overflow-hidden"
+                                    >
+                                        {/* Bed Image */}
+                                        <div className="relative">
                                             <img
-                                                src={b.image ? `/storage/${b.image}` : '/storage/bed/default_bed.svg'}
+                                                src={`/storage/${b.image ? b.image : "bed/default_bed.svg"}`}
                                                 alt={b.name}
-                                                className="w-full h-28 object-cover rounded-md mb-2"
+                                                className="w-full h-36 sm:h-44 object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
+                                            <span className="absolute top-3 left-3 bg-indigo-600 text-white text-[11px] sm:text-xs font-medium px-2.5 py-1 rounded-full shadow-md">
+                                                ₱{b.price}
+                                            </span>
+                                        </div>
 
-                                            {/* Title */}
-                                            <h5 className="text-sm font-semibold text-gray-800 truncate">
-                                                {b.name}
-                                            </h5>
+                                        {/* Bed Content */}
+                                        <div className="p-4 sm:p-5 bg-white">
+                                            {/* Header: Bed name + Status */}
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="text-sm sm:text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition">
+                                                    {b.name}
+                                                </h4>
 
-                                            {/* Rating */}
-                                            <div className="flex items-center gap-1 mb-1 text-xs text-yellow-500">
-                                                <span className="font-medium">
-                                                    {b.average_rating ? Number(b.average_rating).toFixed(1) : "0.0"}
-                                                </span>
-                                                <FontAwesomeIcon icon={faStar} className="w-3.5 h-3.5" />
+                                                {b.is_occupied ? (
+                                                    <span className="px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white bg-gray-500 rounded-full shadow-sm">
+                                                        Occupied
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white bg-green-500 rounded-full shadow-sm">
+                                                        Available
+                                                    </span>
+                                                )}
                                             </div>
 
-                                            {/* Price */}
-                                            <p className="text-xs text-gray-600">
-                                                Price:{' '}
-                                                <span className="font-semibold text-gray-900">
-                                                    ₱{b.price}
+                                            {/* Ratings */}
+                                            <div className="flex items-center space-x-1 mb-3">
+                                                <FontAwesomeIcon icon={faStar} className="text-yellow-400 h-4 w-4" />
+                                                <span className="text-[11px] sm:text-xs text-gray-600">
+                                                    {b.avg_rating} <span className="opacity-80">({b.rating_count} review{bed.rating_count > 1 ? 's' : ''})</span>
                                                 </span>
-                                            </p>
-
-                                            {/* Bookings */}
-                                            <p className="text-xs text-gray-400">
-                                                {b.completed_bookings_count ?? 0} bookings
-                                            </p>
+                                            </div>
                                         </div>
                                     </Link>
                                 ))}

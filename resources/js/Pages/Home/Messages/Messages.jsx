@@ -8,7 +8,7 @@ import UserMessageLayout from './UserMessageLayout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPaperPlane, faTimes, faEllipsisV, faTrashCan, faWarning } from '@fortawesome/free-solid-svg-icons'; // Import icons from FontAwesome
 import Modal from '@/Components/Modal';
-
+import { ArrowLeft } from "lucide-react";
 export default function Messages({ sentMessages, receivedMessages, selectedUser }) {
 
     const [users, setUsers] = useState([]); // Store list of users (all conversations)
@@ -17,12 +17,14 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
     const [activeUser, setActiveUser] = useState(null); // Active user to chat with
     const [messages, setMessages] = useState([]); // Store messages for the active user
     const [message, setMessage] = useState(''); // Message to send
+    const [lastMessage, setLastMessage] = useState({});
     const [searchQuery, setSearchQuery] = useState(''); // User search input
     const [messageOptionOpen, setMessageOptionOpen] = useState(false); // State to manage message options dropdown
     const [deletePromptOpen, setDeletePromptOpen] = useState(false); // State to manage delete prompt
     const menuRef = useRef(null); // Reference to the message options dropdown
 
     const user = usePage().props.auth.user; // Get the authenticated user
+    const authId = user.id;
     const messsagesEndRef = useRef(null);
     const scrollToBottom = () => {
         messsagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -88,8 +90,6 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
         axios.get(`/direct-message/selected-user/${userId}`)
             .then(({ data }) => {
                 setMessages(data.messages); // Store messages of the active user
-
-                console.log(data.messages);
             }).catch((err) => console.error('Error loading messages:', err));
     };
 
@@ -109,7 +109,10 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
                 // Append the new message to the existing messages
                 return [...prevMessages, data.message];
             });
-            console.log("Message sent:", data.message);
+            setLastMessage((prev) => ({
+                ...prev,
+                [activeUser.id]: data.message.content
+            }));
 
             setMessage(""); // Clear the input
         }).catch((err) => console.error('Error sending message:', err));
@@ -171,7 +174,13 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
         }
     };
 
-
+    const markAsRead = (userId) => {
+        axios.post(`/direct-message/mark-as-read/${userId}`, {
+            userId,
+        }).then(({ data }) => {
+            console.log("Marked as read:", data);
+        }).catch((err) => console.error('Error marking as read:', err));
+    };
 
     // Use Echo for real-time updates
     useEffect(() => {
@@ -182,6 +191,10 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
                     if (message.sender_id !== user.id) {
                         setMessages((prevMessages) => [...prevMessages, message]);
                         addUserIfNotExists(message.sender_id);
+                        setLastMessage((prev) => ({
+                            ...prev,
+                            [message.sender_id]: message.content
+                        }));
                     }
                 });
         }
@@ -250,7 +263,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
             <Head title="Messages" />
             <div className="flex h-[calc(100vh-4rem)]">
                 {/* Left column: User list with search */}
-                <div className="w-1/4 sm:w-1/3 p-4 border-r border-gray-300 flex flex-col overflow-y-auto">
+                <div className="w-1/4 sm:w-1/3 p-4  border-r border-gray-300">
                     {/* Search Bar */}
                     <div className="relative mb-4 flex items-center">
                         <FontAwesomeIcon
@@ -261,7 +274,7 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
                             type="text"
                             value={searchQuery}
                             onChange={(e) => searchUsers(e.target.value)}
-                            placeholder="Search users"
+                            placeholder="Search Users"
                             className="w-full p-2 border border-gray-300 rounded-full text-sm pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
@@ -269,33 +282,41 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
                     {/* Default User List */}
                     {users.length > 0 ? (
                         <ul className="space-y-2 custom-scrollbar">
-                            {users.map((user) => (
-                                <li
-                                    key={user.id}
-                                    onClick={() => {
-                                        setActiveUser(user);
-                                        selectedUserToSessionStorage(user);
-                                        fetchMessages(user.id);
-                                    }}
-                                    className="group relative cursor-pointer bg-indigo-100 hover:bg-indigo-200 rounded-full transition duration-200 flex items-center p-1"
-                                >
-                                    <img
-                                        src={`/storage/${user.avatar || 'profile/default_avatar.png'}`}
-                                        alt={user.name}
-                                        className="w-8 h-8 rounded-full mr-2"
-                                    />
-                                    <p className="text-sm truncate">{user.name}</p>
+                            {users.map((user) => {
+                                return (
+                                    <li
+                                        key={user.id}
+                                        onClick={() => {
+                                            setActiveUser(user);
+                                            selectedUserToSessionStorage(user);
+                                            fetchMessages(user.id);
+                                        }}
+                                        className="group relative cursor-pointer bg-indigo-100 hover:bg-indigo-200 rounded-full transition duration-200 flex items-center p-1"
+                                    >
+                                        <img
+                                            src={`/storage/${user.avatar || 'profile/default_avatar.png'}`}
+                                            alt={user.name}
+                                            className="w-8 h-8 rounded-full mr-2"
+                                        />
+                                        <div className='flex items-left flex-col w-40'>
+                                            <p className="text-sm truncate">{user.name}</p>
+                                            <p className={`text-sm truncate text-gray-400 ${!user.last_message.is_read && user.last_message.sender !== authId ? '' : 'font-bold text-gray-700'}`}>
+                                                {user.last_message.sender_id === authId ? "You: " : ""}
+                                                {lastMessage[user.id] ?? user.last_message.content}
+                                            </p>
+                                        </div>
 
-                                    {/* Hover name badge */}
-                                    <div className="absolute sm:hidden w-full left-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md z-10">
-                                        {user.name}
-                                    </div>
+                                        {/* Hover name badge */}
+                                        <div className="absolute sm:hidden w-full left-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md z-10">
+                                            {user.name}
+                                        </div>
 
-                                    {onlineUsers.some((u) => u.id === user.id) && (
-                                        <span className="text-xs text-green-500 ml-auto">Online</span>
-                                    )}
-                                </li>
-                            ))}
+                                        {onlineUsers.some((u) => u.id === user.id) && (
+                                            <span className="text-xs text-green-500 ml-auto">Online</span>
+                                        )}
+                                    </li>
+                                )
+                            })}
                         </ul>) : <div className="text-center ">Start Chatting..</div>}
 
                     {/* Search Results (overlayed or below) */}
@@ -337,35 +358,39 @@ export default function Messages({ sentMessages, receivedMessages, selectedUser 
 
 
                 {/* Right column: Chat window */}
-                <div className="flex-1 flex flex-col min-h-screen">
+                <div className="flex-1 flex flex-col">
                     {!activeUser ? (
-                        <div className="min-h-screen flex flex-1 items-center justify-center flex-col text-center">
-                            <h3 className="text-xl font-semibold text-gray-700">
-                                Start chatting with someone!
-                            </h3>
-                            <p className="text-gray-500">
-                                Select a user from the list to begin the conversation.
-                            </p>
+                        <div className="text-center h-full flex items-center justify-center flex-col">
+                            <h3 className="text-xl font-semibold text-gray-700">Start chatting with someone!</h3>
+                            <p className="text-gray-500">Select a user from the list to begin the conversation.</p>
                         </div>
                     ) : (
                         <div className="h-[calc(100vh-4rem)] flex flex-col">
                             {/* Header */}
                             <div className="flex items-center justify-between p-2 border-b bg-gradient from-bg-indigo-100 to-white">
-                                <h3 className="flex items-center gap-2 font-semibold text-gray-800">
-                                    <img
-                                        src={
-                                            activeUser.avatar
-                                                ? `/storage/${activeUser.avatar}`
-                                                : '/storage/profile/default_avatar.png'
-                                        }
-                                        alt={activeUser.name || 'User Avatar'}
-                                        className="w-8 h-8 rounded-full border-indigo-500 border-2 p-[1px] mr-2"
-                                    />
-                                    {activeUser.name}
-                                    {onlineUsers.some((u) => u.id === activeUser.id) && (
-                                        <span className="text-xs text-green-500">Online</span>
-                                    )}
-                                </h3>
+                                <div className='flex items-center space-x-2'>
+                                    <button
+                                        onClick={() => setActiveUser(null)}
+                                    >
+                                        <ArrowLeft className="w-5 h-5 hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                    <h3 className="flex items-center gap-2 font-semibold text-gray-800">
+                                        <img
+                                            src={
+                                                activeUser.avatar
+                                                    ? `/storage/${activeUser.avatar}`
+                                                    : '/storage/profile/default_avatar.png'
+                                            }
+                                            alt={activeUser.name || 'User Avatar'}
+                                            className="w-8 h-8 rounded-full border-indigo-500 border-2 p-[1px] mr-2"
+                                        />
+                                        {activeUser.name}
+                                        {onlineUsers.some((u) => u.id === activeUser.id) && (
+                                            <span className="text-xs text-green-500">Online</span>
+                                        )}
+                                    </h3>
+
+                                </div>
                                 {/* Dropdown button here... */}
                                 <div className="relative inline-block text-left" ref={menuRef}>
                                     <button

@@ -275,17 +275,19 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
                 {/* Left column: User list with search */}
                 <div className="w-1/4 sm:w-1/3 p-4  border-r border-gray-300">
                     {/* Search Bar */}
-                    <div className="mb-4 flex items-center border-b pb-2">
-                        <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
+                    <div className="relative mb-4 flex items-center">
+                        <FontAwesomeIcon
+                            icon={faSearch}
+                            className="absolute left-3 text-gray-500"
+                        />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => searchOwners(e.target.value)}
-                            placeholder="Search owners"
-                            className="w-full p-2 border border-gray-300 rounded-full text-sm pl-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            placeholder="Search Owners"
+                            className="w-full p-2 border border-gray-300 rounded-full text-sm pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
-
                     {/* Default User List */}
 
                     {owners.length > 0 ? (
@@ -305,7 +307,10 @@ export default function Landowner({ sentMessages, receivedMessages, selectedOwne
                                         alt={owner.name}
                                         className="w-8 h-8 rounded-full mr-2"
                                     />
-                                    <p className="text-sm truncate">{owner.name}</p>
+                                    <div className='flex items-left flex-col w-40'>
+                                        <p className="text-sm truncate">{owner.name}</p>
+                                        <p className="text-sm truncate text-gray-400">{owner.last_message.sender_id === user.id ? "You: " : ""} {owner.last_message?.content}</p>
+                                    </div>
 
                                     {/* Hover name badge */}
                                     <div className="absolute sm:hidden w-full left-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md z-10">

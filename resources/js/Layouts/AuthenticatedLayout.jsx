@@ -68,8 +68,9 @@ export default function AuthenticatedLayout({ header, children }) {
         };
     }, []);
 
-    const updateFavoritesCount = (newCount) => {
-        setFavoritesCount(newCount);
+    const updateFavoritesCount = (change) => {
+        setFavoritesCount((prev) => Math.max(0, prev + change)); // ✅ adjust not replace
+
     };
 
     return (
@@ -132,9 +133,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                             {messagesCount > 9 ? "+9" : messagesCount}
                                         </div>
                                     )}
-                                    <Link href="/messages" className="p-2 flex items-center justify-center w-10 h-10">
-                                        <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white" />
-                                    </Link>
+                                    <div className='relative group'>
+                                        <Link href="/messages" className="p-2 flex items-center justify-center w-10 h-10">
+                                            <FontAwesomeIcon icon={faEnvelope} className="h-5 w-5 text-white" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-8 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2">
+                                            Messages
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {/* Favorites */}
@@ -144,9 +150,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                             {favoritesCount > 9 ? "+9" : favoritesCount}
                                         </div>
                                     )}
-                                    <Link href="/favorites" className="p-2 flex items-center justify-center w-10 h-10">
-                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white" />
-                                    </Link>
+                                    <div className='relative group'>
+                                        <Link href="/favorite" className="p-2 flex items-center justify-center w-10 h-10">
+                                            <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-white" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-8 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2">
+                                            Favorites
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {/* Notifications */}
@@ -156,12 +167,19 @@ export default function AuthenticatedLayout({ header, children }) {
                                             {notificationsCount > 9 ? "+9" : notificationsCount}
                                         </div>
                                     )}
-                                    <button
-                                        onClick={() => setNotificationsModal(!notificationsModal)}
-                                        className="p-2 flex items-center justify-center w-10 h-10">
+                                    <div className='relative group'>
+                                        <button
+                                            onClick={() => setNotificationsModal(!notificationsModal)}
+                                            className="p-2 flex items-center justify-center w-10 h-10">
 
-                                        <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white" />
-                                    </button>
+                                            <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-white" />
+                                        </button>
+                                        <span className="absolute left-1/2 top-8 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2">
+                                            Notifications
+                                        </span>
+
+
+                                    </div>
                                     {notificationsModal && <UserNotifModal />}
                                 </div>
 

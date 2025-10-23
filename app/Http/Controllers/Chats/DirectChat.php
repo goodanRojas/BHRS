@@ -46,7 +46,16 @@ class DirectChat extends Controller
         ]);
     }
 
-
+    public function markAsRead($userId)
+    {
+        $currentUserId = auth()->id();
+        Message::where('sender_id', $userId)
+            ->where('receiver_id', $currentUserId)
+            ->whereNull('receiver_deleted_at')
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        return response()->json(['messages' => "Marked as read"]);
+    }
 
     public function searchUsers(Request $request)
     {
@@ -145,9 +154,25 @@ class DirectChat extends Controller
             })
             ->unique()
             ->values();
-
-        $users = User::whereIn('id', $visibleUserIds)->get();
-
+        Log::info('visibleUserIds', $visibleUserIds->toArray());
+        $users = User::whereIn('id', $visibleUserIds)->get()
+            ->map(function ($user) use ($authUserId) {
+                $lastMessage = Message::where(function ($query) use ($authUserId, $user) {
+                    $query->where('sender_id', $authUserId)
+                        ->where('receiver_id', $user->id)
+                        ->whereNull('sender_deleted_at');
+                })
+                    ->orWhere(function ($query) use ($authUserId, $user) {
+                        $query->where('sender_id', $user->id)
+                            ->where('receiver_id', $authUserId)
+                            ->whereNull('sender_deleted_at');
+                    })
+                    ->latest('created_at')
+                    ->first();
+                $user->last_message = $lastMessage;
+                return $user;
+            });
+        Log::info($users);
         return response()->json([
             'users' => $users
         ]);
@@ -219,14 +244,14 @@ class DirectChat extends Controller
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
         ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-3.5-turbo',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are a boarding house assistant for a landlord.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'temperature' => 0.7,
-            'max_tokens' => 300,
-        ]);
+                    'model' => 'gpt-3.5-turbo',
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'You are a boarding house assistant for a landlord.'],
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens' => 300,
+                ]);
 
         return $response->json('choices.0.message.content') ?? 'Sorry, I could not generate a response.';
     }

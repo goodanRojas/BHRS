@@ -187,43 +187,48 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                 </div>
 
                 {/* Rooms Section */}
-                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-gray-900">{building.rooms.length > 0 ? "Rooms" : "No Available Rooms"}</h3>
+                <h3 className="text-xl md:text-2xl font-bold mt-8 mb-5 text-gray-900">Rooms</h3>
+                {building.rooms.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                        {building.rooms.map((room) => (
+                            <Link
+                                key={room.id}
+                                href={`/home/room/${room.id}`}
+                                className="group rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden bg-white"
+                            >
+                                <div className="relative">
+                                    <img
+                                        src={`/storage/${room.image ? room.image : "room/default_room.svg"}`}
+                                        alt={room.name}
+                                        className="w-full h-32 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                    {building.rooms.map((room) => (
-                        <Link
-                            key={room.id}
-                            href={`/home/room/${room.id}`}
-                            className="group rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden bg-white"
-                        >
-                            <div className="relative">
-                                <img
-                                    src={`/storage/${room.image ? room.image : "room/default_room.svg"}`}
-                                    alt={room.name}
-                                    className="w-full h-32 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
+                                <div className="p-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h4 className="text-sm md:text-base font-semibold text-gray-800 group-hover:text-indigo-600 transition">
+                                            {room.name}
+                                        </h4>
 
-                            <div className="p-3">
-                                <div className="flex items-center justify-between mb-1">
-                                    <h4 className="text-sm md:text-base font-semibold text-gray-800 group-hover:text-indigo-600 transition">
-                                        {room.name}
-                                    </h4>
+                                        <div className="flex items-center text-gray-500 text-xs">
+                                            <FontAwesomeIcon icon={faBed} className="mr-1 text-indigo-500" />
+                                            {room.beds_count} {room.beds_count > 1 ? 'beds' : 'bed'}
+                                        </div>
+                                    </div>
 
-                                    <div className="flex items-center text-gray-500 text-xs">
-                                        <FontAwesomeIcon icon={faBed} className="mr-1 text-indigo-500" />
-                                        {room.beds_count} {room.beds_count > 1 ? 'beds' : 'bed'}
+                                    <div className="flex items-center space-x-1">
+                                        <FontAwesomeIcon icon={faStar} className="text-yellow-400 text-xs" />
+                                        <span className="text-xs text-gray-600">{room.avg_rating ? Number(room.avg_rating).toFixed(1) : "0.0"} ({room.rating_count} {room.rating_count === 1 ? "review" : "reviews"})</span>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center space-x-1">
-                                    <FontAwesomeIcon icon={faStar} className="text-yellow-400 text-xs" />
-                                    <span className="text-xs text-gray-600">{room.avg_rating ? Number(room.avg_rating).toFixed(1) : "0.0"} ({room.rating_count} {room.rating_count === 1 ? "review" : "reviews"})</span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center">
+                        <p className="text-gray-500 text-sm">No beds available in this room.</p>
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );
