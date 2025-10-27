@@ -17,16 +17,19 @@ export default function User({ user }) {
     const [buildings, setBuildings] = useState([]); // list of all buildings
     const [prevBookings, setPrevBookings] = useState([]); // list of previous bookings
     const [showEditModal, setShowEditModal] = useState(false);
-    const [selectedBuilding, setSelectedBuilding] = useState(
-        sessionStorage.getItem("selectedBuilding") || null
+
+    const [selectedBuilding, setSelectedBuilding] = useState(() =>
+        typeof window !== "undefined" ? sessionStorage.getItem("selectedBuilding") : null
     );
 
-    const [selectedRoom, setSelectedRoom] = useState(
-        sessionStorage.getItem("selectedRoom") || null
+    const [selectedRoom, setSelectedRoom] = useState(() =>
+        typeof window !== "undefined" ? sessionStorage.getItem("selectedRoom") : null
     );
-    const [selectedBed, setSelectedBed] = useState(
-        sessionStorage.getItem("selectedBed") || null
+
+    const [selectedBed, setSelectedBed] = useState(() =>
+        typeof window !== "undefined" ? sessionStorage.getItem("selectedBed") : null
     );
+
     useEffect(() => {
         axios.get(`/admin/users/buildings`).then((response) => {
             setBuildings(response.data);
@@ -57,6 +60,7 @@ export default function User({ user }) {
     }, [selectedBed]);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
         if (selectedBuilding) {
             sessionStorage.setItem("selectedBuilding", selectedBuilding);
         }
