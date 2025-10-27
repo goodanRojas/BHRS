@@ -1,11 +1,11 @@
 import { Head, usePage, useForm } from "@inertiajs/react";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import AuthenticatedLayout from "../AuthenticatedLayout";
 import Table from "@/Components/Table";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { Building2, DoorOpen, Mail, Lock,Phone, BedDouble, BookCheck, EllipsisVertical, Pencil } from "lucide-react";
+import { Building2, DoorOpen, Mail, Lock, Phone, BedDouble, BookCheck, EllipsisVertical, Pencil } from "lucide-react";
 import AddBooking from "./AddBooking";
 import UserInfo from "./UserInfo";
 import Breadcrumbs from "@/Components/Breadcrumbs";

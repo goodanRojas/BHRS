@@ -16,7 +16,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/direct-message', 'fetchUserMessages');
         Route::get('direct-message/selected-user/{id}', 'fetchUserConversation');
         Route::get('/direct-message/search', 'searchUsers');
-        Route::post('/direct-message/send', 'sendMessage');
+        Route::post('/direct-message/mark-as-read/{userId}', 'markAsRead');
         Route::post('/direct-messages/send', 'sendMessage');
         Route::get('/direct-messages/users', 'getUsers');
         Route::delete('/direct-message/delete/{selectedUserId}', 'deleteConversation');
