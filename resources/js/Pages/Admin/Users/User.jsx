@@ -51,7 +51,7 @@ export default function User({ user }) {
             },
         });
     };
-    useEffect(() => {
+    useEffect(() => {   
         if (!selectedBed) return;
         axios.get(`/admin/users/${user.id}/${selectedBed}/bookings`).then((response) => {
             setPrevBookings(response.data);
