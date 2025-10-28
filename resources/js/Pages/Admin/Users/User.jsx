@@ -51,11 +51,10 @@ export default function User({ user }) {
             },
         });
     };
-    useEffect(() => {   
+    useEffect(() => {
         if (!selectedBed) return;
         axios.get(`/admin/users/${user.id}/${selectedBed}/bookings`).then((response) => {
             setPrevBookings(response.data);
-            console.log(response.data);
         });
     }, [selectedBed]);
 
@@ -125,7 +124,6 @@ export default function User({ user }) {
                         transition={{ delay: 0.1 }}
                         className="text-2xl font-bold text-gray-800 flex items-center gap-2"
                     ><BookCheck className="text-indigo-500" /> Previous Bookings</motion.h2>
-                    {/* Building dropdown */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -154,7 +152,6 @@ export default function User({ user }) {
                         </select>
                     </motion.div>
 
-                    {/* Room dropdown */}
                     {selectedBuilding && (
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
@@ -177,7 +174,7 @@ export default function User({ user }) {
                                 <option value="">-- Select Room --</option>
                                 {buildings
                                     .find((b) => b.id == selectedBuilding)
-                                    ?.rooms.map((r) => (
+                                    ?.rooms?.map((r) => (
                                         <option key={r.id} value={r.id}>
                                             {r.name}
                                         </option>
@@ -186,7 +183,6 @@ export default function User({ user }) {
                         </motion.div>
                     )}
 
-                    {/* Bed dropdown */}
                     {selectedRoom && (
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
@@ -206,8 +202,8 @@ export default function User({ user }) {
                                 <option value="">-- Select Bed --</option>
                                 {buildings
                                     .find((b) => b.id == selectedBuilding)
-                                    ?.rooms.find((r) => r.id == selectedRoom)
-                                    ?.beds.map((bed) => (
+                                    ?.rooms?.find((r) => r.id == selectedRoom)
+                                    ?.beds?.map((bed) => (
                                         <option key={bed.id} value={bed.id}>
                                             {bed.name}
                                         </option>
@@ -215,43 +211,40 @@ export default function User({ user }) {
                             </select>
                         </motion.div>
                     )}
+                    {selectedBed && (
+                        <div>
+                            {prevBookings && prevBookings.length > 0 && (
+                                <div className="">
+                                    <Table
+                                        legend={'Previous Bookings'}
+                                        data={prevBookings.map((b) => ({
+                                            start_date: b.start_date ? dayjs(b.start_date).format("MMMM D, YYYY") : "-",
+                                            month_count: b.month_count,
+                                            end_date: b.start_date ? dayjs(b.start_date).add(b.month_count, 'month').format("MMMM D, YYYY") : "-",
+                                            status: b.status.charAt(0).toUpperCase() + b.status.slice(1),
+                                            rating: b.ratings_avg_stars || "-",
+                                            comment: b.comments?.map(c => c.body).join(', ') || "-"
+                                        }))}
+                                        columns={[
+                                            { key: 'start_date', label: 'Start Date' },
+                                            { key: 'month_count', label: 'Month Count' },
+                                            { key: 'end_date', label: 'End Date' },
+                                            { key: 'status', label: 'Status' },
+                                            { key: 'rating', label: 'Rating' },
+                                            { key: 'comment', label: 'Comment' },
+                                        ]}
+                                    />
+
+                                </div>
+                            )}
+
+
+                            <AddBooking bedId={selectedBed} userId={user.id} onBookingAdded={(newBooking) => {
+                                setPrevBookings([newBooking, ...prevBookings]);
+                            }} />
+                        </div>
+                    )}
                 </motion.div>
-                {/* Rating + Comment */}
-                {selectedBed && (
-                    <div>
-                        {/* If the user has previous bookings, show it in here. */}
-                        {prevBookings && prevBookings.length > 0 && (
-                            <div className="">
-                                <Table
-                                    legend={'Previous Bookings'}
-                                    data={prevBookings.map((b) => ({
-                                        start_date: dayjs(b.start_date).format("MMMM D, YYYY"),
-                                        month_count: b.month_count,
-                                        end_date: dayjs(b.start_date).add(b.month_count, 'month').format("MMMM D, YYYY"),
-                                        status: b.status.charAt(0).toUpperCase() + b.status.slice(1),
-                                        rating: b.ratings_avg_stars || "-",
-                                        comment: b.comments?.map(c => c.body).join(', ') || "-"
-                                    }))}
-                                    columns={[
-                                        { key: 'start_date', label: 'Start Date' },
-                                        { key: 'month_count', label: 'Month Count' },
-                                        { key: 'end_date', label: 'End Date' },
-                                        { key: 'status', label: 'Status' },
-                                        { key: 'rating', label: 'Rating' },
-                                        { key: 'comment', label: 'Comment' },
-                                    ]}
-                                />
-
-                            </div>
-                        )}
-
-                        {/* Function for creating a booking, rating and comment for previous user. */}
-
-                        <AddBooking bedId={selectedBed} userId={user.id} onBookingAdded={(newBooking) => {
-                            setPrevBookings([newBooking, ...prevBookings]);
-                        }} />
-                    </div>
-                )}
             </div>
 
             <Modal show={showEditModal} onClose={() => setShowEditModal(false)} title="Edit User">
