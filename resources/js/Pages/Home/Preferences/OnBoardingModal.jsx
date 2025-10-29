@@ -113,12 +113,12 @@ export default function OnboardingModal() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-3"
+                className="space-y-3 max-h-[70vh] overflow-y-auto"
               >
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Choose your preferences
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 "> {/* Add Scrollbar */}
                   {preferenceOptions.map((pref) => {
                     const isSelected = selectedPreferences.includes(pref);
                     return (
