@@ -104,7 +104,7 @@ export default function Building({ building, totalCompletedBookings, ratingCount
                                 >
                                     <FontAwesomeIcon icon={faUserTie} className="mr-2 text-gray-500" />
                                     <span className="font-medium">{building.seller.name}</span>
-                                    <FontAwesomeIcon icon={faMessage} className="absolute left-[150px] top-1 text-gray-500 hidden group-hover:block group-hover:text-blue-600 transition duration-300 " />
+                                    <FontAwesomeIcon icon={faMessage} className="absolute left-[150px] top-1 text-gray-500  group-hover:text-blue-600 transition duration-300 " />
                                 </Link>
                             </div>
 

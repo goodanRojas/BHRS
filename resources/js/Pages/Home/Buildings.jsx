@@ -8,6 +8,7 @@ import Features from '@/Pages/Home/Keyword/Features';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faFilter, faSearch, faStar, faEye } from '@fortawesome/free-solid-svg-icons';
 import Dropdown from '@/Components/Dropdown';
+import Filter from './Filter/Filter';
 export default function Buildings({ initialBuildings }) {
     console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
@@ -91,7 +92,10 @@ export default function Buildings({ initialBuildings }) {
                         </div>
                     )}
                 </div>
-
+                {/* Filters */}
+                <Filter setBuildings={(buildings) => {
+                    setBuildings(buildings);
+                }} />
 
                 {/* Keywords */}
                 <div className="mb-6">

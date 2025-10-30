@@ -106,9 +106,13 @@ class BuildingController extends Controller
 
                         // address (assuming address is stored as array with "street"/"city"/etc.)
                         ->orWhereHas('address', function ($addrQuery) use ($search) {
-                        $addrQuery->where('address', 'like', "%{$search}%");
+                        $addrQuery->where(function ($jsonQ) use ($search) {
+                            $jsonQ->where('address->region', 'like', "%{$search}%")
+                                ->orWhere('address->province', 'like', "%{$search}%")
+                                ->orWhere('address->municipality', 'like', "%{$search}%")
+                                ->orWhere('address->barangay', 'like', "%{$search}%");
+                        });
                     })
-
                         // features
                         ->orWhereHas('features', function ($featQuery) use ($search) {
                         $featQuery->where('name', 'like', "%{$search}%")
@@ -148,7 +152,7 @@ class BuildingController extends Controller
             })
             ->values();
 
-        Log::info($buildings);
+        // Log::info($buildings);
         return response()->json($buildings);
     }
     public function showBuilding(Request $request, Building $building)
@@ -175,7 +179,7 @@ class BuildingController extends Controller
                 'features',
                 'rulesAndRegulations',
             ])
-            ->loadCount('buildingViewCount');
+                ->loadCount('buildingViewCount');
 
             foreach ($building->rooms as $room) {
                 $ratings = collect();
