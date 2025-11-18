@@ -11,7 +11,21 @@ import { AlertCircle } from 'lucide-react';
 import SellerNotifModal from '@/Components/SellerNotifModal';
 import axios from 'axios';
 import PopupNotif from '@/Components/Notifications/Owner/PopupNotif';
-
+import { motion } from "framer-motion";
+import {
+    LayoutDashboard,
+    Building2,
+    Users,
+    BedDouble,
+    History,
+    CreditCard,
+    MessageCircle,
+    Bell,
+    User,
+    Wallet,
+    BadgeDollarSign,
+    LogOut,
+} from "lucide-react";
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -255,57 +269,121 @@ export default function SellerLayout({ header, children }) {
 
                 {/* Mobile Menu */}
                 {showingNavigationDropdown && (
-                    <div className="sm:hidden bg-gray-800 border-t border-gray-700">
+                    <motion.div
+                        className="sm:hidden bg-gray-800 border-t border-gray-700"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
                         <div className="space-y-1 px-4 py-3">
-                            <ResponsiveNavLink href={route('seller.dashboard.index')}>
-                                Dashboard
+                            <ResponsiveNavLink href={route("seller.dashboard.index")}>
+                                <div className="flex items-center gap-2">
+                                    <LayoutDashboard size={18} />
+                                    <span>Dashboard</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.building.index')}>
-                                Building
+
+                            <ResponsiveNavLink href={route("seller.building.index")}>
+                                <div className="flex items-center gap-2">
+                                    <Building2 size={18} />
+                                    <span>Building</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.guest.index')}>
-                                Guests
+
+                            <ResponsiveNavLink href={route("seller.guest.index")}>
+                                <div className="flex items-center gap-2">
+                                    <Users size={18} />
+                                    <span>Guests</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.request.bed.index')}>
-                                Requests
+
+                            <ResponsiveNavLink href={route("seller.request.bed.index")}>
+                                <div className="flex items-center gap-2">
+                                    <BedDouble size={18} />
+                                    <span>Requests</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.history.index')}>
-                                History
+
+                            <ResponsiveNavLink href={route("seller.history.index")}>
+                                <div className="flex items-center gap-2">
+                                    <History size={18} />
+                                    <span>History</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.request.payments.index')}>
-                                Payments
+
+                            <ResponsiveNavLink href={route("seller.request.payments.index")}>
+                                <div className="flex items-center gap-2">
+                                    <CreditCard size={18} />
+                                    <span>Payments</span>
+                                </div>
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink href="/seller/messages">
-                                Messages {messagesCount > 0 && `(${messagesCount})`}
+                                <div className="flex items-center gap-2">
+                                    <MessageCircle size={18} />
+                                    <span>
+                                        Messages{" "}
+                                        {messagesCount > 0 && (
+                                            <span className="text-xs text-gray-300">
+                                                ({messagesCount})
+                                            </span>
+                                        )}
+                                    </span>
+                                </div>
                             </ResponsiveNavLink>
+
                             <ResponsiveNavLink
                                 as="button"
                                 onClick={() => setNotificationsModal(true)}
                             >
-                                Notifications {notificationsCount > 0 && `(${notificationsCount})`}
+                                <div className="flex items-center gap-2">
+                                    <Bell size={18} />
+                                    <span>
+                                        Notifications{" "}
+                                        {notificationsCount > 0 && (
+                                            <span className="text-xs text-gray-300">
+                                                ({notificationsCount})
+                                            </span>
+                                        )}
+                                    </span>
+                                </div>
                             </ResponsiveNavLink>
 
-                            <div className="border-t border-gray-700 my-2"></div>
+                            <div className="border-t border-gray-700 my-2" />
 
-                            <ResponsiveNavLink href={route('seller.profile.edit')}>
-                                Profile
+                            <ResponsiveNavLink href={route("seller.profile.edit")}>
+                                <div className="flex items-center gap-2">
+                                    <User size={18} />
+                                    <span>Profile</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.payment-details.index')}>
-                                Payment Details
+
+                            <ResponsiveNavLink href={route("seller.payment-details.index")}>
+                                <div className="flex items-center gap-2">
+                                    <Wallet size={18} />
+                                    <span>Payment Details</span>
+                                </div>
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('seller.subscription.landing')}>
-                                Subscription
+
+                            <ResponsiveNavLink href={route("seller.subscription.landing")}>
+                                <div className="flex items-center gap-2">
+                                    <BadgeDollarSign size={18} />
+                                    <span>Subscription</span>
+                                </div>
                             </ResponsiveNavLink>
+
                             <ResponsiveNavLink
                                 method="post"
                                 as="button"
-                                href={route('seller.logout.post')}
+                                href={route("seller.logout.post")}
                             >
-                                Log Out
+                                <div className="flex items-center gap-2 text-red-400">
+                                    <LogOut size={18} />
+                                    <span>Log Out</span>
+                                </div>
                             </ResponsiveNavLink>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
             </nav>
 

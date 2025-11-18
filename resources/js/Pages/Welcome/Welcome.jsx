@@ -6,151 +6,121 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 export default function Welcome({ auth }) {
-    console.log(auth);
 
+    const buildings = [
+        "/storage/building_images/building1.jpg",
+        "/storage/building_images/building1.jpg",
+        "/storage/building_images/building1.jpg",
+        "/storage/building_images/building1.jpg",
+    ];
+    const [hoveredIndex, setHoveredIndex] = useState(null);
     return (
         <>
             <Head title="Welcome" />
-            <div className="min-h-screen bg-gradient-to-br from-slate-200 via-gray-100 to-slate-100 text-gray-900 overflow-hidden">
-                {/* Navbar */}
-                {!auth ? (
-                    <nav className="flex flex-wrap justify-between items-center px-4 py-4 md:px-8">
-                        {/* Logo */}
-                        <div className="flex-shrink-0">
+
+            <motion.section
+                className="relative min-h-screen flex flex-col"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+            >
+
+                {/* NAVBAR */}
+                <nav className="relative z-20 ">
+                    {!auth ? (
+                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center px-4 py-4 md:px-8 gap-4 sm:gap-0">
+
+                            {/* Logo */}
+                            <Link href="/"  className="flex justify-center sm:justify-start">
+                                <ApplicationLogo
+                                    className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 fill-current text-gray-800"
+                                    variant="white"
+                                />
+                            </Link>
+
+                            {/* Nav Links */}
+                            <div className="flex flex-wrap justify-center sm:justify-end items-center gap-4">
+                                {[
+                                    { label: "Owner Login", href: "/seller/login" },
+                                    { label: "Log in", href: route('login') },
+                                    { label: "Register", href: route('register') },
+                                    { label: "About Us", href: route('about-us') }
+                                ].map((item, i) => (
+                                    <Link
+                                        key={i}
+                                        href={item.href}
+                                        className="relative text-slate-100 font-semibold text-sm px-3 py-2 hover:text-white transition group"
+                                    >
+                                        {item.label}
+                                        <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4 md:px-8">
                             <Link href="/">
-                                <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-500" variant="black" />
-                            </Link>
-                        </div>
-
-                        {/* Buttons */}
-                        <div className="flex flex-wrap items-center justify-end space-x-3 md:space-x-6 mt-3 md:mt-0">
-                            {/* Owner Login */}
-                            <Link
-                                href="/seller/login"
-                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
-                            >
-                                Owner Login
-                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
+                                <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-800" variant="white" />
                             </Link>
 
-                            {/* Tenant Login */}
-                            <Link
-                                href={route('login')}
-                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
-                            >
-                                Log in
-                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
-
-                            {/* Register */}
-                            <Link
-                                href={route('register')}
-                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
-                            >
-                                Register
-                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
-                            {/* About Us */}
-                            <Link
-                                href={route('about-us')}
-                                className="relative text-indigo-500 px-3 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
-                            >
-                                About Us
-                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
-                        </div>
-                    </nav>
-                ) : (
-                    <nav className="flex justify-between items-center px-4 py-4 md:px-8">
-                        <div>
-                            <Link href="/">
-                                <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-500" variant="black" />
-                            </Link>
-                        </div>
-
-                        <div className="flex items-center space-x-4">
                             <Link
                                 href={route('to.user.buildings')}
-                                className="relative text-indigo-500 px-4 py-2 text-sm font-semibold hover:text-indigo-700 transition group"
+                                className="relative text-slate-100 font-semibold text-sm px-4 py-2 hover:text-indigo-800 transition group"
                             >
                                 Dashboard
-                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
+                                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
                             </Link>
                         </div>
-                    </nav>
-                )}
+                    )}
+                </nav>
 
-                {/* Hero Section */}
-                <motion.section
-                    className="relative px-5 py-16 md:py-24 overflow-hidden"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1 }}
-                >
-                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-12">
-                        {/* Text Content */}
-                        <div className="text-center md:text-left z-10">
+                {/* BACKGROUND */}
+                <div className="absolute inset-0 -z-10">
+                    {/* Background Image */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center brightness-[0.5]"
+                        style={{
+                            backgroundImage: "url('/storage/building_images/building1.jpg')"
+                        }}
+                    ></div>
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/30"></div>
+                </div>
+
+                {/* HERO CONTENT */}
+                <div className="flex-grow flex items-center">
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-12 px-4 md:px-8 z-10">
+
+                        {/* Text */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                            className="text-center md:text-left space-y-6"
+                        >
                             <h1
-                                className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 text-gray-900 leading-tight"
+                                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight drop-shadow-xl"
                                 style={{ fontFamily: "'Satisfy', cursive" }}
                             >
                                 Boarding House Reservation System
                             </h1>
 
-                            <p className="text-sm sm:text-base md:text-lg text-gray-500 mb-8 max-w-md mx-auto md:mx-0 leading-relaxed">
+                            <p className="text-gray-200 text-sm sm:text-base md:text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
                                 Easily book your stay and find the best accommodations tailored for your needs.
                             </p>
 
                             <Link
                                 href="/home/buildings"
-                                className="inline-block bg-yellow-500 text-indigo-800 font-semibold text-sm sm:text-base md:text-lg py-3 px-8 rounded-full shadow-md 
-            hover:bg-yellow-600 transition-transform transform hover:scale-105 hover:text-white"
+                                className="inline-block bg-yellow-500 text-gray-900 font-semibold text-sm sm:text-base md:text-lg py-3 px-8 rounded-full shadow-lg 
+                               hover:bg-yellow-600 transition-transform transform hover:scale-105"
                             >
                                 Book Now
                             </Link>
-                        </div>
-
-                        {/* Hero Images */}
-                        <div className="relative flex justify-center md:justify-end w-full">
-                            {/* Background */}
-                            <img
-                                src={'/storage/system/landingpage/hero-bg.png'}
-                                alt="Hero background"
-                                className="w-[300px] sm:w-[400px] md:w-[600px] lg:w-[800px] max-w-full absolute right-0 top-0 drop-shadow-lg z-0"
-                            />
-
-                            {/* Clouds */}
-                            <img
-                                src={'/storage/system/landingpage/clouds.svg'}
-                                alt="Clouds"
-                                className="w-16 sm:w-24 md:w-32 absolute left-4 -top-[120px] opacity-80 drop-shadow-sm z-10"
-                            />
-                            <img
-                                src={'/storage/system/landingpage/clouds.svg'}
-                                alt="Clouds"
-                                className="w-20 sm:w-28 md:w-36 scale-x-[-1] absolute right-6 -top-[100px] opacity-80 drop-shadow-sm z-10"
-                            />
-
-                            {/* Hero Illustrations */}
-                            <img
-                                src={'/storage/system/landingpage/hero2.svg'}
-                                alt="Hero 2"
-                                className="w-28 sm:w-36 md:w-56 lg:w-64 absolute top-[80px] right-2 drop-shadow-lg z-20"
-                            />
-                            <img
-                                src={'/storage/system/landingpage/hero1.svg'}
-                                alt="Hero 1"
-                                className="w-16 sm:w-20 md:w-28 drop-shadow-lg absolute top-[160px] right-[50%] z-30"
-                            />
-                            <img
-                                src={'/storage/system/landingpage/hero3.svg'}
-                                alt="Hero 3"
-                                className="w-20 sm:w-28 md:w-36 drop-shadow-lg absolute top-[20px] right-[35%] z-30"
-                            />
-                        </div>
+                        </motion.div>
                     </div>
-                </motion.section>
-            </div>
+                </div>
+            </motion.section>
 
             {/* Blog Pages Section */}
             < section className="min-h-screen py-16 bg-white text-light-blue-600"
@@ -189,7 +159,7 @@ export default function Welcome({ auth }) {
             </section >
 
             {/* Flexible Layout Section with Tenants and Landlords Feedback */}
-            <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+            < section className="py-20 bg-gradient-to-b from-gray-50 to-white" >
                 <div className="container mx-auto px-6 lg:px-12">
 
 
@@ -257,7 +227,7 @@ export default function Welcome({ auth }) {
                         </motion.div>
                     </div>
                 </div>
-            </section>
+            </section >
             {/* Carousel Section: Best Rated Beds */}
 
 
