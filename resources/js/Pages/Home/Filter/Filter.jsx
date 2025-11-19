@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Star, DollarSign, SlidersHorizontal } from "lucide-react";
 import ph from "@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json";
@@ -52,6 +52,27 @@ export default function Filter({ setBuildings }) {
 
     };
 
+    const hasFilter =
+        priceRange !== "" ||
+        rating !== 0 ||
+        address.region !== "" ||
+        address.province !== "" ||
+        address.municipality !== "" ||
+        address.barangay !== "";
+
+    const clearFilter = () => {
+        setPriceRange("");
+        setRating(0);
+        setAddress({
+            region: "",
+            province: "",
+            municipality: "",
+            barangay: "",
+        });
+        axios.get("/home/buildings/search")
+            .then((res) => setBuildings(res.data))
+            .catch((error) => console.error(error));
+    };
     return (
         <>
             <motion.form
@@ -247,11 +268,44 @@ export default function Filter({ setBuildings }) {
                     </div>
                 </motion.div>
 
-                <button
-                    className="absolute bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition"
+                {/* 
+                TODO: Add a clear Filter button
+                    */}
+                <div
+                    className="
+        flex flex-col gap-2 w-full mt-2 
+        static
+        md:absolute md:bottom-4 md:right-4 md:flex-row md:w-auto md:mt-0
+    "
                 >
-                    Apply Filter
-                </button>
+                    {hasFilter && (
+                        <button
+                            type="button"
+                            className="
+        bg-slate-100 text-gray-600 
+        px-3 py-1.5 rounded-md shadow 
+        hover:bg-slate-200 transition
+        text-sm
+        w-full md:w-auto
+    "
+                            onClick={clearFilter}
+                        >
+                            Clear
+                        </button>
+                    )}
+                    <button
+                        className="
+        bg-indigo-600 text-white 
+        px-3 py-1.5 rounded-md shadow 
+        hover:bg-indigo-700 transition
+        text-sm
+        w-full md:w-auto
+    "
+                    >
+                        Apply
+                    </button>
+
+                </div>
 
             </motion.form>
         </>

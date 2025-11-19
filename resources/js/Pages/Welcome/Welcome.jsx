@@ -31,7 +31,7 @@ export default function Welcome({ auth }) {
                         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center px-4 py-4 md:px-8 gap-4 sm:gap-0">
 
                             {/* Logo */}
-                            <Link href="/"  className="flex justify-center sm:justify-start">
+                            <Link href="/" className="flex justify-center sm:justify-start">
                                 <ApplicationLogo
                                     className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 fill-current text-gray-800"
                                     variant="white"
@@ -65,7 +65,7 @@ export default function Welcome({ auth }) {
 
                             <Link
                                 href={route('to.user.buildings')}
-                                className="relative text-slate-100 font-semibold text-sm px-4 py-2 hover:text-indigo-800 transition group"
+                                className="relative text-slate-100~ font-semibold text-sm px-4 py-2 hover:text-indigo-800 transition group"
                             >
                                 Dashboard
                                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
@@ -123,7 +123,7 @@ export default function Welcome({ auth }) {
             </motion.section>
 
             {/* Blog Pages Section */}
-            < section className="min-h-screen py-16 bg-white text-light-blue-600"
+            < section className="min-h-screen py-16  text-light-blue-600"
             >
 
                 <div className="container mx-auto px-4"
@@ -138,23 +138,25 @@ export default function Welcome({ auth }) {
                         Latest Blog Posts
                     </motion.h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Static Blog Posts */}
-                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <div className="bg-gradient-to-br from-white to-gray-100 p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                             <h3 className="text-2xl font-bold mb-4">How to Choose the Best Boarding House</h3>
                             <p className="text-sm text-gray-600 mb-4">Choosing the best boarding house is more than just about location. Here are some tips to make your decision easier.</p>
                             <Link href="/blog/how-to-choose" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
-                        <div className="bg-white p-6 rounded-lg shadow-lg">
+
+                        <div className="bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                             <h3 className="text-2xl font-bold mb-4">Top 5 Affordable Boarding Houses</h3>
                             <p className="text-sm text-gray-600 mb-4">Discover the top 5 most affordable boarding houses in your area with convenient amenities.</p>
                             <Link href="/blog/top-5-affordable" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
-                        <div className="bg-white p-6 rounded-lg shadow-lg">
+
+                        <div className="bg-white/80 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                             <h3 className="text-2xl font-bold mb-4">Tips for Tenants: Making the Most of Your Boarding House Stay</h3>
                             <p className="text-sm text-gray-600 mb-4">As a tenant, your experience can be much more enjoyable with these simple tips.</p>
                             <Link href="/blog/tenant-tips" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
                     </div>
+
                 </div>
             </section >
 

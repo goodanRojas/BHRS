@@ -7,8 +7,8 @@ export default function AboutUs() {
         { name: "Daniel Rojas", role: "Programmer", image: "/storage/members/daniel.png" },
         { name: "Lean Joy Serot", role: "System Analyst", image: "/storage/members/serot.png" },
         { name: "Jenna Maika P. Odon", role: "Documenter/Technical Writer", image: "/storage/members/jenna.jpg" },
-        { name: "Kristel Q. Sala", role: "Documenter/Technical Writer", image: "/storage/members/sala.jpg" },
         { name: "Roxanne Kimossy Milar", role: "QA Staff/Tester", image: "/storage/members/kim.jpg" },
+        { name: "Kristel Q. Sala", role: "Documenter/Technical Writer", image: "/storage/members/sala.jpg" },
         { name: "Jason A. Gozon", role: "QA Staff/Tester", image: "/storage/members/jason.jpg" },
         { name: "Rohna Mae B. Maraon", role: "Project Manager", image: "/storage/members/maraon.jpg" },
 

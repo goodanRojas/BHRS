@@ -156,7 +156,7 @@ export default function Keywords({
       {visible.map((label, i) => (
         <span
           key={`${label}-${i}`}
-          className={`inline-flex items-center ${sizes[size]} ${radii[rounded]} ${clickableBase} ${getVariantClasses(label)}`}
+          className={`inline-flex items-center hover:bg-slate-200 ${sizes[size]} ${radii[rounded]} ${clickableBase} ${getVariantClasses(label)}`}
           role='button'
           tabIndex={0}
           onClick={() => toggleKeyword(label)} // ✅ use toggleKeyword here
@@ -176,7 +176,7 @@ export default function Keywords({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className={`inline-flex items-center ${sizes[size]} ${radii[rounded]} ${variants[variant]} ${clickableBase}`}
+          className={`text-gray-900 bg-indigo-300 hover:bg-indigo-400 inline-flex items-center ${sizes[size]} ${radii[rounded]} ${variants[variant]} ${clickableBase}`}
           aria-expanded={expanded}
         >
           +{hiddenCount} more
@@ -187,7 +187,7 @@ export default function Keywords({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className={`inline-flex items-center ${sizes[size]} ${radii[rounded]} ${variants[variant]} ${clickableBase}`}
+          className={` text-gray-900 bg-indigo-300 hover:bg-indigo-400 inline-flex items-center ${sizes[size]} ${radii[rounded]} ${variants[variant]} ${clickableBase}`}
           aria-expanded={expanded}
         >
           Show less
