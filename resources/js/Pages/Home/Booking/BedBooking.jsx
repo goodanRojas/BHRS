@@ -16,6 +16,7 @@ export default function Booking({ bed, userPreferences }) {
         name: userPreferences?.fullname || '',
         email: userPreferences?.email || '',
         phone: userPreferences?.phone || '',
+        test: '',
         address: {
             region: '',
             province: '',
@@ -152,6 +153,17 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.name}
 
                         />
+
+                        <InputField
+
+                            label="Test Input"
+                            name="test"
+                            value={data.test}
+                            onChange={handleChange}
+                            error={errors.test}
+
+                        />
+
                         <InputField
                             label="Email"
                             name="email"
@@ -177,8 +189,8 @@ export default function Booking({ bed, userPreferences }) {
                             error={errors.start_date}
                             value={data.start_date}
                             onChange={handleChange}
-                        min={new Date().toLocaleDateString("en-CA")}
-                            
+                            min={new Date().toLocaleDateString("en-CA")}
+
                         />
                         <InputField
                             label="Duration (Months)"

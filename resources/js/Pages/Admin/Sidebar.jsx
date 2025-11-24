@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Home, Users, Building, User, LogOutIcon, CreditCard } from "lucide-react"; // example icons
+import { Home, Users, Building, User, LogOutIcon, CreditCard, ChevronDown, Logs } from "lucide-react"; // example icons
 
 export default function Sidebar({ className, isOpen, onToggle }) {
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
@@ -55,7 +55,7 @@ export default function Sidebar({ className, isOpen, onToggle }) {
                             className={`flex items-center text-white ${isOpen ? "gap-3 justify-start" : "justify-center"}`}
                         >
                             <User size={20} />
-                            {isOpen && <span>Owners</span>}
+                            {isOpen && <span>Owners</span>}<ChevronDown size={20} />
                         </button>
 
                         {isOpen && ownerDropdownOpen && (
@@ -81,7 +81,7 @@ export default function Sidebar({ className, isOpen, onToggle }) {
                             className={`flex items-center text-white ${isOpen ? "gap-3 justify-start" : "justify-center"}`}
                         >
                             <Building size={20} />
-                            {isOpen && <span>Buildings</span>}
+                            {isOpen && <span>Buildings</span>}<ChevronDown size={20} />
                         </button>
 
                         {isOpen && buildingDropdownOpen && (
@@ -114,6 +114,14 @@ export default function Sidebar({ className, isOpen, onToggle }) {
                         >
                             <CreditCard size={20} />
                             {isOpen && <span>Payment Info</span>}
+                        </NavLink>
+                        <NavLink
+                            href={route('admin.logs.index')}
+                            active={route().current('admin.logs.index')}
+                            className={`flex items-center text-white ${isOpen ? "gap-3 justify-start" : "justify-center"}`}
+                        >
+                            <Logs size={20} />
+                            {isOpen && <span>Logs</span>}
                         </NavLink>
                     </div>
                 </nav>
