@@ -2,18 +2,34 @@ import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import GuestLayout from '@/Layouts/GuestLayout';
 import Footer from '@/Components/Footer';
-import { motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
-export default function Welcome({ auth }) {
+export default function Welcome({ auth, images }) {
+    // State: current index & swipe direction
+    const [[currentIndex, direction], setCurrentIndex] = useState([0, 0]);
+    const imageCount = images.length;
 
-    const buildings = [
-        "/storage/building_images/building1.jpg",
-        "/storage/building_images/building1.jpg",
-        "/storage/building_images/building1.jpg",
-        "/storage/building_images/building1.jpg",
-    ];
-    const [hoveredIndex, setHoveredIndex] = useState(null);
+    // Auto-slide every 3 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex(([prevIndex]) => [(prevIndex + 1) % imageCount, 1]);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [imageCount]);
+
+    // Function to handle manual slide
+    const paginate = (newDirection) => {
+        setCurrentIndex([
+            (currentIndex + newDirection + imageCount) % imageCount,
+            newDirection,
+        ]);
+    };
+
+    // Swipe power for drag gesture
+    const swipeConfidenceThreshold = 10000;
+    const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
+
     return (
         <>
             <Head title="Welcome" />
@@ -24,21 +40,16 @@ export default function Welcome({ auth }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
             >
-
                 {/* NAVBAR */}
-                <nav className="relative z-20 ">
+                <nav className="relative z-20">
                     {!auth ? (
                         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center px-4 py-4 md:px-8 gap-4 sm:gap-0">
-
-                            {/* Logo */}
                             <Link href="/" className="flex justify-center sm:justify-start">
                                 <ApplicationLogo
                                     className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 fill-current text-gray-800"
                                     variant="white"
                                 />
                             </Link>
-
-                            {/* Nav Links */}
                             <div className="flex flex-wrap justify-center sm:justify-end items-center gap-4">
                                 {[
                                     { label: "Owner Login", href: "/seller/login" },
@@ -62,10 +73,9 @@ export default function Welcome({ auth }) {
                             <Link href="/">
                                 <ApplicationLogo className="h-16 w-16 md:h-20 md:w-20 fill-current text-gray-800" variant="white" />
                             </Link>
-
                             <Link
                                 href={route('to.user.buildings')}
-                                className="relative text-slate-100~ font-semibold text-sm px-4 py-2 hover:text-indigo-800 transition group"
+                                className="relative text-slate-100 font-semibold text-sm px-4 py-2 hover:text-indigo-800 transition group"
                             >
                                 Dashboard
                                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
@@ -77,21 +87,25 @@ export default function Welcome({ auth }) {
                 {/* BACKGROUND */}
                 <div className="absolute inset-0 -z-10">
                     {/* Background Image */}
-                    <div
-                        className="absolute inset-0 bg-cover bg-center brightness-[0.5]"
-                        style={{
-                            backgroundImage: "url('/storage/building_images/building1.jpg')"
-                        }}
-                    ></div>
+                    <AnimatePresence >
+                        <motion.div
+                            key={currentIndex}
+                            initial={{ opacity: 0.8 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.1 }}
+                            className="absolute inset-0 bg-cover bg-center brightness-[0.5]"
+                            style={{ backgroundImage: `url('${images[currentIndex]}')` }}
+                        />
+                    </AnimatePresence>
 
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/30"></div>
                 </div>
 
                 {/* HERO CONTENT */}
-                <div className="flex-grow flex items-center">
+                <div className="relative flex-grow flex items-center">
                     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-12 px-4 md:px-8 z-10">
-
                         {/* Text */}
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
@@ -105,25 +119,24 @@ export default function Welcome({ auth }) {
                             >
                                 Boarding House Reservation System
                             </h1>
-
                             <p className="text-gray-200 text-sm sm:text-base md:text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
                                 Easily book your stay and find the best accommodations tailored for your needs.
                             </p>
-
                             <Link
                                 href="/home/buildings"
                                 className="inline-block bg-yellow-500 text-gray-900 font-semibold text-sm sm:text-base md:text-lg py-3 px-8 rounded-full shadow-lg 
                                hover:bg-yellow-600 transition-transform transform hover:scale-105"
                             >
-                                Book Now
+                                Explore Now
                             </Link>
                         </motion.div>
                     </div>
+
+            
                 </div>
             </motion.section>
-
             {/* Blog Pages Section */}
-            < section className="min-h-screen py-16  text-light-blue-600"
+            < section className="min-h-screen py-16 bg-white text-light-blue-600"
             >
 
                 <div className="container mx-auto px-4"
@@ -138,30 +151,28 @@ export default function Welcome({ auth }) {
                         Latest Blog Posts
                     </motion.h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="bg-gradient-to-br from-white to-gray-100 p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                        {/* Static Blog Posts */}
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
                             <h3 className="text-2xl font-bold mb-4">How to Choose the Best Boarding House</h3>
                             <p className="text-sm text-gray-600 mb-4">Choosing the best boarding house is more than just about location. Here are some tips to make your decision easier.</p>
                             <Link href="/blog/how-to-choose" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
-
-                        <div className="bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
                             <h3 className="text-2xl font-bold mb-4">Top 5 Affordable Boarding Houses</h3>
                             <p className="text-sm text-gray-600 mb-4">Discover the top 5 most affordable boarding houses in your area with convenient amenities.</p>
                             <Link href="/blog/top-5-affordable" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
-
-                        <div className="bg-white/80 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
                             <h3 className="text-2xl font-bold mb-4">Tips for Tenants: Making the Most of Your Boarding House Stay</h3>
                             <p className="text-sm text-gray-600 mb-4">As a tenant, your experience can be much more enjoyable with these simple tips.</p>
                             <Link href="/blog/tenant-tips" className="text-indigo-600 hover:text-indigo-800">Read More</Link>
                         </div>
                     </div>
-
                 </div>
             </section >
 
             {/* Flexible Layout Section with Tenants and Landlords Feedback */}
-            < section className="py-20 bg-gradient-to-b from-gray-50 to-white" >
+            <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
                 <div className="container mx-auto px-6 lg:px-12">
 
 
@@ -229,7 +240,7 @@ export default function Welcome({ auth }) {
                         </motion.div>
                     </div>
                 </div>
-            </section >
+            </section>
             {/* Carousel Section: Best Rated Beds */}
 
 

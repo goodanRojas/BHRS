@@ -117,7 +117,7 @@ export default function Welcome({ auth }) {
                                 className="inline-block bg-yellow-500 text-indigo-800 font-semibold text-sm sm:text-base md:text-lg py-3 px-8 rounded-full shadow-md 
                                    hover:bg-yellow-600 transition-transform transform hover:scale-105 hover:text-white"
                             >
-                                Book Now
+                                Explore Now
                             </Link>
                         </div>
 

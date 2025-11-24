@@ -1,14 +1,11 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Welcome;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome/Welcome', [
-        'auth' => auth()->user(),
-    ]);
-})->name('landingpage');
+Route::get('/', [Welcome::class, 'index'])->name('landingpage');
 
 Route::get('/about-us', function () {
     return Inertia::render('Welcome/AboutUs', [

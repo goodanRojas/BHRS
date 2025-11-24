@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import useMeasure from "react-use-measure";
 import axios from "axios";
 
-export default function RecommendationsCarousel() {
+export default function RecommendationsCarousel({className = ""}) {
     const [buildings, setBuildings] = useState([]);
 
     useEffect(() => {
@@ -52,7 +52,7 @@ export default function RecommendationsCarousel() {
     }, [xTranslation, width, duration, rerender]);
 
     return (
-        <motion.div className={`${buildings.length === 0 ? 'hidden' : ''} overflow-hidden w-full relative py-4`}>
+        <motion.div className={`${buildings.length === 0 ? 'hidden' : ''} ${className} overflow-hidden w-full relative py-4`}>
             <h1 className="font-bold text-gray-800 uppercase tracking-tight py-4">
                 Recommendations
             </h1>
