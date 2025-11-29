@@ -32,3 +32,4 @@ require __DIR__ . '/subscription.php';
 require __DIR__ . '/rules.php';
 require __DIR__ . '/notification.php';
 require __DIR__ . '/logs.php';
+require __DIR__ . '/customer_support.php';

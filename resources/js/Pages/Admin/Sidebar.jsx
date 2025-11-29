@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import SidebarLink from '@/Components/SidebarLink';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Home, Users, Building, User, LogOutIcon, CreditCard, ChevronDown, Logs } from "lucide-react"; // example icons
+import { Home, Users, Building, User, LogOutIcon, CreditCard, ChevronDown, Logs, Headset } from "lucide-react"; // example icons
 
 export default function Sidebar({ className, isOpen, onToggle }) {
     const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
@@ -114,6 +114,15 @@ export default function Sidebar({ className, isOpen, onToggle }) {
                         >
                             <CreditCard size={20} />
                             {isOpen && <span>Payment Info</span>}
+                        </NavLink>
+
+                        <NavLink
+                            href={route('admin.customer.support.index')}
+                            active={route().current('admin.customer.support.index')}
+                            className={`flex items-center text-white ${isOpen ? "gap-3 justify-start" : "justify-center"}`}
+                        >
+                            <Headset size={20} />
+                            {isOpen && <span>Customer Support</span>}
                         </NavLink>
                         <NavLink
                             href={route('admin.logs.index')}

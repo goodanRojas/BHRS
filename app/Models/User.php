@@ -70,15 +70,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
-   public function ratings()
-   {
-       return $this->hasMany(Rating::class);
-   }
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
 
-   public function comments()
-   {
-       return $this->hasMany(Comment::class);
-   }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
@@ -131,5 +131,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function cancels()
     {
         return $this->hasMany(Cancel::class);
+    }
+
+    public function customerSupports()
+    {
+        return $this->hasMany(CustomerSupport::class);
     }
 }

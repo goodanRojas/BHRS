@@ -8,7 +8,7 @@ import { FavoriteContext } from '@/Contexts/FavoriteContext';
 
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, createContext } from 'react';
-import { faHeart, faHome, faUser, faStore, faRightFromBracket, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faHome, faUser, faStore, faHeadset, faRightFromBracket, faBell, faEnvelope, faMapLocation, faBed } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
 import OnboardingModal from '@/Pages/Home/Preferences/OnBoardingModal';
@@ -107,6 +107,15 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="hidden sm:flex sm:items-center gap-x-4">
                                 {/* Accommodation & Map */}
                                 <div className="flex space-x-3">
+
+                                    <div className="relative group">
+                                        <Link href={route('customer.support.index')} className="p-2">
+                                            <FontAwesomeIcon icon={faHeadset} className="h-5 w-5 text-white" />
+                                        </Link>
+                                        <span className="absolute left-1/2 top-8 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2">
+                                            Customer Support
+                                        </span>
+                                    </div>
                                     <div className="relative group">
                                         <Link href={route('accommodations.index')} className="p-2">
                                             <FontAwesomeIcon icon={faBed} className="h-5 w-5 text-white" />
@@ -115,7 +124,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Accommodations
                                         </span>
                                     </div>
-
                                     <div className="relative group">
                                         <Link href={route('map.index')} className="p-2">
                                             <FontAwesomeIcon icon={faMapLocation} className="h-5 w-5 text-white" />
@@ -255,6 +263,14 @@ export default function AuthenticatedLayout({ header, children }) {
                             >
                                 <FontAwesomeIcon icon={faBed} className="w-5 h-5 text-indigo-400" />
                                 <span>Accommodations</span>
+                            </ResponsiveNavLink>
+                            {/* Accommodations */}
+                            <ResponsiveNavLink
+                                href={route("customer.support.index")}
+                                className="flex items-center gap-3 text-sm"
+                            >
+                                <FontAwesomeIcon icon={faHeadset} className="w-5 h-5 text-indigo-400" />
+                                <span>Customer Support</span>
                             </ResponsiveNavLink>
 
                             {/* Map */}

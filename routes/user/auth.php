@@ -85,3 +85,4 @@ require __DIR__ . '/bed.php';
 require __DIR__ . '/keyword.php';
 require __DIR__ . '/recommendation.php';
 require __DIR__ . '/filter.php';
+require __DIR__ . '/customer_support.php';

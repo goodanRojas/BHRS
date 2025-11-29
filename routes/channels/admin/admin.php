@@ -33,3 +33,6 @@ Broadcast::channel('online-sellers', function ($seller){
     return ['id' => $seller->id, 'name' => $seller->name];
 }, ['guards' => ['seller', 'admin']]);
 
+Broadcast::channel('new-customer-support-channel', function ($user){
+    return ['id' => $user->id, 'name' => $user->name];
+}, ['guards' => ['web', 'admin']]);

@@ -21,6 +21,10 @@ Broadcast::channel('user_booking_rejected.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+Broadcast::channel('customer-support-response-channel.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 /* Chat: User to Owner */
 
 Broadcast::channel('user-to-owner-messages.{id}', function ($owner, $ownerId) {

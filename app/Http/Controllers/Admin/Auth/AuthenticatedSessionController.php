@@ -38,7 +38,7 @@ class AuthenticatedSessionController extends Controller
                 'actor_id' => $admin->id,
                 'name' => $admin->name,
                 'activity' => 'Admin Logged In',
-                ,
+
             ]);
             return redirect()->intended(route('admin.dashboard'));
         } else {
@@ -76,7 +76,6 @@ class AuthenticatedSessionController extends Controller
             'actor_id' => $admin->id,
             'name' => $admin->name,
             'activity' => 'Admin Logged Out',
-            ,
         ]);
         auth('admin')->logout();
         return redirect()->route('admin.login');

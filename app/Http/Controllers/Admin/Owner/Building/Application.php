@@ -77,8 +77,6 @@ class Application extends Controller
             'actor_id' => Auth::guard('admin')->user()->id,
             'name' => Auth::guard('admin')->user()->name,
             'activity' => 'Approved Building Application for ' . $application->name,
-            ,
-
         ]);
         return redirect()->route('admin.owner.building.application.index');
     }
@@ -90,8 +88,6 @@ class Application extends Controller
             'actor_id' => Auth::guard('admin')->user()->id,
             'name' => Auth::guard('admin')->user()->name,
             'activity' => 'Rejected Building Application for ' . $application->name,
-            ,
-
         ]);
         $application->status = "rejected";
         $application->save();
