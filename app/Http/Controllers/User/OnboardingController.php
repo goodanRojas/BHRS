@@ -56,7 +56,7 @@ class OnboardingController extends Controller
         // 1. Generate embeddings for each feature
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
-        ])->post('https://api.openai.com/v1/embeddings', [
+        ])->timeout(120)->post('https://api.openai.com/v1/embeddings', [
                     'model' => 'text-embedding-3-small',
                     'input' => $features,
                 ]);
@@ -86,7 +86,6 @@ class OnboardingController extends Controller
                 $distinctEmbeddings[] = $currentEmbedding;
             }
         }
-
         return response()->json(['preferences' => $distinct]);
     }
 

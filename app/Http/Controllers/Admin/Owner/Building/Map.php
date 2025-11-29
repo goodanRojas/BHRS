@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage};
-use App\Models\{Building, RouteDestination}; // Assuming you have a Building and Destination model
+use App\Models\{Building, RouteDestination, Admin, AdminLog};
 class Map extends Controller
 {
     public function index()
@@ -42,8 +42,14 @@ class Map extends Controller
 
         $destination->save();
 
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Created route destination: ' . $destination->name,
+        ]);
         return back()->with([
-            'success'     => 'Destination created successfully.',
+            'success' => 'Destination created successfully.',
             'destination' => $destination
         ]);
     }
@@ -52,6 +58,12 @@ class Map extends Controller
     {
         $destination = RouteDestination::find($id);
         if ($destination) {
+            AdminLog::create([
+                'actor_type' => Admin::class,
+                'actor_id' => auth()->guard('admin')->id(),
+                'name' => auth()->guard('admin')->user()->name,
+                'activity' => 'Deleted route destination: ' . $destination->name,
+            ]);
             $destination->delete();
             return response()->json(['success' => true]);
         } else {
@@ -62,14 +74,12 @@ class Map extends Controller
     public function update(Request $request, $id)
     {
         $destination = RouteDestination::find($id);
-        Log::info('Update method called with request:', $request->all());
-        // Log::info('Update method called with request:', $destination->toArray());
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'category'    => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'latitude'    => 'required|numeric',
-            'longitude'   => 'required|numeric',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
         $destination->name = $validated['name'];
         $destination->category = $validated['category'];
@@ -88,7 +98,13 @@ class Map extends Controller
 
         $destination->save();
 
-        Log::info('Destination updated:', $destination->toArray());
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated route destination: ' . $destination->name,
+        ]);
+
         return back()->with('success', 'Destination updated successfully.');
     }
 }

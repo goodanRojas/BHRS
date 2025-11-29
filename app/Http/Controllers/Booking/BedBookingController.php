@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Booking;
 use App\Events\Owner\UserGcashPaid;
 use App\Http\Controllers\Controller;
 use App\Events\Owner\NewBooking;
-use App\Models\{Receipt, Address, Bed, Booking};
+use App\Models\{Receipt, Address, Bed, Booking, User, AdminLog};
 use App\Notifications\NewBookingNotification;
 use App\Notifications\User\UserBookingGcashPaid;
 use App\Notifications\Seller\BookingCancelledNotification;
@@ -43,6 +43,7 @@ class BedBookingController extends Controller
 
     public function bookBed(Request $request, $bedId)
     {
+        $user = auth()->user();
         $request->validate([
             'start_date' => 'required|date',
             'month_count' => 'required|integer|min:1',
@@ -69,9 +70,15 @@ class BedBookingController extends Controller
             'agreed_to_terms' => $request->agreedToTerms,
         ]);
         Address::create([
-            'addressable_id'   => $booking->id,
+            'addressable_id' => $booking->id,
             'addressable_type' => Booking::class,
             'address' => $request->address,
+        ]);
+        AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => $user->id,
+            'name' => $user->name,
+            'activity' => 'Booked a bed',
         ]);
 
         $seller = $booking->bookable->room->building->seller;
@@ -87,6 +94,7 @@ class BedBookingController extends Controller
     // Show GCash payment page with React/Inertia
     public function showGCashPaymentPage($booking_id)
     {
+        
         $booking = Booking::where('id', $booking_id)
             ->where('user_id', auth()->id())
             ->where('status', 'approved')
@@ -110,6 +118,7 @@ class BedBookingController extends Controller
 
     public function confirmGcashPayment(Request $request)
     {
+        $user = auth()->user();
         $request->validate([
             'booking_id' => 'required|exists:bookings,id',
             'remarks' => 'nullable|string|max:255',
@@ -122,7 +131,7 @@ class BedBookingController extends Controller
 
         $path = $request->file('payment_proof')->store('receipts', 'public');
 
-        $receipt =  Receipt::create([
+        $receipt = Receipt::create([
             'booking_id' => $booking->id,
             'user_receipt' => $path,
             'payment_method' => 'gcash',
@@ -134,18 +143,31 @@ class BedBookingController extends Controller
         ]);
         $booking->bookable->room->building->seller->notify(new UserBookingGcashPaid($booking));
 
-        event(new  UserGcashPaid($receipt));
-
+        event(new UserGcashPaid($receipt));
+        AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => $user->id,
+            'name' => $user->name,
+            'activity' => 'Confirmed GCash payment for a booking',
+        ]);
         return redirect()->route('accommodations.index');
     }
 
     /* Cancel booking */
     public function cancelBooking(Request $request, Booking $booking)
     {
+        $user = auth()->user();
         $booking->status = 'canceled';
         $booking->save();
         // Notify the owner about the cancellation
         $booking->bookable->room->building->seller->notify(new BookingCancelledNotification($booking));
+
+        AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => $user->id,
+            'name' => $user->name,
+            'activity' => 'Cancelled a booking',
+        ]);
         return redirect()->route('accommodations.canceled')->with('success', 'Booking cancelled successfully.');
     }
 }

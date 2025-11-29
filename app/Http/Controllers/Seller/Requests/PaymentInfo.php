@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Log, Hash, Storage};
 
-use App\Models\{ChatGroup, DefaultMessage, OwnerPaymentInfo, Receipt, Seller, User, Message};
+use App\Models\{ChatGroup, DefaultMessage, Receipt, Seller, User, Message, AdminLog};
 use App\Events\User\Booking\PaymentConfirmed;
 use App\Notifications\User\BookingSetupCompleted;
 
@@ -38,6 +38,7 @@ class PaymentInfo extends Controller
 
     public function confirm(Request $request)
     {
+        $seller = Auth::guard('seller')->user();
         $request->validate([
             'payment_id' => 'required|exists:receipts,id',
             'remarks' => 'nullable',
@@ -86,7 +87,12 @@ class PaymentInfo extends Controller
             'receiver_type' => User::class,
             'content' => $message->message,
         ]);
-
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => $seller->id,
+            'name' => $seller->name,
+            'activity' => 'Bed Request Confirmed',
+        ]);
         return redirect()->route('seller.request.payments.index')
             ->with('success', 'Payment has been confirmed successfully.');
     }

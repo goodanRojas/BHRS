@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{Address, BuildingApplication, Admin};
+use App\Models\{Address, BuildingApplication, Admin, Seller, AdminLog};
 use App\Notifications\Admin\NewBuildingNotification;
 
 class BuildingApplicationController extends Controller
@@ -66,6 +66,13 @@ class BuildingApplicationController extends Controller
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'address' => $validated['address']
+        ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Submitted a building application for ' . $validated['buildingName'],
         ]);
 
         $admins = Admin::all();

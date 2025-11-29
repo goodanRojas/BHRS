@@ -234,6 +234,7 @@ class BuildingController extends Controller
         }
 
         $buildings = Building::where('name', 'like', "%{$search}%")
+            ->where('status', 'active')
             ->limit(5)
             ->pluck('name'); // only get the name column
 

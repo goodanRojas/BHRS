@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Owner\Building;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Bed, Feature};
+use App\Models\{Admin, AdminLog, Bed, Feature};
 use Inertia\Inertia;
 class BedController extends Controller
 {
@@ -32,6 +32,12 @@ class BedController extends Controller
         ]);
         $id = $beds->id;
         $bed = Bed::find($id);
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added Bed: ' . $bed->name,
+        ]);
         return response()->json([
             'bed' => $bed
         ]);
@@ -55,6 +61,13 @@ class BedController extends Controller
             'description' => $request->description,
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Bed::class
+        ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added Bed Feature: ' . $feature->name,
         ]);
         return response()->json([
             'feature' => $feature

@@ -146,6 +146,7 @@ class BedController extends Controller
         $user = $request->user();
 
         try {
+            
             // Check if already favorited
             $favorite = Favorite::where('user_id', $user->id)
                 ->where('favoritable_type', Bed::class)

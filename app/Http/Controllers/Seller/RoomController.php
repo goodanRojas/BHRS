@@ -8,7 +8,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage, Auth};
 use App\Models\Feedback;
 use App\Models\Booking;
-use App\Models\{Bed, Room, Media, Feature, };
+use App\Models\{Bed, Room, Media, Feature, Seller, AdminLog};
 
 class RoomController extends Controller
 {
@@ -35,6 +35,14 @@ class RoomController extends Controller
             'imageable_type' => Room::class,
             'file_path' => $imagePath,
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Uploaded Image to Room ID ' . $request->id,
+        ]);
+
         return response()->json([
             'uploadedImages' => $media
         ]);
@@ -53,7 +61,14 @@ class RoomController extends Controller
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Room::class
         ]);
-        Log::info($feature);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Added Feature ID ' . $feature->id . ' to Room ID ' . $request->featureable_id,
+        ]);
+
         return response()->json([
             'feature' => $feature
         ]);
@@ -62,6 +77,13 @@ class RoomController extends Controller
     {
         // Find the feature by ID
         $feature = Feature::findOrFail($id);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted Feature ID ' . $feature->id . ' from Room ID ' . $feature->featureable_id,
+        ]);
 
         // Delete the feature
         $feature->delete();
@@ -91,6 +113,14 @@ class RoomController extends Controller
             'image' => $imagePath,
             'price' => $request->price,
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Added Bed ID ' . $bed->id . ' to Room ID ' . $request->room_id,
+        ]);
+
         return response()->json([
             'bed' => $bed
         ]);
@@ -104,6 +134,14 @@ class RoomController extends Controller
         $bed = Room::find($request->id);
         $bed->description = $validated['description'];
         $bed->save();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Description of Room ID ' . $bed->id,
+        ]);
+
         return response()->json([
             'description' => $bed->description
         ]);
@@ -122,6 +160,13 @@ class RoomController extends Controller
 
         $imagePath = $request->file('image')->store('images', 'public');
         $room->update(['image' => $imagePath]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Main Image of Room ID ' . $room->id,
+        ]);
 
         return response()->json([
             'message' => 'Main image updated successfully',
@@ -142,6 +187,13 @@ class RoomController extends Controller
         $imagePath = $request->file('image')->store('images', 'public');
         $media->update(['file_path' => $imagePath]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Carousel Image ID ' . $media->id . ' for Room ID ' . $media->imageable_id,
+        ]);
+
         return response()->json([
             'message' => 'Carousel image updated successfully',
             'image' => $imagePath,
@@ -152,6 +204,13 @@ class RoomController extends Controller
         if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
             Storage::disk('public')->delete($media->file_path);
         }
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted Carousel Image ID ' . $media->id . ' of Room ID ' . $media->imageable_id,
+        ]);
 
         $media->delete();
 
@@ -165,6 +224,12 @@ class RoomController extends Controller
         $room->name = $request->name;
         $room->save();
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Name of Room ID ' . $room->id,
+        ]);
         return response()->json([
             'name' => $room->name
         ]);
@@ -175,6 +240,14 @@ class RoomController extends Controller
             return redirect()->back()->with('error', 'You cannot delete this bed because it has bookings.');
         }
         $building = $room->building;
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted Room ID ' . $room->id . ' from Building ID ' . $building->id,
+        ]);
+
         $room->delete();
         return redirect()
             ->route('seller.building.show.building', $building) // pass the model, not just id

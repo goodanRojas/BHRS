@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Subscription;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Subscription, SubscriptionPlan};
+use App\Models\{Subscription, SubscriptionPlan, Admin, AdminLog};
 use Illuminate\Support\Facades\Log;
 use App\Events\Seller\SubscriptionConfirmedEvent;
 use App\Notifications\Seller\{SubscriptionConfirmedNotif, SubscriptionRejectedNotif};
@@ -81,6 +81,14 @@ class SubscriptionController extends Controller
         }
 
         $subscription->save();
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Confirmed subscription ID: ' . $subscription->id,
+        ]);
+
         $seller = $subscription->seller;
         $subscription->load('plan', 'seller');
         $seller->notify(new SubscriptionConfirmedNotif($subscription));
@@ -97,7 +105,12 @@ class SubscriptionController extends Controller
         $subscription->load('plan', 'seller');
         $seller = $subscription->seller;
         $seller->notify(new SubscriptionRejectedNotif($subscription));
-
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Rejected subscription ID: ' . $subscription->id,
+        ]);
         return redirect()->route('admin.subscriptions.cancelled', $subscription)
             ->with('success', 'Subscription has been rejected and moved to cancelled!');
     }

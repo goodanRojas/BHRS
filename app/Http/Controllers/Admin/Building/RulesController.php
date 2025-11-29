@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Building;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\RulesAndRegulation;
+use App\Models\{RulesAndRegulation, AdminLog, Admin};
 use Illuminate\Support\Facades\Log;
 class RulesController extends Controller
 {
@@ -22,7 +22,7 @@ class RulesController extends Controller
     // Add a rule
     public function store(Request $request, $id, $sellerId)
     {
-
+        $admin = auth('admin')->user();
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -35,14 +35,19 @@ class RulesController extends Controller
             'description' => $request->description,
             'status' => 1,
         ]);
-
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => $admin->id,
+            'name' => $admin->name,
+            'activity' => 'Added building rule - ' . $request->title,
+        ]);
         return response()->json(['rule' => $rule], 201);
     }
 
     // Update a rule
     public function update(Request $request, RulesAndRegulation $rule)
     {
-      
+        $admin = auth('admin')->user();
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -53,6 +58,12 @@ class RulesController extends Controller
             'title' => $request->title,
             'description' => $request->description,
         ]);
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => $admin->id,
+            'name' => $admin->name,
+            'activity' => 'Updated building rule - ' . $request->title,
+        ]);
 
         return response()->json(['rule' => $rule]);
     }
@@ -60,10 +71,16 @@ class RulesController extends Controller
     // Delete a rule
     public function destroy(RulesAndRegulation $rule)
     {
-        
 
+        $admin = auth('admin')->user();
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => $admin->id,
+            'name' => $admin->name,
+            'activity' => 'Deleted building rule - ' . $rule->title,
+        ]);
         $rule->delete();
-
         return response()->json(['message' => 'Rule deleted successfully']);
     }
 }

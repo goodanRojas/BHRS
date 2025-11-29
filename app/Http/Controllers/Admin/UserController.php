@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\{User, Building, Booking, Bed};
+use App\Models\{User, Building, Booking, Bed, Admin, AdminLog};
 use Illuminate\Support\Facades\{Hash, Log};
 class UserController extends Controller
 {
@@ -31,6 +31,13 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Created user account: ' . $user->name,
+        ]);
+
         return redirect()->back()->with('success', 'User created successfully');
     }
 
@@ -46,8 +53,12 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Log::info($user);
-
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated user account: ' . $user->name,
+        ]);
         return redirect()->back()->with('success', 'User updated successfully');
     }
 
@@ -56,6 +67,14 @@ class UserController extends Controller
         $user = User::findOrFail($id); // Assuming you're using the `User` model, not `Seller`
         $user->status = !$user->status;
         $user->save();
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => ($user->status ? 'Activated' : 'Deactivated') . ' user account: ' . $user->name,
+        ]);
+
         return response()->json([
             'success' => true,
         ]);
@@ -126,6 +145,13 @@ class UserController extends Controller
             'agreed_to_terms' => true,
             'status' => 'completed',
             'payment_method' => 'cash',
+        ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added booking ID: ' . $booking->id . ' for user ID: ' . $validated['userId'],
         ]);
 
         return response()->json([

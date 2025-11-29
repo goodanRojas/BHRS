@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage};
-use App\Models\{Bed, Media, Feature};
+use App\Models\{Bed, Media, Feature, Seller, AdminLog};
 
 class BedController extends Controller
 {
@@ -34,6 +34,14 @@ class BedController extends Controller
             'imageable_type' => Bed::class,
             'file_path' => $imagePath,
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Uploaded an image for bed ID ' . $request->id,
+        ]);
+
         return response()->json([
             'uploadedImages' => $media
         ]);
@@ -51,6 +59,14 @@ class BedController extends Controller
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Bed::class
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Added a feature (' . $request->name . ') to bed ID ' . $request->featureable_id,
+        ]);
+
         return response()->json([
             'feature' => $feature
         ]);
@@ -60,6 +76,12 @@ class BedController extends Controller
         // Find the feature by ID
         $feature = Feature::findOrFail($id);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted a feature (' . $feature->name . ') from bed ID ' . $feature->featureable_id,
+        ]);
         // Delete the feature
         $feature->delete();
 
@@ -77,6 +99,13 @@ class BedController extends Controller
         $bed = Bed::find($request->id);
         $bed->description = $validated['description'];
         $bed->save();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated description for bed ID ' . $request->id,
+        ]);
         return response()->json([
             'description' => $bed->description
         ]);
@@ -95,6 +124,13 @@ class BedController extends Controller
 
         $imagePath = $request->file('image')->store('images', 'public');
         $bed->update(['image' => $imagePath]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated main image for bed ID ' . $bed->id,
+        ]);
 
         return response()->json([
             'message' => 'Main image updated successfully',
@@ -115,6 +151,13 @@ class BedController extends Controller
         $imagePath = $request->file('image')->store('images', 'public');
         $media->update(['file_path' => $imagePath]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated carousel image ID ' . $media->id . ' for bed ID ' . $media->imageable_id,
+        ]);
+
         return response()->json([
             'message' => 'Carousel image updated successfully',
             'image' => $imagePath,
@@ -125,7 +168,12 @@ class BedController extends Controller
         if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
             Storage::disk('public')->delete($media->file_path);
         }
-
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted carousel image ID ' . $media->id . ' for bed ID ' . $media->imageable_id,
+        ]);
         $media->delete();
 
         return response()->json([
@@ -139,6 +187,14 @@ class BedController extends Controller
             return redirect()->back()->with('error', 'You cannot delete this bed because it has bookings.');
         }
         $room = $bed->room;
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted bed ID ' . $bed->id,
+        ]);
+
         $bed->delete();
         return redirect()
             ->route('seller.room.details', $room) // pass the model, not just id
@@ -153,6 +209,12 @@ class BedController extends Controller
         $bed->name = $request->name;
         $bed->save();
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated name for bed ID ' . $bed->id,
+        ]);
         return response()->json([
             'name' => $bed->name
         ]);
@@ -161,6 +223,14 @@ class BedController extends Controller
     {
         $bed->price = $request->price;
         $bed->save();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated price for bed ID ' . $bed->id,
+        ]);
+
         return response()->json([
             'price' => $bed->price
         ]);
@@ -170,6 +240,14 @@ class BedController extends Controller
     {
         $bed->is_occupied = !$bed->is_occupied;
         $bed->save();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Toggled occupancy for bed ID ' . $bed->id . ' to ' . ($bed->is_occupied ? 'occupied' : 'unoccupied'),
+        ]);
+
         return response()->json([
             'is_occupied' => $bed->is_occupied
         ]);

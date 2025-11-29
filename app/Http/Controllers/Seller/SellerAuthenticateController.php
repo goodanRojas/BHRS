@@ -10,7 +10,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Route, RateLimiter};
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use App\Models\Subscription;
+use App\Models\{Subscription, Seller, AdminLog};
 class SellerAuthenticateController
 {
 
@@ -39,7 +39,6 @@ class SellerAuthenticateController
 
     public function store(Request $request)
     {
-
         $this->ensureIsNotRateLimited($request);
         $validate = $request->validate([
             'email' => 'required|string|email',
@@ -52,8 +51,14 @@ class SellerAuthenticateController
             ])
         ) {
             RateLimiter::clear($this->throttleKey($request)); // reset attempts
-            Log::info("Owner authenticated!");
+            $seller = auth('seller')->user();
 
+            AdminLog::create([
+                'actor_type' => Seller::class,
+                'actor_id' => $seller->id,
+                'name' => $seller->name,
+                'activity' => 'Logged in',
+            ]);
             return redirect()->intended(route('seller.dashboard.index'));
         } else {
             RateLimiter::hit($this->throttleKey($request), 3600); // record a failed attempt, decay = 3600s (1hr)
@@ -87,6 +92,13 @@ class SellerAuthenticateController
 
     public function destroy(Request $request)
     {
+        $seller = auth('seller')->user();
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => $seller->id,
+            'name' => $seller->name,
+            'activity' => 'Logged out',
+        ]);
         // Log out the seller from the custom 'seller' guard
         Auth::guard('seller')->logout();
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Events\UserStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\{AdminLog, User};
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,6 +60,13 @@ class AuthenticatedSessionController extends Controller
         $user->update(['is_online' => true]);
         event(new UserStatusUpdated($user->id, true));
 
+        AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => $user->id,
+            'name' => $user->name,
+            'activity' => 'Logged in',
+        ]);
+
         // Redirect to intended page
         return redirect()->intended(route('to.user.buildings', absolute: false));
     }
@@ -69,13 +77,19 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         auth()->user()->update(['is_online' => false]);
+
+        AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => auth()->user()->id,
+            'name' => auth()->user()->name,
+            'activity' => 'Logged out',
+        ]);
         event(new UserStatusUpdated(auth()->user()->id, False));
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
-
 
 
         return redirect('/');

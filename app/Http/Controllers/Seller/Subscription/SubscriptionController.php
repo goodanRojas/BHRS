@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{Subscription, SubscriptionPlan, Admin, AdminPaymentInfo};
+use App\Models\{Subscription, SubscriptionPlan, Admin, AdminPaymentInfo, Seller, AdminLog};
 use App\Events\Admin\NewSellerSubscriptionEvent;
 class SubscriptionController extends Controller
 {
@@ -44,6 +44,7 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
+        $seller = auth()->guard('seller')->user();
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
             'receipt' => 'required|image|max:2048',
@@ -69,7 +70,12 @@ class SubscriptionController extends Controller
 
         $admin->notify(new NewSellerSubscriptionNotif($subscription));
         event(new NewSellerSubscriptionEvent($subscription));
-
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => $seller->id,
+            'name' => $seller->name,
+            'activity' => 'Subscription Created',
+        ]);
         return redirect()->route('seller.subscription.pending');
     }
 
@@ -123,6 +129,7 @@ class SubscriptionController extends Controller
 
     public function storeUpgrade(Request $request)
     {
+        $seller = auth()->guard('seller')->user();
         // dd($request->all());
         $owner = auth()->guard('seller')->user();
 
@@ -152,7 +159,12 @@ class SubscriptionController extends Controller
         $admin->notify(new SellerSubscriptionUpgradeNotif($subscription));
         event(new SellerSubscriptionUpgradeEvent($subscription));
 
-
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => $seller->id,
+            'name' => $seller->name,
+            'activity' => 'Subscription Upgraded',
+        ]);
         return redirect()->route('seller.subscription.pending', parameters: [
             'message' => 'Your subscription has been upgraded. Please wait for admin approval.',
             'type' => 'success'

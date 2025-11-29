@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Seller\Building;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\RulesAndRegulation;
+use App\Models\{RulesAndRegulation, Seller, AdminLog};
 
 class RulesController extends Controller
 {
@@ -37,6 +37,13 @@ class RulesController extends Controller
             'status' => 1,
         ]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Created a new building rule',
+        ]);
+
         return response()->json(['rule' => $rule], 201);
     }
 
@@ -59,6 +66,13 @@ class RulesController extends Controller
             'description' => $request->description,
         ]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated a building rule',
+        ]);
+
         return response()->json(['rule' => $rule]);
     }
 
@@ -72,6 +86,13 @@ class RulesController extends Controller
         }
 
         $rule->delete();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted a building rule',
+        ]);
 
         return response()->json(['message' => 'Rule deleted successfully']);
     }

@@ -16,6 +16,7 @@ export default function Buildings({ initialBuildings }) {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [suggestions, setSuggestions] = useState([]);
+    const [loading, setLoading] = useState(false);
     // debounce search
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -66,9 +67,10 @@ export default function Buildings({ initialBuildings }) {
                                     onChange={(e) => {
                                         setSearch(e.target.value);
                                         if (e.target.value.length > 0) {
+                                            setLoading(true);
                                             fetch(`/home/buildings/suggestions?query=${e.target.value}`)
                                                 .then((res) => res.json())
-                                                .then((data) => setSuggestions(data));
+                                                .then((data) => { setSuggestions(data); setLoading(false); });
                                         } else {
                                             setSuggestions([]);
                                         }
@@ -85,10 +87,11 @@ export default function Buildings({ initialBuildings }) {
                                         <button
                                             key={index}
                                             onClick={() => {
+                                                console.log(name);
                                                 setSearch(name);
                                                 setSuggestions([]);
                                             }}
-                                            className="block text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50"
+                                            className="w-full block text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50"
                                         >
                                             {name}
                                         </button>
@@ -97,9 +100,12 @@ export default function Buildings({ initialBuildings }) {
                             )}
                         </div>
                         {/* Filters */}
+
                         <Filter setBuildings={(buildings) => {
                             setBuildings(buildings);
-                        }} />
+                        }}
+                            setLoading={(loading) => { setLoading(loading); }}
+                        />
 
                         {/* Keywords */}
                         <div className="mb-6">
@@ -129,106 +135,112 @@ export default function Buildings({ initialBuildings }) {
 
                             {/* Buildings Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-                                {buildings.map((building) => (
-                                    <Link
-                                        key={building.id}
-                                        href={`/home/building/${building.id}`}
-                                        className="
-        group flex flex-col w-[220px] 
-        bg-white/90 rounded-2xl shadow-md border border-gray-100 
-        hover:shadow-xl hover:border-gray-200 hover:-translate-y-2 
-        transition-all duration-300 backdrop-blur-sm
-    "
-                                    >
-                                        {/* Image */}
-                                        <div className="relative h-[150px] overflow-hidden rounded-t-2xl">
-                                            <img
-                                                src={`/storage/${building.image}`}
-                                                alt={building.name}
-                                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                            />
-
-                                            {/* View Count */}
-                                            {building.building_view_count_count > 0 && (
-                                                <div className="absolute top-2 left-2 z-20 flex items-center gap-1 
-                bg-black/50 text-white px-2 py-1 rounded-full backdrop-blur-sm">
-                                                    <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
-                                                    <span className="text-[10px] font-semibold">
-                                                        {building.building_view_count_count}
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                            {/* Rating */}
-                                            {building.rating_count > 0 && (
-                                                <div className="absolute top-2 right-2 z-20 flex items-center gap-1 
-                bg-black/50 text-white px-2 py-1 rounded-full backdrop-blur-sm">
-                                                    <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-yellow-400" />
-                                                    <span className="text-[10px] font-semibold">
-                                                        {building.avg_rating ? Number(building.avg_rating).toFixed(1) : "0.0"}
-                                                    </span>
-                                                    <span className="text-[9px] text-slate-200">
-                                                        ({building.rating_count})
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                            {/* Gradient Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent 
-            opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="p-4 space-y-3">
-
-                                            {/* Title */}
-                                            <div>
-                                                <h2 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
-                                                    {building.name}
-                                                </h2>
-                                                <div className="h-0.5 w-8 bg-indigo-500 rounded mt-1"></div>
-                                            </div>
-
-                                            {/* Seller Info */}
-                                            <div className="flex items-center gap-2">
+                                {loading ? (
+                                    // 🔄 Skeleton Loader (4 items)
+                                    [...Array(4)].map((_, i) => (
+                                        <div key={i} className="w-[220px] h-[260px] bg-gray-200 animate-pulse rounded-2xl"></div>
+                                    ))
+                                ) : buildings.length > 0 ? (
+                                    buildings.map((building) => (
+                                        <Link
+                                            key={building.id}
+                                            href={`/home/building/${building.id}`}
+                                            className="group flex flex-col w-[220px] bg-white/90 rounded-2xl shadow-md border hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
+                                        >
+                                            {/* Image */}
+                                            <div className="relative h-[150px] overflow-hidden rounded-t-2xl">
                                                 <img
-                                                    src={
-                                                        building.seller?.avatar
-                                                            ? `/storage/${building.seller.avatar}`
-                                                            : "/storage/profile/default_avatar.png"
-                                                    }
-                                                    alt={building.seller?.name || "Default Avatar"}
-                                                    className="w-7 h-7 rounded-full border border-gray-200 object-cover shadow-sm"
+                                                    src={`/storage/${building.image}`}
+                                                    alt={building.name}
+                                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                                                 />
-                                                <span className="text-xs font-medium text-gray-700 truncate">
-                                                    {building.seller?.name}
-                                                </span>
+                                                {/* View Count */}
+                                                {building.building_view_count_count > 0 && (
+                                                    <div className="absolute top-2 left-2 z-20 flex items-center gap-1 
+                                                          bg-black/50 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                                                        <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
+                                                        <span className="text-[10px] font-semibold">
+                                                            {building.building_view_count_count}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {/* Rating */}
+                                                {building.rating_count > 0 && (
+                                                    <div className="absolute top-2 right-2 z-20 flex items-center gap-1 
+                bg-black/50 text-white px-2 py-1 rounded-full backdrop-blur-sm">
+                                                        <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-yellow-400" />
+                                                        <span className="text-[10px] font-semibold">
+                                                            {building.avg_rating ? Number(building.avg_rating).toFixed(1) : "0.0"}
+                                                        </span>
+                                                        <span className="text-[9px] text-slate-200">
+                                                            ({building.rating_count})
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {/* Gradient Overlay */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent 
+            opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             </div>
 
-                                            {/* Address */}
-                                            <div className="flex items-start text-gray-500 text-[10px] gap-1 leading-tight">
-                                                <i className="fas fa-location-arrow text-indigo-500 mt-0.5"></i>
-                                                {building.address ? (
-                                                    building.address.address ? (
-                                                        <span className="truncate block max-w-[170px]">
-                                                            {[
-                                                                building.address.barangay ?? building.address?.address?.barangay,
-                                                                building.address.municipality ?? building.address?.address?.municipality,
-                                                                building.address.province ?? building.address?.address?.province,
-                                                            ]
-                                                                .filter(Boolean)
-                                                                .join(", ")}
-                                                        </span>
+                                            {/* Content */}
+                                            <div className="p-4 space-y-3">
+
+                                                {/* Title */}
+                                                <div>
+                                                    <h2 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                                                        {building.name}
+                                                    </h2>
+                                                    <div className="h-0.5 w-8 bg-indigo-500 rounded mt-1"></div>
+                                                </div>
+
+                                                {/* Seller Info */}
+                                                <div className="flex items-center gap-2">
+                                                    <img
+                                                        src={
+                                                            building.seller?.avatar
+                                                                ? `/storage/${building.seller.avatar}`
+                                                                : "/storage/profile/default_avatar.png"
+                                                        }
+                                                        alt={building.seller?.name || "Default Avatar"}
+                                                        className="w-7 h-7 rounded-full border border-gray-200 object-cover shadow-sm"
+                                                    />
+                                                    <span className="text-xs font-medium text-gray-700 truncate">
+                                                        {building.seller?.name}
+                                                    </span>
+                                                </div>
+
+                                                {/* Address */}
+                                                <div className="flex items-start text-gray-500 text-[10px] gap-1 leading-tight">
+                                                    <i className="fas fa-location-arrow text-indigo-500 mt-0.5"></i>
+                                                    {building.address ? (
+                                                        building.address.address ? (
+                                                            <span className="truncate block max-w-[170px]">
+                                                                {[
+                                                                    building.address.barangay ?? building.address?.address?.barangay,
+                                                                    building.address.municipality ?? building.address?.address?.municipality,
+                                                                    building.address.province ?? building.address?.address?.province,
+                                                                ]
+                                                                    .filter(Boolean)
+                                                                    .join(", ")}
+                                                            </span>
+                                                        ) : (
+                                                            <p>No Address Provided</p>
+                                                        )
                                                     ) : (
                                                         <p>No Address Provided</p>
-                                                    )
-                                                ) : (
-                                                    <p>No Address Provided</p>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                ))}
+                                        </Link>
+                                    ))
+                                ) : (
+                                    // 🕳 No results message
+                                    <div className="col-span-full text-gray-500 text-sm mt-10">
+                                        No buildings found.
+                                    </div>
+                                )}
+
                             </div>
                         </section>
                     </div>

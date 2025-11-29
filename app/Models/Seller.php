@@ -36,7 +36,10 @@ class Seller extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-
+    public function adminLogs()
+    {
+        return $this->morphMany(AdminLog::class, 'actor');
+    }
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new SellerResetPassword($token));

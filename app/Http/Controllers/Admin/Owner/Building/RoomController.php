@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin\Owner\Building;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log};
-use App\Models\{Room, Bed, Building, Address, Seller, Feature};
+use App\Models\{Room, Bed, Building, Address, Seller, Feature, Admin, AdminLog};
 use Inertia\Inertia;
 
 class RoomController extends Controller
@@ -23,6 +23,14 @@ class RoomController extends Controller
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Room::class
         ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added Room Feature: ' . $feature->name,
+        ]);
+
         return response()->json([
             'feature' => $feature
         ]);
@@ -51,7 +59,12 @@ class RoomController extends Controller
         ]);
         $id = $rooms->id;
         $room = Room::find($id);
-        Log::info($room);
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added Room: ' . $room->name,
+        ]);
         return response()->json([
             'room' => $room
         ]);
@@ -59,7 +72,7 @@ class RoomController extends Controller
 
     public function showRoom($id)
     {
-        $room = Room::with('images', 'building', 'features', 'beds',)->find($id);
+        $room = Room::with('images', 'building', 'features', 'beds', )->find($id);
         return Inertia::render('Admin/Owner/Building/Room/Room', [
             'room' => $room
         ]);

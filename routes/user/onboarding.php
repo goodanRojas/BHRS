@@ -7,6 +7,6 @@ Route::prefix('user/onboarding')->name('user.onboarding.')->middleware('auth')->
     Route::get('/', [OnboardingController::class, 'show'])->name('show');
     Route::post('/', [ OnboardingController::class, 'store'])->name('store');
 
-    Route::get('/get/preferences', [OnboardingController::class, 'getPrefrences'])->name('get.preferences');
+    Route::get('/get/preferences', [OnboardingController::class, 'getPreferences'])->name('get.preferences');
     
 });

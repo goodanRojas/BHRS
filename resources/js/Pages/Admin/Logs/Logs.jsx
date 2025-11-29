@@ -1,106 +1,28 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "../AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import {
-    LogIn,
-    User,
-    UserCog,
-    CheckCircle,
-    XCircle,
-    CreditCard,
-    Activity
-} from "lucide-react";
+import { LogIn, LogOut, UserCog, User } from "lucide-react";
 
-export default function Logs() {
-    const [logs] = useState([
-        {
-            id: 1,
-            name: "Daniel Rojas",
-            activity: "User Login",
-            user_type: "User",
-            date: "2025-11-24 08:32 AM",
-            icon: LogIn,
-        },
-        {
-            id: 2,
-            name: "Maria Santos",
-            activity: "Owner Login",
-            user_type: "Owner",
-            date: "2025-11-24 09:10 AM",
-            icon: UserCog,
-        },
-        {
-            id: 3,
-            name: "Building Owner - John Cruz",
-            activity: "Owner Subscription Activated",
-            user_type: "Owner",
-            date: "2025-11-24 09:45 AM",
-            icon: CreditCard,
-        },
-        {
-            id: 4,
-            name: "User - Michael Tan",
-            activity: "Booking Confirmed",
-            user_type: "User",
-            date: "2025-11-24 10:15 AM",
-            icon: CheckCircle,
-        },
-        {
-            id: 5,
-            name: "User - Jenny P.",
-            activity: "Booking Rejected",
-            user_type: "User",
-            date: "2025-11-24 10:40 AM",
-            icon: XCircle,
-        },
-        // --- New Entries ---
-        {
-            id: 6,
-            name: "Owner - Angela Lim",
-            activity: "Subscription Expired",
-            user_type: "Owner",
-            date: "2025-11-24 11:05 AM",
-            icon: CreditCard,
-        },
-        {
-            id: 7,
-            name: "User - Mark Reyes",
-            activity: "User Logout",
-            user_type: "User",
-            date: "2025-11-24 11:30 AM",
-            icon: LogIn,
-        },
-        {
-            id: 8,
-            name: "Owner - Peter Tan",
-            activity: "Added New Property",
-            user_type: "Owner",
-            date: "2025-11-24 11:55 AM",
-            icon: UserCog,
-        },
-        {
-            id: 9,
-            name: "User - Anna Cruz",
-            activity: "Booking Confirmed",
-            user_type: "User",
-            date: "2025-11-24 12:20 PM",
-            icon: CheckCircle,
-        },
-        {
-            id: 10,
-            name: "User - Luis Gonzales",
-            activity: "Booking Rejected",
-            user_type: "User",
-            date: "2025-11-24 12:45 PM",
-            icon: XCircle,
-        },
-    ]);
+export default function Logs({ logs }) {
 
+    // Extract only the class name from actor_type
+    const getUserType = (type) => {
+        if (!type) return "Unknown";
+        const parts = type.split("\\");
+        return parts[parts.length - 1]; // "User", "Seller", "Admin"
+    };
+
+    // Choose icon based on activity
+    const getActivityIcon = (activity) => {
+        if (activity.includes("Logged in")) return LogIn;
+        if (activity.includes("Logged out")) return LogOut;
+        return UserCog; // default
+    };
 
     return (
         <AuthenticatedLayout>
             <Head title="Activity Logs" />
+
             <motion.h1
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -125,7 +47,8 @@ export default function Logs() {
 
                         <tbody>
                             {logs.map((log, index) => {
-                                const Icon = log.icon;
+                                const Icon = getActivityIcon(log.activity);
+                                const userType = getUserType(log.actor_type);
 
                                 return (
                                     <motion.tr
@@ -149,18 +72,21 @@ export default function Logs() {
                                         {/* User Type */}
                                         <td className="py-3">
                                             <span
-                                                className={`px-3 py-1 rounded-full text-xs font-medium ${log.user_type === "Owner"
-                                                    ? "bg-purple-100 text-purple-700"
-                                                    : "bg-blue-100 text-blue-700"
-                                                    }`}
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                    userType === "Seller"
+                                                        ? "bg-purple-100 text-purple-700"
+                                                        : userType === "User"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
                                             >
-                                                {log.user_type}
+                                                {userType}
                                             </span>
                                         </td>
 
                                         {/* Date */}
                                         <td className="py-3 text-gray-500">
-                                            {new Date(log.date).toLocaleString("en-US", {
+                                            {new Date(log.created_at).toLocaleString("en-US", {
                                                 year: "numeric",
                                                 month: "short",
                                                 day: "numeric",
@@ -173,7 +99,6 @@ export default function Logs() {
                                 );
                             })}
                         </tbody>
-
                     </table>
                 </div>
             </div>

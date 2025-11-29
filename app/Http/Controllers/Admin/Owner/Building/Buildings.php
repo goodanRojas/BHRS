@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage};
 use Illuminate\Validation\Rule;
-use App\Models\{Room, Bed, Building, Address, Seller, Feature, Media};
+use App\Models\{Room, Bed, Building, Address, Seller, Feature, Media, AdminLog, Admin};
 
 class Buildings extends Controller
 {
@@ -21,6 +21,12 @@ class Buildings extends Controller
 
     public function disable(Request $request, Building $building)
     {
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => ($request->status ? 'Deactivated' : 'Activated') . ' Building: ' . $building->name,
+        ]);
         $building->status = $request->status  ? 'inactive' : 'active';
         $building->save();
         return response()->json([
@@ -38,9 +44,6 @@ class Buildings extends Controller
     }
     public function update(Request $request, Building $building)
     {
-        // dd($request);
-        Log::info('Building Update data');
-        Log::info($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|array',
@@ -89,6 +92,13 @@ class Buildings extends Controller
             ],
             'latitude' => $request->input('latitude'),
             'longitude' => $request->input('longitude'),
+        ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth('admin')->user()->id,
+            'name' => auth('admin')->user()->name,
+            'activity' => 'Updated Building: ' . $building->name,
         ]);
 
         return response()->json([
@@ -147,7 +157,12 @@ class Buildings extends Controller
                     ]);
                 }
             }
-
+            AdminLog::create([
+                'actor_type' => Admin::class,
+                'actor_id' => auth('admin')->user()->id,
+                'name' => auth('admin')->user()->name,
+                'activity' => 'Created Building: ' . $building->name,
+            ]);
             return back()->with('message', 'Building successfully created');
         }
         return back()->with('message', 'An error occurred while creating the building');
@@ -177,6 +192,13 @@ class Buildings extends Controller
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Building::class
         ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' =>  auth()->guard('admin')->user()->name,
+            'activity' => 'Added Building Feature: ' . $feature->name,
+        ]);
         return response()->json([
             'feature' => $feature
         ]);
@@ -186,6 +208,13 @@ class Buildings extends Controller
     {
         // Find the feature by ID
         $feature = Feature::findOrFail($id);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' =>  auth()->guard('admin')->user()->name,
+            'activity' => 'Deleted Building Feature: ' . $feature->name,
+        ]);
 
         // Delete the feature
         $feature->delete();
@@ -211,7 +240,14 @@ class Buildings extends Controller
             'imageable_type' => Building::class,
             'file_path' => $imagePath,
         ]);
-        Log::info($media);
+        
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Uploaded Building Image for Building ID: ' . $request->id,
+        ]);
+
         return response()->json([
             'uploadedImages' => $media
         ]);
@@ -230,6 +266,13 @@ class Buildings extends Controller
 
         $imagePath = $request->file('image')->store('images', 'public');
         $building->update(['image' => $imagePath]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated Main Image for Building: ' . $building->name,
+        ]);
 
         return response()->json([
             'message' => 'Main image updated successfully',
@@ -250,6 +293,13 @@ class Buildings extends Controller
         $imagePath = $request->file('image')->store('images', 'public');
         $media->update(['file_path' => $imagePath]);
 
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated Carousel Image ID: ' . $media->id,
+        ]);
+
         return response()->json([
             'message' => 'Carousel image updated successfully',
             'image' => $imagePath,
@@ -260,6 +310,13 @@ class Buildings extends Controller
         if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
             Storage::disk('public')->delete($media->file_path);
         }
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Deleted Carousel Image ID: ' . $media->id,
+        ]);
 
         $media->delete();
 
@@ -290,6 +347,14 @@ class Buildings extends Controller
             'name' => $request->name,
             'image' => $imagePath,
         ]);
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->user()->id,
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Added Room: ' . $rooms->name,
+        ]);
+
         return response()->json([
             'room' => $rooms
         ]);

@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Auth, Log};
-use App\Models\{Booking, Bed, Room};
+use App\Models\{Booking, Bed, Room, User, AdminLog};
 
 class AccommodationController extends Controller
 {
@@ -72,12 +72,18 @@ class AccommodationController extends Controller
 
     public function storeFeedback(Request $request, $type, $id)
     {
+        $user = $request->user();
         // Validate the incoming request data
         $validated = $request->validate([
             'rating' => 'required|integer|between:1,5',
             'feedback' => 'nullable|string|max:1000',
         ]);
-
+          AdminLog::create([
+            'actor_type' => User::class,
+            'actor_id' => $user->id,
+            'name' => $user->name,
+            'activity' => 'Added Feedback',
+        ]);
         // Find the correct model based on the type (bed or room)
         if ($type == 'bed') {
             $accommodation = Bed::findOrFail($id);

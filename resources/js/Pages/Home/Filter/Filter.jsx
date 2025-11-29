@@ -4,7 +4,7 @@ import { MapPin, Star, DollarSign, SlidersHorizontal } from "lucide-react";
 import ph from "@/Pages/Data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json";
 import axios from "axios";
 
-export default function Filter({ setBuildings }) {
+export default function Filter({ setBuildings, setLoading }) {
     // Filter states
     const [hovered, setHovered] = useState(null);
     const [priceRange, setPriceRange] = useState("");
@@ -39,12 +39,13 @@ export default function Filter({ setBuildings }) {
             rating: rating === 0 || rating === "" ? null : rating,
             address: !address || address === "" ? null : address,
         }
+        setLoading(true);
         axios.post("/user/filter", {
             payload: payload,
         })
             .then((response) => {
                 setBuildings(response.data);
-                console.log(response.data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error("There was an error filtering the buildings!", error);

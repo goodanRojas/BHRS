@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Auth};
 use Inertia\Inertia;
-use App\Models\{BuildingApplication, Building, Address};
+use App\Models\{BuildingApplication, Building, Address, Admin, AdminLog};
 
 class Application extends Controller
 {
@@ -39,11 +39,11 @@ class Application extends Controller
         $application = BuildingApplication::findOrFail($request->id);
 
         $seller = $application->seller;
-        if($seller){
+        if ($seller) {
             $seller->notify(new BuildingApplicationApproved($application));
             event(new BuildingApplicationApprovedEvent($application));
         }
-        
+
         $application->status = "approved";
         $application->save();
         // Handle image upload
@@ -72,10 +72,27 @@ class Application extends Controller
             'latitude' => $application->latitude,
         ]);
 
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => Auth::guard('admin')->user()->id,
+            'name' => Auth::guard('admin')->user()->name,
+            'activity' => 'Approved Building Application for ' . $application->name,
+            ,
+
+        ]);
         return redirect()->route('admin.owner.building.application.index');
     }
 
-    public function reject(BuildingApplication $application){
+    public function reject(BuildingApplication $application)
+    {
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => Auth::guard('admin')->user()->id,
+            'name' => Auth::guard('admin')->user()->name,
+            'activity' => 'Rejected Building Application for ' . $application->name,
+            ,
+
+        ]);
         $application->status = "rejected";
         $application->save();
         return redirect()->route('admin.owner.building.application.index')->with('success', 'Application rejected successfully.');

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use App\Models\OwnerPaymentInfo;
+use App\Models\{OwnerPaymentInfo, Seller, AdminLog};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Storage};
 use Inertia\Inertia;
@@ -57,6 +57,12 @@ class PaymentDetailsController extends Controller
             $paymentInfo->update(['qr_code' => $path]);
         }
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Payment Details',
+        ]);
         return redirect()->back()->with('success', 'Payment details saved successfully.');
     }
 

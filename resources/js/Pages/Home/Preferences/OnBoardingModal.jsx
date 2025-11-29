@@ -8,11 +8,12 @@ export default function OnboardingModal() {
   const [step, setStep] = useState(1);
   const [selectedPreferences, setSelectedPreferences] = useState([]);
   const [preferenceOptions, setPreferenceOptions] = useState([]);
+  const [loadingPreferences, setLoadingPreferences] = useState(true);
 
   useEffect(() => {
     axios.get(route('user.onboarding.get.preferences')).then((response) => {
       setPreferenceOptions(response.data.preferences);
-    });
+    }).finally(() => setLoadingPreferences(false));
   }, []);
 
   const { data, setData, post, processing, errors } = useForm({
@@ -43,7 +44,7 @@ export default function OnboardingModal() {
   return (
     <Dialog
       open={true}
-      onClose={() => {}}
+      onClose={() => { }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     >
       <motion.div
@@ -58,9 +59,8 @@ export default function OnboardingModal() {
           {steps.map((s) => (
             <span
               key={s}
-              className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${
-                s === step ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
+              className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${s === step ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
             />
           ))}
         </div>
@@ -118,27 +118,35 @@ export default function OnboardingModal() {
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Choose your preferences
                 </h2>
-                <div className="flex flex-wrap gap-2 "> {/* Add Scrollbar */}
-                  {preferenceOptions.map((pref) => {
-                    const isSelected = selectedPreferences.includes(pref);
-                    return (
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.05 }}
-                        type="button"
-                        key={pref}
-                        onClick={() => handlePreferenceToggle(pref)}
-                        className={`px-4 py-2 rounded-full border transition-all duration-200 ${
-                          isSelected
+
+                {loadingPreferences ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className='w-10 h-10 border-4 border-indigo-600 border-dashed rounded-full animate-spin'></div>
+                  </div>
+                ) : (
+
+                  <div className="flex flex-wrap gap-2 "> {/* Add Scrollbar */}
+                    {preferenceOptions.map((pref) => {
+                      const isSelected = selectedPreferences.includes(pref);
+                      return (
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
+                          type="button"
+                          key={pref}
+                          onClick={() => handlePreferenceToggle(pref)}
+                          className={`px-4 py-2 rounded-full border transition-all duration-200 ${isSelected
                             ? 'bg-blue-600 text-white border-blue-600 shadow'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                        }`}
-                      >
-                        {pref}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                            }`}
+                        >
+                          {pref}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <p className="text-sm text-gray-500">
                   You can select up to 5 preferences.
                 </p>
@@ -180,11 +188,10 @@ export default function OnboardingModal() {
                 whileHover={{ scale: processing ? 1 : 1.05 }}
                 whileTap={{ scale: processing ? 1 : 0.95 }}
                 type="submit"
-                className={`px-6 py-2 rounded-lg shadow text-white transition ${
-                  processing || selectedPreferences.length < 4
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`px-6 py-2 rounded-lg shadow text-white transition ${processing || selectedPreferences.length < 4
+                  ? 'bg-blue-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 disabled={processing || selectedPreferences.length < 4}
               >
                 {processing ? 'Submitting...' : 'Submit'}

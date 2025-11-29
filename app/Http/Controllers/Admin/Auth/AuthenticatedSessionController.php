@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Auth, RateLimiter, };
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\{Admin, AdminLog};
 class AuthenticatedSessionController extends Controller
 {
     public function create(Request $request)
@@ -31,8 +32,14 @@ class AuthenticatedSessionController extends Controller
             ])
         ) {
             RateLimiter::clear($this->throttleKey($request)); // reset attempts
-            Log::info("Admin authenticated!");
-
+            $admin = Auth::guard('admin')->user();
+            AdminLog::create([
+                'actor_type' => Admin::class,
+                'actor_id' => $admin->id,
+                'name' => $admin->name,
+                'activity' => 'Admin Logged In',
+                ,
+            ]);
             return redirect()->intended(route('admin.dashboard'));
         } else {
             RateLimiter::hit($this->throttleKey($request), 3600); // record a failed attempt, decay = 3600s (1hr)
@@ -63,6 +70,14 @@ class AuthenticatedSessionController extends Controller
 
     public function logout(Request $request)
     {
+        $admin = Auth::guard('admin')->user();
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => $admin->id,
+            'name' => $admin->name,
+            'activity' => 'Admin Logged Out',
+            ,
+        ]);
         auth('admin')->logout();
         return redirect()->route('admin.login');
     }

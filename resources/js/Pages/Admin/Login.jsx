@@ -29,9 +29,11 @@ export default function Login({ status, error }) {
     return (
         <GuestLayout>
             <Head title="Admin Login" />
-            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 pointer-events-none">
+            <nav className="absolute top-0 left-0 w-full flex justify-center items-center px-5 ">
                 <div className='flex items-center justify-center'>
-                    <ApplicationLogo relative={true} />
+                    <Link href={route('landingpage')}>
+                        <ApplicationLogo relative={true} />
+                    </Link>
                 </div>
             </nav>
 

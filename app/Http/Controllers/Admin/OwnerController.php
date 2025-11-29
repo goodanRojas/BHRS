@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Log, Hash};
 use Inertia\Inertia;
-use App\Models\Seller;
-use App\Models\Address;
+use App\Models\{Seller, Address, Admin, AdminLog};
 
 class OwnerController extends Controller
 {
@@ -50,16 +48,24 @@ class OwnerController extends Controller
         Log::info($seller->toArray());
         if ($seller) {
             $address = Address::create([
-                'addressable_id'   => $seller->id,
+                'addressable_id' => $seller->id,
                 'addressable_type' => Seller::class,
                 'address' => [
                     'barangay' => $validated['address']['barangay'],
-                    'city'     => $validated['address']['city'],
+                    'city' => $validated['address']['city'],
                     'province' => $validated['address']['province'],
-                    'region'   => $validated['address']['region'],
+                    'region' => $validated['address']['region'],
                 ],
             ]);
         }
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Created owner account: ' . $seller->name,
+        ]);
+
         return redirect()->route('admin.owners');
     }
 
@@ -83,11 +89,16 @@ class OwnerController extends Controller
         $owner = Seller::find($id); // Assuming you're using the `Owner` model, not `Seller`
 
         if ($owner) {
-            Log::info('Toggling owner status', ['id' => $owner->id, 'current_status' => $owner->status]);
-            // Toggle status (you could also use ternary operator like your code, or use specific strings)
             $owner->status = !$owner->status;
             $owner->save();
-            Log::info('Owner status updated', ['id' => $owner->id, 'status' => $owner->status]);
+
+            AdminLog::create([
+                'actor_type' => Admin::class,
+                'actor_id' => auth()->guard('admin')->id(),
+                'name' => auth()->guard('admin')->user()->name,
+                'activity' => ($owner->status ? 'Activated' : 'Deactivated') . ' owner account: ' . $owner->name,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'status' => $owner->status,  // Return the updated status
@@ -115,6 +126,13 @@ class OwnerController extends Controller
         $owner->password = Hash::make($password);
 
         $owner->save();
+
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated owner account: ' . $owner->name,
+        ]);
 
         return redirect()->back()->with('success', 'User successfully update');
     }

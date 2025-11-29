@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{Log, Storage, Auth};
 use Illuminate\Validation\Rule;
-use App\Models\{Building, Feature, Room, Address, Bed, Media};
+use App\Models\{Building, Feature, Room, Address, Bed, Media, Seller, AdminLog};
 
 class BuildingController extends Controller
 {
@@ -62,7 +62,12 @@ class BuildingController extends Controller
             'featureable_id' => $request->featureable_id,
             'featureable_type' => Building::class
         ]);
-        Log::info($feature);
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Added Feature ' . $feature->name . ' to Building ID ' . $request->featureable_id,
+        ]);
         return response()->json([
             'feature' => $feature
         ]);
@@ -71,6 +76,13 @@ class BuildingController extends Controller
     {
         // Find the feature by ID
         $feature = Feature::findOrFail($id);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted Feature ' . $feature->name . ' from Building ID ' . $feature->featureable_id,
+        ]);
 
         // Delete the feature
         $feature->delete();
@@ -104,6 +116,14 @@ class BuildingController extends Controller
             'name' => $request->name,
             'image' => $imagePath,
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Added Room ' . $rooms->name . ' to Building ID ' . $request->building_id,
+        ]);
+
         return response()->json([
             'room' => $rooms
         ]);
@@ -164,6 +184,13 @@ class BuildingController extends Controller
             'longitude' => $request->input('longitude'),
         ]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Building ID ' . $building->id,
+        ]);
+
         return response()->json([
             'message' => 'Building updated successfully',
             'building' => $building,
@@ -186,7 +213,14 @@ class BuildingController extends Controller
             'imageable_type' => Building::class,
             'file_path' => $imagePath,
         ]);
-        Log::info($media);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Uploaded Image to Building ID ' . $request->id,
+        ]);
+
         return response()->json([
             'uploadedImages' => $media
         ]);
@@ -204,6 +238,13 @@ class BuildingController extends Controller
 
         $imagePath = $request->file('image')->store('images', 'public');
         $building->update(['image' => $imagePath]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Main Image of Building ID ' . $building->id,
+        ]);
 
         return response()->json([
             'message' => 'Main image updated successfully',
@@ -224,6 +265,13 @@ class BuildingController extends Controller
         $imagePath = $request->file('image')->store('images', 'public');
         $media->update(['file_path' => $imagePath]);
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Updated Carousel Image ID ' . $media->id . ' of Building ID ' . $media->imageable_id,
+        ]);
+
         return response()->json([
             'message' => 'Carousel image updated successfully',
             'image' => $imagePath,
@@ -234,6 +282,13 @@ class BuildingController extends Controller
         if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
             Storage::disk('public')->delete($media->file_path);
         }
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Deleted Carousel Image ID ' . $media->id . ' of Building ID ' . $media->imageable_id,
+        ]);
 
         $media->delete();
 

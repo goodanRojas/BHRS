@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\BuildingApplication;
+use App\Models\{BuildingApplication, Seller, AdminLog};
 use Illuminate\Support\Facades\Log;
 class BuildingRequestController extends Controller
 {
@@ -26,6 +26,13 @@ class BuildingRequestController extends Controller
         if ($application) {
             $application->status = 'cancelled';
             $application->save();
+
+            AdminLog::create([
+                'actor_type' => Seller::class,
+                'actor_id' => auth('seller')->user()->id,
+                'name' => auth('seller')->user()->name,
+                'activity' => 'Cancelled Building Application ID ' . $application->id,
+            ]);
 
             return response()->json([
                 'success' => true,

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Hash, Storage};
-use App\Models\{SellerApplication, Address, Admin};
+use App\Models\{SellerApplication, Address, Admin, Seller, AdminLog};
 use App\Events\Admin\SellerRegisteredEvent;
 use App\Notifications\Admin\NewSellerApplicationNotif;
 class SellerRegisterController extends Controller
@@ -59,6 +59,14 @@ class SellerRegisterController extends Controller
             'addressable_type' => SellerApplication::class,
             'address' => $validated['address'],
         ]);
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Submitted Seller Application ID ' . $application->id,
+        ]);
+
         $admin = Admin::first();
         $admin->notify(new NewSellerApplicationNotif($application));
         event(new SellerRegisteredEvent($application));
@@ -81,6 +89,13 @@ class SellerRegisterController extends Controller
         $application->status = 'cancelled';
         $application->save();
 
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Cancelled Seller Application ID ' . $application->id,
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Application cancelled successfully.',
@@ -91,6 +106,14 @@ class SellerRegisterController extends Controller
     public function approved()
     {
         $approved = SellerApplication::where('user_id', auth()->id())->where('status', 'approved')->get();
+
+        AdminLog::create([
+            'actor_type' => Seller::class,
+            'actor_id' => auth('seller')->user()->id,
+            'name' => auth('seller')->user()->name,
+            'activity' => 'Viewed Approved Seller Applications',
+        ]);
+
         return inertia('Seller/Auth/Approved', [
             'approved' => $approved,
         ]);

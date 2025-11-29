@@ -48,6 +48,12 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function adminLogs()
+    {
+        return $this->morphMany(AdminLog::class, 'actor');
+    }
+
+
     public function ownerApplications()
     {
         return $this->hasMany(SellerApplication::class);

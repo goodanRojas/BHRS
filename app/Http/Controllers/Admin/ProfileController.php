@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use App\Models\{Admin, AdminLog};
 class ProfileController extends Controller
 {
     /**
@@ -55,7 +56,7 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
-        
+
         $admin = auth('admin')->user();
 
         $validated = $request->validate([
@@ -63,13 +64,21 @@ class ProfileController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $admin->id,
             'password' => 'nullable|string|min:8|confirmed',
         ]);
-        
+
         $admin->name = $request->name;
         $admin->email = $request->email;
         if ($request->password) {
             $admin->password = Hash::make($request->password);
         }
         $admin->save();
+        AdminLog::create([
+            'actor_type' => Admin::class,
+            'actor_id' => auth()->guard('admin')->id(),
+            'name' => auth()->guard('admin')->user()->name,
+            'activity' => 'Updated profile for admin ID: ' . $admin->id
+        ]);
+
+
         return redirect()->back()->with('success', 'Profile updated successfully');
     }
 
