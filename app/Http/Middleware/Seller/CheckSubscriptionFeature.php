@@ -27,8 +27,7 @@ class CheckSubscriptionFeature
             ->latest('created_at')
             ->first();
 
-        Log::info($subscription);
-
+       
         // Case 1: No subscription at all (new seller)
         if (!$subscription) {
             return redirect()->route('seller.subscription.landing')

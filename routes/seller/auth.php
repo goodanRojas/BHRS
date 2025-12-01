@@ -50,3 +50,4 @@ require __DIR__ . '/notification.php';
 require __DIR__ . '/map.php';
 require __DIR__ . '/rules.php';
 require __DIR__ . '/guest_history.php';
+require __DIR__ . '/customer_support.php';

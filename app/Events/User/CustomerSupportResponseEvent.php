@@ -37,8 +37,10 @@ class CustomerSupportResponseEvent implements ShouldBroadcast
     }
     public function broadcastOn(): array
     {
+        $supportable = $this->ticket->supportable;
+
         return [
-            new PrivateChannel('customer-support-response-channel.' . $this->ticket->user_id),
+            new PrivateChannel('customer-support-response-channel.' . strtolower(class_basename($supportable)) . '.' . $supportable->id),
         ];
     }
 }

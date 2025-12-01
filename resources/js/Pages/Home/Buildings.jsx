@@ -10,7 +10,6 @@ import { faUserTie, faFilter, faSearch, faStar, faEye } from '@fortawesome/free-
 import Dropdown from '@/Components/Dropdown';
 import Filter from './Filter/Filter';
 export default function Buildings({ initialBuildings }) {
-    console.log(initialBuildings);
     const [buildings, setBuildings] = useState(initialBuildings);
     const [keywords, setKeywords] = useState([]);
     const [search, setSearch] = useState('');
@@ -35,7 +34,6 @@ export default function Buildings({ initialBuildings }) {
                     },
 
                 });
-                console.log(response.data);
                 setBuildings(response.data);
             } catch (error) {
                 console.error("Error fetching buildings:", error);

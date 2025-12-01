@@ -1,4 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import SellerLayout from "@/Layouts/SellerLayout";
 import { Head } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { Paperclip, User, Calendar, CheckCircle } from "lucide-react";
@@ -7,7 +7,7 @@ import Breadcrumbs from "@/Components/Breadcrumbs";
 export default function Ticket({ ticket }) {
     console.log(ticket);
     return (
-        <AuthenticatedLayout>
+        <SellerLayout>
             <Head title={`Ticket #${ticket.id}`} />
 
 
@@ -127,6 +127,6 @@ export default function Ticket({ ticket }) {
                     </div>
                 </div>
             </motion.div>
-        </AuthenticatedLayout>
+        </SellerLayout>
     );
 }

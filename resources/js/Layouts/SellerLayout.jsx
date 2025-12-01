@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import Footer from '@/Components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faBell, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { AlertCircle } from 'lucide-react';
 import SellerNotifModal from '@/Components/SellerNotifModal';
 import axios from 'axios';
 import PopupNotif from '@/Components/Notifications/Owner/PopupNotif';
@@ -25,6 +24,8 @@ import {
     Wallet,
     BadgeDollarSign,
     LogOut,
+    Headset,
+    AlertCircle
 } from "lucide-react";
 export default function SellerLayout({ header, children }) {
     const user = usePage().props.auth.seller;
@@ -145,6 +146,19 @@ export default function SellerLayout({ header, children }) {
                         {/* Right Section */}
                         <div className="hidden sm:flex sm:items-center space-x-4">
                             {/* Messages */}
+                            <div className="relative">
+                                {messagesCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                                        {messagesCount}
+                                    </div>
+                                )}
+                                <Link
+                                    href={route("seller.customer.support.index")}
+                                    className="p-2 text-gray-300 hover:text-white"
+                                >
+                                    <Headset size={20} />
+                                </Link>
+                            </div>
                             <div className="relative">
                                 {messagesCount > 0 && (
                                     <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
@@ -369,6 +383,13 @@ export default function SellerLayout({ header, children }) {
                                 <div className="flex items-center gap-2">
                                     <BadgeDollarSign size={18} />
                                     <span>Subscription</span>
+                                </div>
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route("seller.customer.support.index")}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Headset size={18} />
+                                    <span>Customer Support</span>
                                 </div>
                             </ResponsiveNavLink>
 

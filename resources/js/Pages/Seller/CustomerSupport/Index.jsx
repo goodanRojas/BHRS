@@ -1,4 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import SellerLayout from "@/Layouts/SellerLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, X, Paperclip, AlertTriangle } from "lucide-react";
 import { Head, useForm, usePage } from "@inertiajs/react";
@@ -10,7 +10,7 @@ export default function Index({ tickets: initialTickets = [] }) {
 
     const props = usePage().props;
 
-    const user = usePage().props.auth.user;
+    const owner = usePage().props.auth.seller;
 
     const [open, setOpen] = useState(false);
     const [tickets, setTickets] = useState(initialTickets);
@@ -31,7 +31,7 @@ export default function Index({ tickets: initialTickets = [] }) {
     const submitForm = (e) => {
         e.preventDefault();
 
-        post(route("customer.support.store"), {
+        post(route("seller.customer.support.store"), {
             forceFormData: true,
             onSuccess: (page) => {
                 reset();
@@ -52,7 +52,7 @@ export default function Index({ tickets: initialTickets = [] }) {
     };
 
     useEffect(() => {
-        const channel = Echo.private(`customer-support-response-channel.user.${user?.id}`)
+        const channel = Echo.private(`customer-support-response-channel.seller.${owner?.id}`)
             .listen('.CustomerSupportResponseEvent', (e) => {
                 setTickets((tickets) => {
                     const exists = tickets.some((t) => t.id === e.ticket.id);
@@ -76,12 +76,12 @@ export default function Index({ tickets: initialTickets = [] }) {
         return () => {
             Echo.leave('customer-support-response-channel');
         }
-    }, [user?.id]);
+    }, [owner?.id]);
 
     return (
-        <AuthenticatedLayout>
+        <SellerLayout>
             <Head title="Customer Support" />
-           
+
             {toast.isTrue && (
                 <Toast
                     isTrue={toast.isTrue}
@@ -259,7 +259,7 @@ export default function Index({ tickets: initialTickets = [] }) {
                                 tickets.map((ticket, index) => (
                                     <motion.tr
                                         key={ticket.id}
-                                        onClick={() => window.location.href = route("customer.support.show", ticket.id)}
+                                        onClick={() => window.location.href = route("seller.customer.support.show", ticket.id)}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.03 }}
@@ -273,13 +273,10 @@ export default function Index({ tickets: initialTickets = [] }) {
 
                                         <td className="py-3">
                                             {ticket.attachment ? (
-                                                <a
-                                                    href={`/storage/${ticket.attachment}`}
-                                                    className="text-blue-600 hover:underline flex items-center gap-1"
-                                                    target="_blank"
-                                                >
-                                                    <Paperclip size={16} /> Download
-                                                </a>
+                                                <>
+                                                    <Paperclip size={16} />
+                                                </>
+
                                             ) : (
                                                 <span className="text-gray-400">None</span>
                                             )}
@@ -314,6 +311,6 @@ export default function Index({ tickets: initialTickets = [] }) {
                     </table>
                 </motion.div>
             </div>
-        </AuthenticatedLayout>
+        </SellerLayout>
     );
 }

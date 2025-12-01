@@ -60,8 +60,8 @@ export default function Show({ ticket }) {
                     <div className="flex items-center gap-4">
                         <User size={24} className="text-gray-500" />
                         <div>
-                            <p className="font-medium">{ticket.user.name}</p>
-                            <p className="text-gray-500 text-sm">{ticket.user.email}</p>
+                            <p className="font-medium">{ticket.supportable.name}</p>
+                            <p className="text-gray-500 text-sm">{ticket.supportable.email}</p>
                         </div>
                     </div>
 

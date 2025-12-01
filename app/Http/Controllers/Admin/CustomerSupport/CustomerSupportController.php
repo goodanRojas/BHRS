@@ -11,7 +11,7 @@ class CustomerSupportController extends Controller
 {
     public function index()
     {
-        $tickets = CustomerSupport::with('user')
+        $tickets = CustomerSupport::with('supportable')
             ->orderBy('created_at', 'desc')
             ->get();
         return inertia('Admin/CustomerSupport/Index', [
@@ -21,7 +21,7 @@ class CustomerSupportController extends Controller
 
     public function show($id)
     {
-        $ticket = CustomerSupport::with('user')->findOrFail($id);
+        $ticket = CustomerSupport::with('supportable')->findOrFail($id);
         return inertia('Admin/CustomerSupport/Show', [
             'ticket' => $ticket,
         ]);
@@ -39,7 +39,7 @@ class CustomerSupportController extends Controller
             'resolved_at' => null,
         ]);
 
-        event(new CustomerSupportResponseEvent($ticket));
+            event(new CustomerSupportResponseEvent($ticket));
 
         return redirect()->back()->with([
             'success' => true,

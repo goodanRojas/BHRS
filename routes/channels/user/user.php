@@ -20,13 +20,13 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('user_booking_rejected.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+Broadcast::channel('customer-support-response-channel.{type}.{id}', function ($user, $type, $id) {
+    return strtolower(class_basename($user)) === $type && (int) $user->id === (int) $id;
+}, ['guards' => ['web', 'seller']]);
 
-Broadcast::channel('customer-support-response-channel.{userId}', function ($user, $userId) {
-    return (int) $user->id === (int) $userId;
-});
 
 /* Chat: User to Owner */
 
 Broadcast::channel('user-to-owner-messages.{id}', function ($owner, $ownerId) {
     return (int) $owner->id === (int) $ownerId;
-},['guards' => ['seller']]);
+}, ['guards' => ['seller']]);

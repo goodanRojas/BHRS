@@ -69,13 +69,13 @@ export default function Index({ tickets: initialTickets = [] }) {
                                         {/* User Info */}
                                         <td className="py-3 flex items-center gap-2">
                                             <img
-                                                src={`/storage/${ticket.user.avatar || "storage/profile/default-avatar.png"}`}
-                                                alt={ticket.user.name}
+                                                src={`/storage/${ticket.supportable.avatar || "storage/profile/default-avatar.png"}`}
+                                                alt={ticket.supportable.name}
                                                 className="w-8 h-8 rounded-full object-cover"
                                             />
                                             <div>
-                                                <p className="font-medium">{ticket.user.name}</p>
-                                                <p className="text-xs text-gray-500">{ticket.user.email}</p>
+                                                <p className="font-medium">{ticket.supportable.name}</p>
+                                                <p className="text-xs text-gray-500">{ticket.supportable.email}</p>
                                             </div>
                                         </td>
 

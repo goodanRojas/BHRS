@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\User\CustomerSupport;
+namespace App\Http\Controllers\Owner\CustomerSupport;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-use App\Models\{User, CustomerSupport};
+use App\Models\{Seller, CustomerSupport};
 use App\Events\Admin\NewCustomerSupportEvent;
 class CustomerSupportController extends Controller
 {
     public function index()
     {
-        $tickets = auth()->user()
+        $tickets = auth("seller")->user()
             ->supportTickets()
             ->with('supportable')
             ->orderBy('created_at', 'desc')
             ->get();
-        return Inertia::render('Home/CustomerSupport/Index', [
+        return Inertia::render('Seller/CustomerSupport/Index', [
             'tickets' => $tickets,
         ]);
     }
@@ -37,8 +37,8 @@ class CustomerSupportController extends Controller
         }
 
         $ticket = CustomerSupport::create([
-            'supportable_id' => auth()->id(),
-            'supportable_type' => User::class,
+            'supportable_id' => auth("seller")->id(),
+            'supportable_type' => Seller::class,
             'email' => $request->email,
             'name' => $request->name,
             'message' => $request->message,
@@ -54,7 +54,7 @@ class CustomerSupportController extends Controller
         //
 
 
-        return redirect()->route('customer.support.index')->with([
+        return redirect()->route('seller.customer.support.index')->with([
             'message' => 'Support ticket created successfully.',
             'success' => true,
             'ticket' => $ticket
@@ -65,7 +65,7 @@ class CustomerSupportController extends Controller
     public function show($id)
     {
         $ticket = CustomerSupport::with(['supportable'])->findOrFail($id);
-        return Inertia::render('Home/CustomerSupport/Ticket', [
+        return Inertia::render('Seller/CustomerSupport/Ticket', [
             'ticket' => $ticket,
         ]);
     }

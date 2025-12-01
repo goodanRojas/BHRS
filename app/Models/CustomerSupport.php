@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerSupport extends Model
 {
     protected $fillable = [
-        'user_id',
+        'supportable_id',
+        'supportable_type',
         'email',
         'name',
         'message',
@@ -19,8 +20,9 @@ class CustomerSupport extends Model
         'resolved_at',
     ];
 
-    public function user()
+    public function supportable()
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
+
 }

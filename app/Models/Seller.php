@@ -124,4 +124,10 @@ class Seller extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(RulesAndRegulation::class);
     }
+
+    public function supportTickets()
+    {
+        return $this->morphMany(CustomerSupport::class, 'supportable');
+    }
+
 }

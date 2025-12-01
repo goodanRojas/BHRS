@@ -133,8 +133,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Cancel::class);
     }
 
-    public function customerSupports()
+    public function supportTickets()
     {
-        return $this->hasMany(CustomerSupport::class);
+        return $this->morphMany(CustomerSupport::class, 'supportable');
     }
 }
