@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, X, Paperclip, AlertTriangle } from "lucide-react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
+import { useOwnerSupportCount } from "@/Contexts/OwnerSupportCountContext";
 import Modal from "@/Components/Modal";
 import Toast from "@/Components/Toast";
 
@@ -11,6 +12,9 @@ export default function Index({ tickets: initialTickets = [] }) {
     const props = usePage().props;
 
     const owner = usePage().props.auth.seller;
+
+
+    const { updateOwnerSupportCount } = useOwnerSupportCount();
 
     const [open, setOpen] = useState(false);
     const [tickets, setTickets] = useState(initialTickets);
@@ -70,7 +74,7 @@ export default function Index({ tickets: initialTickets = [] }) {
                     isType: "success",
                     id: Date.now(),
                 });
-
+                updateOwnerSupportCount(+1);
             });
 
         return () => {
@@ -79,7 +83,7 @@ export default function Index({ tickets: initialTickets = [] }) {
     }, [owner?.id]);
 
     return (
-        <SellerLayout>
+        <>
             <Head title="Customer Support" />
 
             {toast.isTrue && (
@@ -263,8 +267,13 @@ export default function Index({ tickets: initialTickets = [] }) {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.03 }}
-                                        className="border-b cursor-pointer hover:bg-gray-50"
+                                        className={`border-b hover:bg-gray-50 transition cursor-pointer relative ${ticket.read_at === null && ticket.message !== null ? "bg-yellow-50  hover:bg-yellow-100" : ""}`}
                                     >
+                                        {ticket.read_at === null && ticket.message !== null && (
+                                            <>
+                                                <span className="absolute left-1 top-2 w-[10px] h-[10px] bg-blue-500 rounded-full"></span>
+                                            </>
+                                        )}
                                         <td className="py-3 capitalize">
                                             {ticket.category}
                                         </td>
@@ -311,6 +320,9 @@ export default function Index({ tickets: initialTickets = [] }) {
                     </table>
                 </motion.div>
             </div>
-        </SellerLayout>
+        </>
     );
 }
+
+
+Index.layout = (page) => <SellerLayout children={page} />;

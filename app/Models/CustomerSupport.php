@@ -18,6 +18,8 @@ class CustomerSupport extends Model
         'priority',
         'status',
         'resolved_at',
+        'read_at',
+        'admin_read_at'
     ];
 
     public function supportable()

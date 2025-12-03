@@ -65,6 +65,9 @@ class CustomerSupportController extends Controller
     public function show($id)
     {
         $ticket = CustomerSupport::with(['supportable'])->findOrFail($id);
+        $ticket->update([
+            'read_at' => now()
+        ]);
         return Inertia::render('Home/CustomerSupport/Ticket', [
             'ticket' => $ticket,
         ]);

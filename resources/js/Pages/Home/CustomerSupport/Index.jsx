@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, X, Paperclip, AlertTriangle } from "lucide-react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
+import { useSupportCount } from "@/Contexts/SupportCountContext";
 import Modal from "@/Components/Modal";
 import Toast from "@/Components/Toast";
 
@@ -11,6 +12,8 @@ export default function Index({ tickets: initialTickets = [] }) {
     const props = usePage().props;
 
     const user = usePage().props.auth.user;
+
+    const { updateSupportCount } = useSupportCount();
 
     const [open, setOpen] = useState(false);
     const [tickets, setTickets] = useState(initialTickets);
@@ -44,6 +47,7 @@ export default function Index({ tickets: initialTickets = [] }) {
                     isType: "success",
                     id: Date.now(),
                 })
+
             },
             onError: (errors) => {
                 console.log(errors);
@@ -70,18 +74,18 @@ export default function Index({ tickets: initialTickets = [] }) {
                     isType: "success",
                     id: Date.now(),
                 });
-
+                updateSupportCount(+1);
             });
 
         return () => {
-            Echo.leave('customer-support-response-channel');
+            Echo.leave(`customer-support-response-channel.user.${user?.id}`)
         }
     }, [user?.id]);
 
     return (
-        <AuthenticatedLayout>
+        <>
             <Head title="Customer Support" />
-           
+
             {toast.isTrue && (
                 <Toast
                     isTrue={toast.isTrue}
@@ -263,8 +267,14 @@ export default function Index({ tickets: initialTickets = [] }) {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.03 }}
-                                        className="border-b cursor-pointer hover:bg-gray-50"
+                                        className={`border-b hover:bg-gray-50 transition cursor-pointer relative ${ticket.read_at === null && ticket.message !== null ? "bg-yellow-50  hover:bg-yellow-100" : ""}`}
                                     >
+                                        {ticket.read_at === null && ticket.message !== null && (
+                                            <>
+                                                <span className="absolute left-1 top-2 w-[10px] h-[10px] bg-blue-500 rounded-full"></span>
+                                            </>
+                                        )}
+
                                         <td className="py-3 capitalize">
                                             {ticket.category}
                                         </td>
@@ -314,6 +324,8 @@ export default function Index({ tickets: initialTickets = [] }) {
                     </table>
                 </motion.div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Index.layout = (page) => <AuthenticatedLayout children={page} />;
