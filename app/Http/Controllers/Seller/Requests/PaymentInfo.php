@@ -78,7 +78,7 @@ class PaymentInfo extends Controller
 
         //Notify the user after he/she is added to the group and broadcast an event
         $owner = auth()->guard('seller')->user();
-        $message = DefaultMessage::where('type', 'tenant_welcome')->first();
+        $message = DefaultMessage::where('remarks', 'tenant_welcome')->first();
 
         Message::create([
             'sender_id' => $owner->id,

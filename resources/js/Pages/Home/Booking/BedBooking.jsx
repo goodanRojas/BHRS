@@ -16,7 +16,6 @@ export default function Booking({ bed, userPreferences }) {
         name: userPreferences?.fullname || '',
         email: userPreferences?.email || '',
         phone: userPreferences?.phone || '',
-        test: '',
         address: {
             region: '',
             province: '',
@@ -154,15 +153,7 @@ export default function Booking({ bed, userPreferences }) {
 
                         />
 
-                        <InputField
-
-                            label="Test Input"
-                            name="test"
-                            value={data.test}
-                            onChange={handleChange}
-                            error={errors.test}
-
-                        />
+                    
 
                         <InputField
                             label="Email"
